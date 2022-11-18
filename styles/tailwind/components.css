@@ -1,0 +1,18 @@
+@tailwind components;
+
+@layer components {
+  .card {
+    @apply bg-gray-400 rounded-medium p-6;
+  }
+
+  .contactInput {
+    @apply outline-none bg-black-600 rounded-sm border-b border-black-600 px-6 py-4 text-white placeholder-gray-300 transition-all focus:border-gradient;
+  }
+
+  .tab {
+    @apply h-6 md:h-12 text-gray-300 text-lg p-4 inline-flex cursor-pointer rounded items-center;
+  }
+  .tab-active {
+    @apply text-white bg-black-500;
+  }
+}

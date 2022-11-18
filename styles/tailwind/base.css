@@ -1,0 +1,26 @@
+@tailwind base;
+
+@font-face {
+  font-family: 'Lato Black';
+  font-style: normal;
+  font-weight: 900;
+  src: local(''), url('/fonts/Lato-Black.ttf') format('ttf');
+}
+
+@layer base {
+  html body {
+    @apply md:scrollbar md:scrollbar-track-gray-400 md:scrollbar-thumb-black-500 h-screen md:scroll-smooth;
+  }
+  main {
+    @apply overflow-x-hidden;
+  }
+  p {
+    @apply text-white text-sm md:text-base text-justify hyphens-auto;
+  }
+  strong {
+    @apply text-secondary-light;
+  }
+  ul {
+    @apply text-justify hyphens-auto;
+  }
+}

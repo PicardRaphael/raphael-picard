@@ -31,7 +31,7 @@ const Meta = ({ title, description, canonical }: MetaProps) => (
         url: 'https://raphaelpicard.com/',
         locale: AppConfig.locale,
         site_name: AppConfig.site_name,
-        images: [{ url: 'https://zupimages.net/viewer.php?id=22/47/85mw.png' }],
+        images: [{ url: 'https://zupimages.net/viewer.php?id=22/47/z4cz.png' }],
       }}
       facebook={{
         appId: '1234567890',

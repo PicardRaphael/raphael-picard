@@ -78,7 +78,7 @@ const Home = () => {
   );
 };
 
-export const get: GetServerSideProps = async () => {
+export const getServerSideProps: GetServerSideProps = async () => {
   const queryClient = new QueryClient();
   await queryClient.prefetchQuery(['hero'], fetchHero);
   await queryClient.prefetchQuery(['about'], fetchAbout);

@@ -48,7 +48,7 @@ const Skills = ({ skills }: SkillsProp) => {
   };
 
   return (
-    <div className='section'>
+    <>
       <h2 className='text-2xl font-bold text-center gradient md:text-4xl'>
         Arbres de compétences
       </h2>
@@ -84,7 +84,7 @@ const Skills = ({ skills }: SkillsProp) => {
           <TreeSkill title='Back End' skills={skills.back} />
         </motion.div>
       </motion.div>
-    </div>
+    </>
   );
 };
 

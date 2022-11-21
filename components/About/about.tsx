@@ -9,7 +9,7 @@ import type { About as IAbout } from '../../types/about';
 
 const About = ({ about, aboutPic }: IAbout) => {
   return (
-    <div className='section md:pl-6'>
+    <>
       <h2 className='inline text-2xl font-bold gradient md:text-4xl'>
         Qui suis-je ?
       </h2>
@@ -52,7 +52,7 @@ const About = ({ about, aboutPic }: IAbout) => {
           )}
         </InView>
       </div>
-    </div>
+    </>
   );
 };
 

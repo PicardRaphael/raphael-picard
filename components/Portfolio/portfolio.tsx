@@ -7,7 +7,7 @@ type PortfolioProps = {
 };
 const Portfolio = ({ projects }: PortfolioProps) => {
   return (
-    <div className='section md:pl-6'>
+    <>
       <motion.div
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1.1 }}
@@ -18,7 +18,7 @@ const Portfolio = ({ projects }: PortfolioProps) => {
         </h2>
         <SlideCard data={projects} />
       </motion.div>
-    </div>
+    </>
   );
 };
 

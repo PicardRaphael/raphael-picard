@@ -9,7 +9,7 @@ type WorkExperienceProps = {
 
 const WorkExperience = ({ experiences }: WorkExperienceProps) => {
   return (
-    <div className='section md:pl-6'>
+    <>
       <motion.div
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1.1 }}
@@ -20,7 +20,7 @@ const WorkExperience = ({ experiences }: WorkExperienceProps) => {
         </h2>
         <SlideCard data={experiences} />
       </motion.div>
-    </div>
+    </>
   );
 };
 

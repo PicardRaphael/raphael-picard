@@ -4,6 +4,7 @@ import type { GetServerSideProps } from 'next';
 import About from '../components/About/about';
 import Contact from '../components/Contact/contact';
 import Hero from '../components/Hero/hero';
+import Loading from '../components/Loading/loading';
 import Portfolio from '../components/Portfolio/portfolio';
 import Skills from '../components/Skills/skills';
 import WorkExperience from '../components/WorkExperience/workExperience';
@@ -27,43 +28,44 @@ const Home = () => {
     queryFn: fetchProjects,
   });
 
-  console.log(experiencesQuery.data);
   return (
     <div>
       <section id='hero' className='w-full bg-black-600'>
-        {heroQuery.isLoading ? (
-          <h1>Loading...</h1>
-        ) : (
-          <Hero {...heroQuery.data} />
-        )}
+        <div className='section'>
+          {heroQuery.isLoading ? <Loading /> : <Hero {...heroQuery.data} />}
+        </div>
       </section>
       <section id='a-propos' className='w-full'>
-        {aboutQuery.isLoading ? (
-          <h1>Loading...</h1>
-        ) : (
-          <About {...aboutQuery.data} />
-        )}
+        <div className='section md:pl-6'>
+          {aboutQuery.isLoading ? <Loading /> : <About {...aboutQuery.data} />}
+        </div>
       </section>
       <section id='experiences' className='w-full bg-black-600'>
-        {experiencesQuery.isLoading ? (
-          <h1>Loading...</h1>
-        ) : (
-          <WorkExperience experiences={experiencesQuery.data} />
-        )}
+        <div className='section md:pl-6'>
+          {experiencesQuery.isLoading ? (
+            <Loading />
+          ) : (
+            <WorkExperience experiences={experiencesQuery.data} />
+          )}
+        </div>
       </section>
       <section id='competences' className='w-full'>
-        {skillsQuery.isLoading ? (
-          <h1>Loading...</h1>
-        ) : (
-          <Skills skills={skillsQuery.data} />
-        )}
+        <div className='section'>
+          {skillsQuery.isLoading ? (
+            <Loading />
+          ) : (
+            <Skills skills={skillsQuery.data} />
+          )}
+        </div>
       </section>
       <section id='portfolio' className='w-full bg-black-600'>
-        {projectsQuery.isLoading ? (
-          <h1>Loading...</h1>
-        ) : (
-          <Portfolio projects={projectsQuery.data} />
-        )}
+        <div className='section md:pl-6'>
+          {projectsQuery.isLoading ? (
+            <Loading />
+          ) : (
+            <Portfolio projects={projectsQuery.data} />
+          )}
+        </div>
       </section>
       <section id='contact' className='w-full'>
         <Contact />

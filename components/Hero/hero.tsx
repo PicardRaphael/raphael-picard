@@ -23,7 +23,7 @@ const Hero = ({
   });
 
   return (
-    <div className='section'>
+    <>
       <motion.div
         initial={{
           y: -500,
@@ -75,7 +75,7 @@ const Hero = ({
         </h2>
         <PortableText value={together} />
       </div>
-    </div>
+    </>
   );
 };
 

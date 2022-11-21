@@ -4,7 +4,6 @@ import type { GetServerSideProps } from 'next';
 import About from '../components/About/about';
 import Contact from '../components/Contact/contact';
 import Hero from '../components/Hero/hero';
-import MainLayout from '../components/Layout/mainLayout';
 import Portfolio from '../components/Portfolio/portfolio';
 import Skills from '../components/Skills/skills';
 import WorkExperience from '../components/WorkExperience/workExperience';
@@ -14,8 +13,6 @@ import { fetchFooter } from '../lib/fetchFooter';
 import { fetchHero } from '../lib/fetchHero';
 import { fetchProjects } from '../lib/fetchProjects';
 import { fetchSkills } from '../lib/fetchSkills';
-import { AppConfig } from '../utils/appConfig';
-import type { Footer as IFooter } from '../types/footer';
 
 const Home = () => {
   const heroQuery = useQuery({ queryKey: ['hero'], queryFn: fetchHero });
@@ -90,23 +87,6 @@ export const getServerSideProps: GetServerSideProps = async () => {
       footer,
     },
   };
-};
-
-Home.getLayout = function getLayout(
-  component,
-  { footer }: { footer: IFooter }
-) {
-  return (
-    <MainLayout
-      meta={{
-        title: `${AppConfig.site_name} | ${AppConfig.job}`,
-        description: AppConfig.description,
-      }}
-      footer={footer}
-    >
-      {component}
-    </MainLayout>
-  );
 };
 
 export default Home;

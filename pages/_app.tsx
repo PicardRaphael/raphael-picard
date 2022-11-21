@@ -1,40 +1,36 @@
 import '../styles/globals.css';
 
-import type { NextPage } from 'next';
 import type { AppProps } from 'next/app';
-import { ReactElement, ReactNode, useState } from 'react';
+import { useState } from 'react';
 import {
   DehydratedState,
   Hydrate,
   QueryClient,
   QueryClientProvider,
 } from '@tanstack/react-query';
+import { AppConfig } from '../utils/appConfig';
+import MainLayout from '../components/Layout/mainLayout';
+import { Footer } from '../types/footer';
 
-type NextPageWithLayout = NextPage & {
-  getLayout?: (page: ReactElement, pageProps) => ReactNode;
-};
-type AppPropsWithLayout = AppProps<{ dehydratedState: DehydratedState }> & {
-  Component: NextPageWithLayout;
-};
-
-const MyApp = ({ Component, pageProps }: AppPropsWithLayout) => {
+const MyApp = ({
+  Component,
+  pageProps,
+}: AppProps<{ dehydratedState: DehydratedState; footer: Footer }>) => {
   const [queryClient] = useState(() => new QueryClient());
 
-  if (Component.getLayout) {
-    return Component.getLayout(
-      <QueryClientProvider client={queryClient}>
-        <Hydrate state={pageProps.dehydratedState}>
-          <Component {...pageProps} />
-        </Hydrate>
-      </QueryClientProvider>,
-      pageProps
-    );
-  }
   return (
     <>
       <QueryClientProvider client={queryClient}>
         <Hydrate state={pageProps.dehydratedState}>
-          <Component {...pageProps} />
+          <MainLayout
+            meta={{
+              title: `${AppConfig.site_name} | ${AppConfig.job}`,
+              description: AppConfig.description,
+            }}
+            footer={pageProps.footer}
+          >
+            <Component {...pageProps} />
+          </MainLayout>
         </Hydrate>
       </QueryClientProvider>
     </>

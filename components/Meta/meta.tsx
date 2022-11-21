@@ -9,7 +9,7 @@ export type MetaProps = {
   canonical?: string;
 };
 
-const Meta = ({ title, description, canonical }: MetaProps) => (
+const Meta = ({ title, description }: MetaProps) => (
   <>
     <Head>
       <meta charSet='UTF-8' key='charset' />
@@ -23,15 +23,24 @@ const Meta = ({ title, description, canonical }: MetaProps) => (
     </Head>
     <NextSeo
       title={title}
+      titleTemplate={title}
       description={description}
+      defaultTitle={title}
       canonical='https://raphaelpicard.com/'
       openGraph={{
         title: AppConfig.title,
         description: AppConfig.description,
         url: 'https://raphaelpicard.com/',
         locale: AppConfig.locale,
-        site_name: AppConfig.site_name,
-        images: [{ url: 'https://zupimages.net/viewer.php?id=22/47/z4cz.png' }],
+        siteName: AppConfig.site_name,
+        images: [
+          {
+            url: 'https://zupimages.net/up/22/47/z4cz.png',
+            alt: 'Raphaël PICARD',
+            width: 1200,
+            height: 630,
+          },
+        ],
       }}
       facebook={{
         appId: '1234567890',

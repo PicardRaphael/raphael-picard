@@ -33,7 +33,26 @@ const Meta = ({ title, description }: MetaProps) => (
         url: 'https://raphaelpicard.com/',
         locale: AppConfig.locale,
         siteName: AppConfig.site_name,
+        type: 'website',
+        profile: {
+          firstName: 'Raphaël',
+          lastName: 'Picard',
+          username: 'RaphaelPicard',
+          gender: 'male',
+        },
         images: [
+          {
+            url: 'https://zupimages.net/up/22/47/z4cz.png',
+            alt: 'Raphaël PICARD',
+            width: 1200,
+            height: 630,
+          },
+          {
+            url: 'https://zupimages.net/up/22/47/z4cz.png',
+            alt: 'Raphaël PICARD',
+            width: 1200,
+            height: 630,
+          },
           {
             url: 'https://zupimages.net/up/22/47/z4cz.png',
             alt: 'Raphaël PICARD',

@@ -11,12 +11,12 @@ const NavHeaderMobile = () => {
     <nav>
       <div>
         <div
-          className="animate-pulse space-y-2"
+          className='space-y-2 animate-pulse'
           onClick={() => setIsNavOpen((prev) => !prev)}
         >
-          <span className="btn-gradient block h-0.5 w-8 animate-pulse"></span>
-          <span className="btn-gradient block h-0.5 w-8 animate-pulse"></span>
-          <span className="btn-gradient block h-0.5 w-8 animate-pulse"></span>
+          <span className='btn-gradient block h-0.5 w-8 animate-pulse'></span>
+          <span className='btn-gradient block h-0.5 w-8 animate-pulse'></span>
+          <span className='btn-gradient block h-0.5 w-8 animate-pulse'></span>
         </div>
         <div
           className={`
@@ -32,30 +32,30 @@ const NavHeaderMobile = () => {
           }`}
         >
           <div
-            className="absolute top-0 right-0 animate-pulse p-8"
+            className='absolute top-0 right-0 p-8 animate-pulse'
             onClick={() => setIsNavOpen(false)}
           >
             <svg
-              className="btn-gradient h-9 w-9 rounded-large"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+              className='btn-gradient h-9 w-9 rounded-large'
+              viewBox='0 0 24 24'
+              fill='none'
+              stroke='currentColor'
+              strokeWidth='2'
+              strokeLinecap='round'
+              strokeLinejoin='round'
             >
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
+              <line x1='18' y1='6' x2='6' y2='18' />
+              <line x1='6' y1='6' x2='18' y2='18' />
             </svg>
           </div>
-          <ul className="flex min-h-[250px] flex-col items-center justify-between">
+          <ul className='flex min-h-[250px] flex-col items-center justify-between'>
             {NavMainData.map((item) => (
               <li
                 onClick={() => setIsNavOpen(false)}
                 key={item.key}
-                className="border-gradient my-8 border-b uppercase text-gray-300"
+                className='my-8 text-gray-300 uppercase border-b border-gradient'
               >
-                <Link href={item.url}>
+                <Link href={`#${item.url}`}>
                   <a>{item.label}</a>
                 </Link>
               </li>

@@ -1,19 +1,23 @@
 import { dehydrate, QueryClient, useQuery } from '@tanstack/react-query';
 import type { GetServerSideProps } from 'next';
+import dynamic from 'next/dynamic';
 
-import About from '../components/About/about';
-import Contact from '../components/Contact/contact';
-import Hero from '../components/Hero/hero';
 import Loading from '../components/Loading/loading';
-import Portfolio from '../components/Portfolio/portfolio';
-import Skills from '../components/Skills/skills';
-import WorkExperience from '../components/WorkExperience/workExperience';
 import { fetchAbout } from '../lib/fetchAbout';
 import { fetchExperiences } from '../lib/fetchExperiences';
 import { fetchFooter } from '../lib/fetchFooter';
 import { fetchHero } from '../lib/fetchHero';
 import { fetchProjects } from '../lib/fetchProjects';
 import { fetchSkills } from '../lib/fetchSkills';
+
+const About = dynamic(() => import('../components/About/about'));
+const Contact = dynamic(() => import('../components/Contact/contact'));
+const Hero = dynamic(() => import('../components/Hero/hero'));
+const Portfolio = dynamic(() => import('../components/Portfolio/portfolio'));
+const Skills = dynamic(() => import('../components/Skills/skills'));
+const WorkExperience = dynamic(
+  () => import('../components/WorkExperience/workExperience')
+);
 
 const Home = () => {
   const heroQuery = useQuery({ queryKey: ['hero'], queryFn: fetchHero });
@@ -74,7 +78,7 @@ const Home = () => {
   );
 };
 
-export const getServerSideProps: GetServerSideProps = async () => {
+export const get: GetServerSideProps = async () => {
   const queryClient = new QueryClient();
   await queryClient.prefetchQuery(['hero'], fetchHero);
   await queryClient.prefetchQuery(['about'], fetchAbout);

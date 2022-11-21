@@ -1,3 +1,4 @@
+import { dehydrate, QueryClient, useQuery } from '@tanstack/react-query';
 import type { GetServerSideProps } from 'next';
 
 import About from '../components/About/about';
@@ -13,39 +14,59 @@ import { fetchFooter } from '../lib/fetchFooter';
 import { fetchHero } from '../lib/fetchHero';
 import { fetchProjects } from '../lib/fetchProjects';
 import { fetchSkills } from '../lib/fetchSkills';
-import type { About as IAbout } from '../types/about';
-import type { Experience as IExperience } from '../types/experience';
-import type { Footer as IFooter } from '../types/footer';
-import type { Hero as IHero } from '../types/hero';
-import type { Project as IProject } from '../types/project';
-import type { Skills as ISkills } from '../types/skill';
 import { AppConfig } from '../utils/appConfig';
+import type { Footer as IFooter } from '../types/footer';
 
-type HomeProps = {
-  hero: IHero;
-  about: IAbout;
-  experiences: IExperience[];
-  projects: IProject[];
-  footer: IFooter;
-  skills: ISkills;
-};
-const Home = ({ hero, about, experiences, projects, skills }: HomeProps) => {
+const Home = () => {
+  const heroQuery = useQuery({ queryKey: ['hero'], queryFn: fetchHero });
+  const aboutQuery = useQuery({ queryKey: ['about'], queryFn: fetchAbout });
+  const skillsQuery = useQuery({ queryKey: ['skills'], queryFn: fetchSkills });
+  const experiencesQuery = useQuery({
+    queryKey: ['experiences'],
+    queryFn: fetchExperiences,
+  });
+  const projectsQuery = useQuery({
+    queryKey: ['projects'],
+    queryFn: fetchProjects,
+  });
+
+  console.log(experiencesQuery.data);
   return (
     <div>
       <section id='hero' className='w-full bg-black-600'>
-        {hero ? <Hero {...hero} /> : null}
+        {heroQuery.isLoading ? (
+          <h1>Loading...</h1>
+        ) : (
+          <Hero {...heroQuery.data} />
+        )}
       </section>
       <section id='a-propos' className='w-full'>
-        {about ? <About {...about} /> : null}
+        {aboutQuery.isLoading ? (
+          <h1>Loading...</h1>
+        ) : (
+          <About {...aboutQuery.data} />
+        )}
       </section>
       <section id='experiences' className='w-full bg-black-600'>
-        {experiences ? <WorkExperience experiences={experiences} /> : null}
+        {experiencesQuery.isLoading ? (
+          <h1>Loading...</h1>
+        ) : (
+          <WorkExperience experiences={experiencesQuery.data} />
+        )}
       </section>
       <section id='competences' className='w-full'>
-        {projects ? <Skills skills={skills} /> : null}
+        {skillsQuery.isLoading ? (
+          <h1>Loading...</h1>
+        ) : (
+          <Skills skills={skillsQuery.data} />
+        )}
       </section>
       <section id='portfolio' className='w-full bg-black-600'>
-        {skills ? <Portfolio projects={projects} /> : null}
+        {projectsQuery.isLoading ? (
+          <h1>Loading...</h1>
+        ) : (
+          <Portfolio projects={projectsQuery.data} />
+        )}
       </section>
       <section id='contact' className='w-full'>
         <Contact />
@@ -54,32 +75,19 @@ const Home = ({ hero, about, experiences, projects, skills }: HomeProps) => {
   );
 };
 
-export const getServerSideProps: GetServerSideProps<HomeProps> = async () => {
-  const heroQuery = fetchHero();
-  const aboutQuery = fetchAbout();
-  const footerQuery = fetchFooter();
-  const projectsQuery = fetchProjects();
-  const experiencesQuery = fetchExperiences();
-  const skillsQuery = fetchSkills();
-
-  const [hero, about, footer, projects, experiences, skills] =
-    await Promise.all([
-      heroQuery,
-      aboutQuery,
-      footerQuery,
-      projectsQuery,
-      experiencesQuery,
-      skillsQuery,
-    ]);
+export const getServerSideProps: GetServerSideProps = async () => {
+  const queryClient = new QueryClient();
+  await queryClient.prefetchQuery(['hero'], fetchHero);
+  await queryClient.prefetchQuery(['about'], fetchAbout);
+  await queryClient.prefetchQuery(['experiences'], fetchExperiences);
+  await queryClient.prefetchQuery(['projects'], fetchProjects);
+  await queryClient.prefetchQuery(['skills'], fetchSkills);
+  const footer = await fetchFooter();
 
   return {
     props: {
-      hero,
-      about,
+      dehydratedState: dehydrate(queryClient),
       footer,
-      projects,
-      experiences,
-      skills,
     },
   };
 };

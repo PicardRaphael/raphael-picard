@@ -3,6 +3,8 @@ import Footer from '@/components/Footer';
 import Header from '@/components/Header';
 import { SanityLive } from '@/sanity/lib/live';
 import { homeMetadata } from '@/utils/metadata/home-metadata';
+import { SpeedInsights } from '@vercel/speed-insights/next';
+
 import '../assets/styles/globals.css';
 
 export const metadata = homeMetadata;
@@ -20,6 +22,7 @@ export default function RootLayout({
 				</main>
 				<Footer />
 				<SanityLive />
+				<SpeedInsights />
 			</body>
 		</html>
 	);

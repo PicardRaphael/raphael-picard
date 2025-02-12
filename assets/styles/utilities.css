@@ -1,0 +1,11 @@
+@utility border-gradient {
+	border-bottom: 2px solid;
+	border-image-slice: 1;
+	border-image-source: linear-gradient(to right, var(--color-secondary-default) 40%, theme(--color-primary-default) 60%);
+}
+@utility section {
+	display: flex;
+	width: 100%;
+	align-items: center;
+	flex-grow: 1;
+}

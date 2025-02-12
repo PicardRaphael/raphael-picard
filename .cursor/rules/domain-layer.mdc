@@ -1,0 +1,174 @@
+---
+description: Guidelines for structuring the Domain Layer in the project. Covers entities, repositories, services, DTOs, mappers, and custom errors, ensuring business logic remains isolated, testable, and independent of external dependencies.
+globs: *.ts, *.md, *.mdc
+---
+Here is how you need to create good Domain Layer.
+This may depend on other layers :
+- [application-layer.mdc](mdc:.cursor/rules/application-layer.mdc)
+- [infrastructure-layer.mdc](mdc:.cursor/rules/infrastructure-layer.mdc)
+
+# RylesDomain Layer (`/src/core/domain/`)
+
+## Overview
+
+The **Domain Layer** is the **core business logic** of the application. It contains **entities, repositories, services, DTOs (Data Transfer Objects), mappers, and custom errors**. This layer is **completely independent** of external frameworks, databases, or UI, ensuring that the business rules remain isolated and testable.
+
+## Best Practices
+
+- **Use Interfaces for Entities** → Define entities as TypeScript interfaces rather than classes to avoid unnecessary instantiations.
+- **Keep Business Logic Pure** → Domain logic should not depend on external frameworks (e.g., Next.js, Prisma, React).
+- **Ensure DTO Validation** → Always validate data using **Zod** before it enters the application.
+- **Centralize Mappers** → Use dedicated **mappers** to convert between entities and DTOs.
+
+## Responsibilities of the Domain Layer
+
+---
+
+## **Entities**
+
+Entities represent **core business models** that define the application's domain logic.
+
+```ts
+// src/core/domain/entities/product.entity.ts
+export interface Product {
+  id: string;
+  name: string;
+  description?: string;
+  price: number;
+  createdAt: Date;
+}
+```
+
+**Why?** → Entities should be **pure TypeScript interfaces** to remain independent of external dependencies.
+
+---
+
+## **Repositories**
+
+Repositories define **interfaces** for interacting with data sources, ensuring **loose coupling** between the domain logic and the infrastructure.
+
+```ts
+// src/core/domain/repositories/product.repository.ts
+import { Product } from '../entities/product.entity';
+
+export interface ProductRepository {
+  getLatestProducts(): Promise<Product[]>;
+  create(product: Product): Promise<Product>;
+  update(id: string, product: Partial<Product>): Promise<Product>;
+  delete(id: string): Promise<void>;
+}
+```
+
+**Why?** → This interface ensures **decoupling from the database or storage implementation**.
+
+---
+
+## **Services**
+
+Services encapsulate **domain-specific business rules**.
+
+```ts
+// src/core/domain/services/product.service.ts
+import { getProductRepository } from '@/core/infrastructure/factories/product-repository.factory';
+import { Product } from '../entities/product.entity';
+
+export class ProductService {
+  private static instance: ProductService;
+  private repository = getProductRepository('prisma');
+  private constructor() {}
+
+  public static getInstance(): ProductService {
+    if (!ProductService.instance) {
+      ProductService.instance = new ProductService();
+    }
+    return ProductService.instance;
+  }
+
+  async getLatestProducts() {
+    return await this.repository.getLatestProducts();
+  }
+
+  async createProduct(product: Product) {
+    return await this.repository.create(product);
+  }
+}
+export const productService = ProductService.getInstance();
+```
+
+**Why?** → Services use the **Singleton pattern** to ensure a single instance handles business logic.
+
+---
+
+## **DTOs (Data Transfer Objects)**
+
+DTOs **validate and standardize** data formats before they interact with the domain.
+
+```ts
+// src/core/domain/dtos/product.dto.ts
+import { z } from 'zod';
+
+export const ProductDTO = z.object({
+  id: z.string().uuid(),
+  name: z.string().min(3),
+  description: z.string().optional(),
+  price: z.number().positive(),
+  createdAt: z.date(),
+});
+
+export type ProductDTOType = z.infer<typeof ProductDTO>;
+```
+
+**Why?** → Using **Zod** for validation ensures data integrity before it reaches the domain logic.
+
+---
+
+## **Mappers**
+
+Mappers **convert entities into DTOs** and vice versa.
+
+```ts
+// src/core/domain/mappers/product.mapper.ts
+import { Product } from '../entities/product.entity';
+import { ProductDTO, ProductDTOType } from '../dtos/product.dto';
+
+export class ProductMapper {
+  static toDTO(product: Product): ProductDTOType {
+    return ProductDTO.parse(product);
+  }
+
+  static toEntity(data: ProductDTOType): Product {
+    return { ...data };
+  }
+}
+```
+
+**Why?** → **Ensures separation between raw database models and business logic.**
+
+---
+
+## **Custom Errors**
+
+Errors help **handle domain-specific exceptions** consistently.
+
+```ts
+// src/core/domain/errors/product.error.ts
+export class ProductNotFoundError extends Error {
+  constructor(productId: string) {
+    super(`Product with ID ${productId} not found.`);
+    this.name = 'ProductNotFoundError';
+  }
+}
+```
+
+**Why?** → **Centralized error handling improves debugging and maintainability.**
+
+---
+
+## Summary
+
+**Entities** → Define core business models.\
+**Repositories** → Interfaces for data access.\
+**Services** → Handle business logic.\
+**DTOs** → Validate and standardize data.\
+**Mappers** → Convert between DTOs and entities.\
+**Errors** → Centralized custom error handling.

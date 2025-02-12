@@ -1,0 +1,95 @@
+---
+description: Guidelines for consistent file naming in the project. Enforces kebab-case and standardized suffixes for different file types, ensuring clarity and maintainability across the codebase.
+globs: *.ts, *tsx, *.css, *.md, *.mdc
+---
+
+Rules to name files :
+
+## General
+
+- Always use kebab-kase
+- Use descriptive names with auxiliary verbs (isLoading, hasError)
+- Prefix event handlers with "handle" (handleClick, handleSubmit)
+- Use lowercase with dashes for directories (components/auth-wizard)
+- Favor named exports for components
+
+## Server Actions
+
+- Always add a suffix of `.action`
+
+Example :
+
+- `user.ts` -> `user.action.ts`
+
+## Store
+
+- Always add a suffix of `.store`
+
+Example :
+
+- `user.ts` -> `user.store.ts`
+
+## Schema
+
+- Always add a suffix of `.schema`
+
+Example :
+
+- `user.ts` -> `user.schema.ts`## Zustand store
+
+## Entity
+
+- Always add a suffix of `.entity`
+
+Example :
+
+- `user.ts` -> `user.entity.ts`
+
+## Repository
+
+- Always add a suffix of `.repository`
+
+Example :
+
+- `user.ts` -> `user.repository.ts`
+
+## Service
+
+- Always add a suffix of `.service`
+
+Example :
+
+- `user.ts` -> `user.service.ts`
+
+## DTO
+
+- Always add a suffix of `.dto`
+
+Example :
+
+- `user.ts` -> `user.dto.ts`
+
+## Mapper
+
+- Always add a suffix of `.mapper`
+
+Example :
+
+- `user.ts` -> `user.mapper.ts`
+
+## Use Case
+
+- Always add a suffix of `.use-case`
+
+Example :
+
+- `user.ts` -> `user.use-case.ts`
+
+## React Query
+
+- Always add a suffix of `.query` or `.mutation`
+
+Example :
+
+- `user.ts` -> `user.query.ts`
+- `user.ts` -> `user.mutation.ts`

@@ -1,0 +1,42 @@
+.gradient {
+	@apply bg-linear-to-r/oklch from-(--color-secondary-default) from-40% to-(--color-primary-default) to-60%;
+	-webkit-text-fill-color: transparent;
+	-webkit-background-clip: text;
+	background-clip: text;
+}
+.reverse-gradient {
+	@apply bg-linear-to-r/oklch from-(--color-primary-default) from-40% to-(--color-secondary-default) to-60%;
+	-webkit-text-fill-color: transparent;
+	-webkit-background-clip: text;
+	background-clip: text;
+}
+.btn-gradient {
+	@apply text-center text-white capitalize;
+	background-image: linear-gradient(
+		to right,
+		var(--color-primary-default) 0%,
+		var(--color-secondary-default) 50%,
+		var(--color-primary-default) 100%
+	);
+	background-size: 200% auto;
+	transition: all 0.5s ease;
+}
+.btn-gradient:hover {
+	background-position: right center;
+}
+.linear-overlay {
+	background-image: linear-gradient(
+		-75deg,
+		var(--color-primary-default) calc(var(--x) + 20%),
+		var(--color-secondary-default) calc(var(--x) + 25%),
+		var(--color-primary-default) calc(var(--x) + 100%)
+	);
+	mask:
+		linear-gradient(white, white) content-box,
+		linear-gradient(white, white);
+	-webkit-mask:
+		linear-gradient(white, white) content-box,
+		linear-gradient(white, white);
+	mask-composite: exclude;
+	-webkit-mask-composite: xor;
+}

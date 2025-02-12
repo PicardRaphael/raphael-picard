@@ -1,0 +1,26 @@
+.loader {
+	@apply relative border-b-6 text-2xl/relaxed font-semibold tracking-wider text-gray-500 uppercase;
+}
+.loader::before {
+	content: attr(data-text);
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	@apply border-b-6 border-solid bg-linear-to-r/oklch from-(--color-secondary-default) from-40% to-(--color-primary-default) to-60%;
+	-webkit-text-fill-color: transparent;
+	-webkit-background-clip: text;
+	background-clip: text;
+	overflow: hidden;
+	border-image-slice: 1;
+	border-image-source: linear-gradient(to right, var(--color-secondary-default) 40%, var(--color-primary-default) 60%);
+	animation: animate 5s linear infinite;
+}
+@keyframes animate {
+	0% {
+		width: 0;
+	}
+	100% {
+		width: 100%;
+	}
+}

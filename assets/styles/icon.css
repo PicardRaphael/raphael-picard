@@ -1,0 +1,11 @@
+.icon-animate {
+	transform: scale(0.9);
+	transition: all 0.2s ease-in-out;
+	transition: opacity 0.6s;
+}
+
+.icon-animate:hover {
+	transform: scale(1.1);
+	transition: all 0.2s ease-in-out;
+	transition: opacity 0.6s;
+}

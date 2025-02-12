@@ -1,0 +1,197 @@
+---
+description: Guidelines for animations in the project. Covers motion components, variants, transitions, and best practices using Framer Motion and Tailwind CSS v4.
+globs: *.tsx, *.css, *mdc
+---
+Here is how you need to create Animation.
+Framer motion : Using for animation with [tailwind-css.mdc](mdc:.cursor/rules/tailwind-css.mdc)
+
+# Rules for Framer Motion Animations
+
+## 1. Core Principles
+
+- **Tailwind for Basics:** Utilize Tailwind CSS utility classes for fundamental transitions (e.g., `transition`, `duration-200`, `ease-in-out`).
+
+- **Framer Motion for Complexity:** Reserve Framer Motion for complex animations, state-driven effects, and orchestrating sequences.
+
+- **Performance:** Prioritize smooth and performant animations. Avoid animating properties that trigger layout thrashing. Use `transform` and `opacity` when possible.
+
+## 2. Framer Motion Techniques
+
+- **`motion` Component:** Wrap elements with `<motion.div>`, `<motion.button>`, etc., to enable animation capabilities.
+
+- **Declarative Animations:** Use `animate`, `initial`, `exit`, `whileHover`, `whileTap`, `whileFocus`, `whileInView` props for declarative control. These align well with React's component-based architecture.
+
+- **Variants:** Define reusable animation configurations using variants for cleaner code and consistency.
+
+  ```jsx
+  const variants = {
+    hidden: { opacity: 0, x: -50 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: { duration: 0.5, type: 'spring', stiffness: 100 },
+    },
+  };
+
+  <motion.div
+    variants={variants}
+    initial='hidden'
+    animate='visible'
+    className='bg-green-100 p-4 rounded-md'
+  >
+    Content with variant animation
+  </motion.div>;
+  ```
+
+- **`transition` Prop:** Customize animation parameters like `duration`, `ease`, `delay`, and `type` (spring, tween, etc.) using the `transition` prop. Refer to the Framer Motion documentation for available options ([https://motion.dev/docs/transition](mdc:https:/motion.dev/docs/transition)).
+
+- **`useAnimate` (Considered):** Use `useAnimate` for more imperative animation control and sequencing, especially when `animate` prop becomes unwieldy.
+
+## 3. Tailwind & Framer Motion Integration
+
+- **Styling with Tailwind:** Use Tailwind classes for initial styling and basic layout.
+
+- **Combine:** Seamlessly integrate Tailwind classes with Framer Motion for a unified design system.
+
+## 5. Examples
+
+- **Fade-in on Mount:**
+
+  ```jsx
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    transition={{ duration: 0.5 }}
+    className='bg-gray-100 p-4 rounded-md'
+  >
+    Content fading in
+  </motion.div>
+  ```
+
+- **Hover Scale Effect:**
+
+  ```jsx
+  <motion.button
+    whileHover={{ scale: 1.1 }}
+    whileTap={{ scale: 0.95 }}
+    className='bg-blue-500 text-white font-bold py-2 px-4 rounded transition-colors duration-200 hover:bg-blue-700'
+  >
+    Hover Me
+  </motion.button>
+  ```
+
+- **Staggered Animation:**
+
+  ```jsx
+  const listVariants = {
+    visible: {
+      transition: { staggerChildren: 0.1 },
+    },
+    hidden: { opacity: 0 },
+  };
+
+  const itemVariants = {
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        ease: 'easeInOut',
+      },
+    },
+    hidden: {
+      opacity: 0,
+      y: 50,
+    },
+  };
+
+  <motion.ul
+    variants={listVariants}
+    initial='hidden'
+    animate='visible'
+    className='space-y-2'
+  >
+    {[1, 2, 3].map((item) => (
+      <motion.li
+        key={item}
+        variants={itemVariants}
+        className='bg-yellow-100 p-2 rounded-md'
+      >
+        Item {item}
+      </motion.li>
+    ))}
+  </motion.ul>;
+  ```
+
+- **Exit Animations (with `AnimatePresence`):** Used for components that mount/unmount.
+
+  ```jsx
+  import { AnimatePresence, motion } from 'framer-motion';
+
+  function MyComponent({ isVisible }) {
+    return (
+      <AnimatePresence>
+        {isVisible && (
+          <motion.div
+            key='unique-id' // Important for AnimatePresence
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className='bg-red-100 p-4 rounded-md'
+          >
+            Content that fades in and out
+          </motion.div>
+        )}
+      </AnimatePresence>
+    );
+  }
+  ```
+
+## 6. Accessibility
+
+- **Respect `prefers-reduced-motion`:** Use the `prefers-reduced-motion` media query to disable animations for users who prefer reduced motion. Framer Motion provides a hook for this:
+
+  ```jsx
+  import { useReducedMotion } from 'framer-motion';
+
+  function MyAnimatedComponent() {
+    const shouldReduceMotion = useReducedMotion();
+
+    const animation = {
+      opacity: shouldReduceMotion ? 1 : 0,
+      transition: { duration: shouldReduceMotion ? 0 : 0.5 },
+    };
+
+    return <motion.div animate={animation}>Content</motion.div>;
+  }
+  ```
+
+* **Avoid Distracting Animations:** Ensure animations are not overly distracting or disorienting.
+
+## 7. Performance
+
+- **`will-change` (Use Sparingly):** The `will-change` CSS property can improve performance, but use it judiciously.
+
+## 8. Framer Motion vs. CSS Animations: A Recap
+
+- **CSS Animations (When to Use):**
+
+  - Simple transitions (hover effects, basic fades).
+  - Performance-critical scenarios where basic animations suffice.
+
+- **Framer Motion (When to Use):**
+  - Complex animations involving multiple properties and keyframes.
+  - Orchestrating animation sequences (staggered animations, chained animations).
+  - State-driven animations (animations based on React component state).
+  - Gestural animations (hover, tap, drag).
+  - Spring-based animations for natural-looking effects.
+  - Declarative and maintainable animation code.
+
+## 9. Key Takeaways from Framer Motion Docs:
+
+- **`motion` as the Foundation:** Everything starts with the `motion` component.
+- **Variants for Reusability:** Embrace variants for complex animations and maintainability.
+- **`transition` for Customization:** Fine-tune animations with the `transition` prop.
+- **`AnimatePresence` for Mounting/Unmounting:** Animate components entering and exiting the DOM.
+- **Accessibility Matters:** Always consider users who prefer reduced motion.

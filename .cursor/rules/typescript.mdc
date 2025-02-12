@@ -1,0 +1,139 @@
+---
+description: Guidelines for TypeScript code. Covers type safety, best practices, advanced features, and modern TypeScript techniques based on the latest version.
+globs: *.ts, *.tsx
+---
+# Rules for Typescript
+
+- Use TypeScript for all code
+- Prefer interfaces over types
+- Avoid enums; use const maps instead
+- Implement proper type safety and inference
+- Use satisfies operator for type validation
+- Avoid `any` Type: Use explicit types instead of `any`. If unknow, prefer `unknow`.
+- Prefer Interfaces Over Types for Objects:
+
+  ```typescript
+  interface User {
+    id: number;
+    name: string;
+    email?: string; // Optional property
+  }
+  ```
+
+- Use Type Aliases for Complex Types:
+
+  ```typescript
+  type ID = number | string;
+  ```
+
+- Leverage Type Inference: Let TypeScript infer types when possible for cleaner code.
+
+  ```typescript
+  let count = 0; // TypeScript infers as number
+  ```
+
+## Functions
+
+- Explicitly Type Parameters and Return Values:
+
+  ```typescript
+  function add(a: number, b: number): number {
+    return a + b;
+  }
+  ```
+
+- Use Optional and Default Parameters:
+
+  ```typescript
+  function greet(name: string = 'Guest'): void {
+    console.log(`Hello, ${name}!`);
+  }
+  ```
+
+## Classes and Objects
+
+- Use Access Modifiers (`public`, `private`, `protected`, `readonly`):
+
+  ```typescript
+  class Person {
+    private id: number;
+    public name: string;
+    protected age: number;
+    readonly email: string;
+
+    constructor(id: number, name: string, age: number, email: string) {
+      this.id = id;
+      this.name = name;
+      this.age = age;
+      this.email = email;
+    }
+  }
+  ```
+
+- Avoid Enums: Use constant objects or literal types instead.
+
+  ```typescript
+  const Colors = {
+    Red: 'red',
+    Green: 'green',
+    Blue: 'blue',
+  } as const;
+
+  type Color = typeof Colors[keyof typeof Colors];
+  ```
+
+## Advanced Types
+
+- Use Generics for Reusability:
+
+  ```typescript
+  function identity<T>(value: T): T {
+    return value;
+  }
+  ```
+
+- Use Utility Types (`Partial<T>`, `Readonly<T>`, `Pick<T>`):
+
+  ```typescript
+  interface Task {
+    title: string;
+    description: string;
+  }
+
+  const partialTask: Partial<Task> = {
+    title: 'Buy milk',
+  };
+  ```
+
+- Use Union and Intersection Types:
+
+  ```typescript
+  type Response = Success | Failure;
+
+  interface Success {
+    status: 'success';
+    data: string;
+  }
+
+  interface Failure {
+    status: 'failure';
+    error: Error;
+  }
+  ```
+
+## Error Handling
+
+- Use Optional Types and Type Guards:
+
+  ```typescript
+  function getNameLength(name?: string): number {
+    return name ? name.length : 0;
+  }
+  ```
+
+- Use Proper Return Types for Error Handling:
+
+  ```typescript
+  type Result<T, E> = { success: true; data: T } | { success: false; error: E };
+  ```
+

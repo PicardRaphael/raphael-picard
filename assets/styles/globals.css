@@ -1,0 +1,19 @@
+@import 'tailwindcss';
+@import './base.css';
+@import './theme.css';
+@import './utilities.css';
+@import './loader.css';
+@plugin 'tailwind-scrollbar';
+@import './typewriter.css';
+@import './gradient.css';
+@import './icon.css';
+
+@font-face {
+	font-family: 'Lato Black';
+	font-style: normal;
+	font-weight: 900;
+	font-display: swap;
+	src:
+		local(''),
+		url('/fonts/Lato-Black.ttf') format('ttf');
+}

@@ -1,0 +1,90 @@
+@font-face {
+	font-family: 'Lato Black';
+	font-style: normal;
+	font-weight: 900;
+	src:
+		local(''),
+		url('/fonts/Lato-Black.ttf') format('ttf');
+}
+
+@layer components {
+	html body {
+		@apply min-h-screen font-(--default-font-family) text-white antialiased lg:scroll-smooth;
+	}
+	main {
+		@apply flex overflow-x-hidden;
+	}
+	p {
+		@apply text-justify text-sm hyphens-auto text-white lg:text-base;
+	}
+	strong {
+		color: var(--color-secondary-light);
+	}
+	ul {
+		@apply text-justify hyphens-auto;
+	}
+
+	.card {
+		@apply rounded-md p-6;
+		width: 20%;
+		background-color: var(--color-gray-400);
+	}
+	.section-black-600 {
+		@apply bg-black-600 section;
+	}
+	.section-black-500 {
+		@apply bg-black-500 section;
+	}
+	.section-container {
+		@apply mx-auto self-center p-3 lg:max-w-6xl lg:px-0 lg:py-0;
+	}
+
+	.title-h2 {
+		@apply inline text-center text-2xl font-bold lg:text-4xl;
+	}
+	.emoji {
+		background: none !important;
+		-webkit-background-clip: initial !important;
+		-webkit-text-fill-color: initial !important;
+		color: inherit !important;
+		background-clip: initial;
+	}
+	/* width */
+	::-webkit-scrollbar {
+		width: 10px;
+	}
+
+	/* Track */
+	::-webkit-scrollbar-track {
+		@apply bg-gray-400;
+	}
+
+	/* Handle */
+	::-webkit-scrollbar-thumb {
+		@apply bg-black-500;
+	}
+
+	.link-active {
+		@apply border-gradient pb-1 text-white;
+	}
+	.contact-input {
+		@apply bg-black-600 border-black-600 focus:border-gradient rounded-sm border-b px-6 py-4 text-white placeholder-gray-300 transition-all outline-none;
+	}
+
+	.description-portable-text {
+		@apply overflow-y-auto md:h-80 lg:h-60;
+	}
+	.description-portable-text p {
+		@apply text-xs lg:text-sm;
+	}
+	.description-portable-text strong {
+		font-weight: normal;
+		color: white;
+	}
+	.description-portable-text h3 strong {
+		color: var(--color-primary-light);
+	}
+	.description p {
+		@apply text-xs lg:text-base;
+	}
+}

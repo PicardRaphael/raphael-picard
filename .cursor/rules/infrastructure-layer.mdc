@@ -1,0 +1,162 @@
+---
+description: Guidelines for structuring the Infrastructure Layer in the project. Covers repository implementations, adapters, factory patterns, and best practices for data persistence and external integrations.
+globs: *.ts, *.md, *.mdc
+---
+Here is how you need to create good Application Layer.
+This may depend on other layers :
+- [domain-layer.mdc](mdc:.cursor/rules/domain-layer.mdc)
+- [application-layer.mdc](mdc:.cursor/rules/application-layer.mdc)
+
+# Rules Infrastructure Layer (`/src/core/infrastructure/`)
+
+## Overview
+
+The **Infrastructure Layer** is responsible for handling **external system interactions**, including databases (Prisma, Supabase), local storage, APIs, and third-party services. It provides **concrete implementations** for the interfaces defined in the **Domain Layer**, ensuring that the application remains flexible and testable.
+
+## Best Practices
+
+- **Use Factories for Repository Selection** → Allows easy switching between Prisma, LocalStorage, and other data sources.
+- **Keep Repositories Stateless** → Repositories should not store state; they should only handle persistence.
+- **Centralize API Integrations in Adapters** → Avoid direct API calls from the UI.
+
+## Responsibilities of the Infrastructure Layer
+
+**Repositories** → Implement data access logic using Prisma, LocalStorage, or APIs.
+**Adapters** → Provide a consistent API for external services.
+**Factories** → Dynamically instantiate repository implementations.
+**Data Persistence** → Manage how data is stored and retrieved from different sources.
+
+---
+
+## **Repositories**
+
+Repositories implement the **data access logic** defined by the repository interfaces in the Domain Layer.
+
+### Prisma Repository Example (Database Access)
+
+```ts
+// src/core/infrastructure/prisma/prisma.product.repository.ts
+import { prisma } from '@/libs/prisma';
+import { ProductRepository } from '@/core/domain/repositories/product.repository';
+import { Product } from '@/core/domain/entities/product.entity';
+
+export class PrismaProductRepository implements ProductRepository {
+  private static instance: PrismaProductRepository;
+  private constructor() {}
+
+  public static getInstance(): PrismaProductRepository {
+    if (!PrismaProductRepository.instance) {
+      PrismaProductRepository.instance = new PrismaProductRepository();
+    }
+    return PrismaProductRepository.instance;
+  }
+
+  async getLatestProducts(): Promise<Product[]> {
+    return await prisma.product.findMany({ orderBy: { createdAt: 'desc' } });
+  }
+  async create(product: Product): Promise<Product> {
+    return await prisma.product.create({ data: product });
+  }
+}
+```
+
+**Why?** → Uses Prisma ORM for database interaction while following the Singleton Pattern.
+
+---
+
+### LocalStorage Repository Example (Client-Side Persistence)
+
+```ts
+// src/core/infrastructure/storage/localstorage.product.repository.ts
+import { Product } from '@/core/domain/entities/product.entity';
+import { ProductRepository } from '@/core/domain/repositories/product.repository';
+
+export class LocalStorageProductRepository implements ProductRepository {
+  private static instance: LocalStorageProductRepository;
+  private constructor() {}
+
+  public static getInstance(): LocalStorageProductRepository {
+    if (!LocalStorageProductRepository.instance) {
+      LocalStorageProductRepository.instance =
+        new LocalStorageProductRepository();
+    }
+    return LocalStorageProductRepository.instance;
+  }
+
+  async getLatestProducts(): Promise<Product[]> {
+    const data = localStorage.getItem('products');
+    return data ? JSON.parse(data) : [];
+  }
+
+  async create(product: Product): Promise<Product> {
+    const products = await this.getLatestProducts();
+    products.push(product);
+    localStorage.setItem('products', JSON.stringify(products));
+    return product;
+  }
+}
+```
+
+**Why?** → Implements a repository that persists data **locally on the client-side**.
+
+---
+
+## **Adapters**
+
+Adapters unify different data sources and API calls into a single interface.
+
+```ts
+// src/core/infrastructure/adapters/product.adapters.ts
+import { fetchLatestProductsUseCase } from '@/core/application/use-cases/fetch-latest-products.use-case';
+import { createProductUseCase } from '@/core/application/use-cases/create-product.use-case';
+import { useGetLatestProducts } from '@/store/react-query/product/use-fetch-products.query';
+
+export const productAdapters = {
+  reactQuery: { useGetLatestProducts },
+  useCases: {
+    fetchLatestProducts: fetchLatestProductsUseCase.execute,
+    createProduct: createProductUseCase.execute,
+  },
+};
+```
+
+**Why?** → Adapters provide a **centralized API layer**, making it easier to switch between different data sources.
+
+---
+
+## **Factories**
+
+Factories dynamically instantiate repositories based on configuration.
+
+```ts
+// src/core/infrastructure/factories/product-repository.factory.ts
+import { PrismaProductRepository } from '@/core/infrastructure/prisma/prisma.product.repository';
+import { LocalStorageProductRepository } from '@/core/infrastructure/storage/localstorage.product.repository';
+import { ProductRepository } from '@/core/domain/repositories/product.repository';
+
+export const productRepositories: { [key: string]: ProductRepository } = {
+  prisma: PrismaProductRepository.getInstance(),
+  localstorage: LocalStorageProductRepository.getInstance(),
+};
+
+export const getProductRepository = (
+  type: 'prisma' | 'localstorage' = 'prisma'
+): ProductRepository => {
+  return productRepositories[type];
+};
+```
+
+**Why?** → Allows switching between **different storage mechanisms** dynamically.
+
+---
+
+## Summary
+
+**Repositories** → Implement the data access logic.
+**Adapters** → Provide a unified API for different data sources.
+**Factories** → Enable dynamic repository selection.
+**Persistence Layer** → Manages interactions with databases, APIs, and local storage.
+
+This structure ensures **flexibility, scalability, and separation of concerns** in Next.js 15 applications.
+
+---

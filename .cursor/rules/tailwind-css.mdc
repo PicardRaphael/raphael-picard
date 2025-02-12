@@ -1,0 +1,198 @@
+---
+description: Guidelines for using Tailwind CSS v4 in the project. Covers global styles, theme variables, custom utilities, component classes, variants, functions, and new features.
+globs: *.tsx, *.css, *.md, *.mdc
+---
+TailwindCSS: Using for styles and animation with [animation-styles.mdc](mdc:.cursor/rules/animation-styles.mdc).
+
+# Rules for Tailwind CSS v4 Styles
+
+## Description
+
+Guidelines for utilizing Tailwind CSS v4 directives and best practices.
+
+---
+
+## Folder Structure
+
+```plaintext
+src/
+│── styles/
+│   │── global.css    # Global styles and Tailwind imports
+│   │── themes.css    # Theme files (@theme variables)
+│   │── utilities/    # Custom utility classes (@utility)
+│   │──── **.css      # Utility files grouped by theme (e.g., buttons, cards, spacing)
+│   │── classes/      # Custom reusable classes (@layer components)
+│   │──── **.css      # Component-specific classes grouped by theme
+```
+
+Explanation of Folder Structure
+Exemple:
+
+- `global.css`: This file imports Tailwind and contains any global styles that apply to the entire project.
+- `themes.css`: Defines design tokens using the @theme directive, such as colors, typography, spacing, and breakpoints.
+- `utilities/`: Contains utility classes organized by theme. Each file inside represents a category of utilities:
+  - `buttons.css`: Custom button utilities.
+  - `cards.css`: Custom utilities for card components.
+  - `spacing.css`: Custom spacing utilities.
+  - `typography.css`: Custom text utilities.
+- `classes/`: Contains custom reusable component classes, structured similarly to utilities.
+  - `buttons.css`: Contains @layer components for button styles.
+  - `cards.css`: Contains @layer components for card styles.
+  - `typography.css`: Contains reusable text styles.
+
+## 1. Import Tailwind CSS in `global.css`
+
+```css
+@import 'tailwindcss';
+@import 'themes.css';
+@import 'utilities/buttons.css';
+@import 'utilities/cards.css';
+@import 'classes/buttons.css';
+@import 'classes/cards.css';
+```
+
+## 2. Define Theme Variables with @theme in `themes.css`
+
+Use the @theme directive to set design tokens. Use oklch color format to define colors.
+
+Exemple:
+
+```css
+@theme {
+  --font-display: 'Inter', sans-serif;
+  --breakpoint-3xl: 1920px;
+  --color-avocado-100: oklch(0.99 0 0);
+  --color-avocado-200: oklch(0.98 0.04 113.22);
+  --color-avocado-300: oklch(0.94 0.11 115.03);
+  --color-avocado-400: oklch(0.92 0.19 114.08);
+  --color-avocado-500: oklch(0.84 0.18 117.33);
+  --color-avocado-600: oklch(0.53 0.12 118.34);
+  --ease-fluid: cubic-bezier(0.3, 0, 0, 1);
+  --ease-snappy: cubic-bezier(0.2, 0, 0, 1);
+}
+```
+
+## 3. Create Custom Utility Classes in `utilities/`
+
+For CSS features not included in Tailwind by default, define custom utilities.
+
+Example: utilities/buttons.css
+
+```css
+@utility my-element {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+```
+
+## 4. Define Custom Classes in `classes/`
+
+Custom classes should be created if:
+
+- The same styles are repeated across multiple elements.
+- The list of utility classes becomes too long and hard to read.
+- You need to add CSS styles not covered by Tailwind.
+- You're building reusable components with multiple variants.
+
+Example: classes/buttons.css
+
+```css
+.my-other-element {
+  @apply flex items-center justify-center rounded-full bg-gray-100 px-4 py-2 text-sm font-medium text-gray-900 transition-colors duration-200 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2;
+}
+```
+
+## 5. Use @variant
+
+Use the @variant directive to apply a Tailwind variant to styles in your CSS:
+
+Exemple:
+
+```css
+.my-element {
+  background: white;
+  @variant dark {
+    @variant hover {
+      background: black;
+    }
+  }
+}
+```
+
+## 6. Use Theme Variables (`var()`) in a Class Without `@apply`
+
+In Tailwind CSS v4, you can use theme variables defined in `@theme` directly in your custom CSS classes without `@apply`.
+
+Exemple:
+
+```css
+.my-element {
+  background: var(--color-gray-100);
+}
+```
+
+## 7. Replace Deprecated Classes with Their Recommended Alternatives
+
+Some classes have been deprecated in Tailwind CSS v4. Use the recommended replacements below.
+
+| Deprecated (Avoid)      | Replacement (Use)      |
+| ----------------------- | ---------------------- |
+| `bg-opacity-*`          | `bg-black/50`          |
+| `text-opacity-*`        | `text-black/50`        |
+| `border-opacity-*`      | `border-black/50`      |
+| `divide-opacity-*`      | `divide-black/50`      |
+| `ring-opacity-*`        | `ring-black/50`        |
+| `placeholder-opacity-*` | `placeholder-black/50` |
+| `flex-shrink-*`         | `shrink-*`             |
+| `flex-grow-*`           | `grow-*`               |
+| `overflow-ellipsis`     | `text-ellipsis`        |
+| `decoration-slice`      | `box-decoration-slice` |
+| `decoration-clone`      | `box-decoration-clone` |
+
+## 8. Use @custom-variant
+
+Use the @custom-variant directive to add a custom variant in your project:
+Exemple:
+
+```css
+@custom-variant pointer-coarse (@media (pointer: coarse));
+@custom-variant theme-midnight (&:where([data-theme="midnight"] *));
+```
+
+## 9. Functions
+
+- --alpha() : Use the --alpha() function to adjust the opacity of a color:Input CSS
+  Example:
+
+```css
+.my-element {
+  color: --alpha(var(--color-lime-300) / 50%);
+}
+.my-element {
+  color: color-mix(in oklab, var(--color-lime-300) 50%, transparent);
+}
+```
+
+- --spacing() : Use the --spacing() function to generate a spacing value based on your theme:
+
+```css
+.my-element {
+  margin: --spacing(4);
+}
+
+.my-element {
+  margin: calc(var(--spacing) * 4);
+}
+```
+
+## 10. Variant stacking order
+
+In v3, stacked variants were applied from right to left, but in v4 we've updated them to apply left to right to look more like CSS syntax.
+
+Exemple:
+
+```html
+/** v3 **/
+<ul class="py-4 first:*:pt-0 last:*:pb-0"></ul>
+/** v4 **/
+<ul class="py-4 *:first:pt-0 *:last:pb-0"></ul>
+```

@@ -1,0 +1,106 @@
+---
+description: Guidelines for structuring the Application Layer in the project. Covers use cases, business logic orchestration, DTO handling, and best practices for keeping the application maintainable and testable.
+globs: *.tsx, *.ts, *.md, *mdc
+---
+Here is how you need to create good Application Layer.
+This may depend on other layers :
+- [domain-layer.mdc](mdc:.cursor/rules/domain-layer.mdc)
+- [infrastructure-layer.mdc](mdc:.cursor/rules/infrastructure-layer.mdc)
+
+# Rules for Application Layer (`/src/core/application/`)
+
+## Overview
+
+The **Application Layer** acts as the **bridge between the domain layer and external systems** (UI, databases, APIs). It contains **Use Cases**, which execute **business logic workflows** by calling services from the **Domain Layer**. This layer does not know about the UI or infrastructure directly, keeping the application **flexible and maintainable**.
+
+## Best Practices
+
+- **Use the Singleton Pattern for Use Cases** → Prevent multiple instances from being created unnecessarily.
+- **Keep Use Cases Independent** → Use cases should call services and repositories but should not manage infrastructure concerns.
+- **Return DTOs Instead of Entities** → Ensures that responses are consistent and formatted correctly.
+
+## Responsibilities of the Application Layer
+
+**Use Cases** → Implement specific business logic workflows.
+**Orchestrates the Domain Layer** → Calls repositories and services without managing persistence.
+**Decouples Business Logic from External Dependencies** → Keeps logic pure and testable.
+
+---
+
+## **Use Cases**
+
+Use Cases define **what the application does** by encapsulating **business logic workflows**. They call the **services** and **repositories** from the Domain Layer.
+
+```ts
+// src/core/application/use-cases/fetch-latest-products.use-case.ts
+import { productService } from '@/core/domain/services/product.service';
+import { ProductMapper } from '@/core/domain/mappers/product.mapper';
+
+export class FetchLatestProductsUseCase {
+  private static instance: FetchLatestProductsUseCase;
+  private constructor() {}
+
+  public static getInstance(): FetchLatestProductsUseCase {
+    if (!FetchLatestProductsUseCase.instance) {
+      FetchLatestProductsUseCase.instance = new FetchLatestProductsUseCase();
+    }
+    return FetchLatestProductsUseCase.instance;
+  }
+
+  async execute() {
+    const products = await productService.getLatestProducts();
+    return products.map((product) => ProductMapper.toDTO(product));
+  }
+}
+export const fetchLatestProductsUseCase =
+  FetchLatestProductsUseCase.getInstance();
+```
+
+**Why?** → This follows the **Singleton Pattern** and ensures that logic is centralized, making it reusable across the application.
+
+---
+
+## **Use Case Example for Creating a Product**
+
+This use case validates the **DTO**, interacts with the **service layer**, and returns the result.
+
+```ts
+// src/core/application/use-cases/create-product.use-case.ts
+import { productService } from '@/core/domain/services/product.service';
+import { ProductDTO, ProductDTOType } from '@/core/domain/dtos/product.dto';
+import { ProductMapper } from '@/core/domain/mappers/product.mapper';
+
+export class CreateProductUseCase {
+  private static instance: CreateProductUseCase;
+  private constructor() {}
+
+  public static getInstance(): CreateProductUseCase {
+    if (!CreateProductUseCase.instance) {
+      CreateProductUseCase.instance = new CreateProductUseCase();
+    }
+    return CreateProductUseCase.instance;
+  }
+
+  async execute(data: ProductDTOType) {
+    const validatedData = ProductDTO.parse(data);
+    const newProduct = await productService.createProduct(validatedData);
+    return ProductMapper.toDTO(newProduct);
+  }
+}
+export const createProductUseCase = CreateProductUseCase.getInstance();
+```
+
+**Why?** → DTO validation ensures that only valid data reaches the business logic.
+
+---
+
+## Summary
+
+**Use Cases** → Centralized business logic execution.
+**Decoupling** → Ensures that infrastructure/UI dependencies do not interfere with business rules.
+**Reusability** → Makes logic available across API routes, UI components, and services.
+**Testability** → Each use case can be **unit tested independently**.
+
+This structure ensures that business logic remains isolated, **allowing for easy modification and expansion** without affecting the entire application.
+
+---

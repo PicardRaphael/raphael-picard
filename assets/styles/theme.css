@@ -1,0 +1,35 @@
+@theme {
+	--font-display: 'Lato Black', 'sans-serif';
+	--color-primary-light: oklch(66.68% 0.1974 295.23);
+	--color-primary-light-dark: oklch(58.14% 0.2498 290.95);
+	--color-primary-default: oklch(51.43% 0.28455805439477855 284.29393885254973);
+	--color-primary-dark-light: oklch(49.3% 0.29376411163088134 280.42919245922326);
+	--color-primary-dark: oklch(41.14% 0.2491 279.58);
+	--color-secondary-light: oklch(71.28% 0.2259 317.11);
+	--color-secondary-light-dark: oklch(72.24% 0.27846649274925334 316.2914486965046);
+	--color-secondary-default: oklch(62.01% 0.3018 314.42);
+	--color-secondary-dark-light: oklch(54.99% 0.3034 313.72);
+	--color-secondary-dark: oklch(50.94% 0.2524 313.86);
+	--color-black-500: oklch(24.78% 0 0); /* Background Principal */
+	--color-black-600: oklch(21.34% 0 0);
+	--color-black-700: oklch(19.57% 0 0);
+	--color-black-800: oklch(17.3% 0 0);
+	--color-black-900: oklch(0% 0 0); /* Text */
+	--color-gray-300: oklch(65.5% 0.0024 17.22); /* Background */
+	--color-gray-400: oklch(59.99% 0 0); /* Text */
+	--color-gray-500: oklch(47.84% 0 0); /* Background */
+	--color-gray-600: oklch(34.07% 0 0); /* Border */
+	--color-blue-100: oklch(97.15% 0.01666587737481977 230.9006218347717);
+	--color-blue-200: oklch(89.6% 0.0484 232.92);
+	--color-blue-300: oklch(82.08% 0.0833 237.18);
+	--color-blue-400: oklch(73.92% 0.1154 242.05);
+	--color-blue-500: oklch(65.92% 0.1738 250.61);
+	--color-blue-600: oklch(59.46% 0.1398 250.3);
+	--color-blue-700: oklch(52.41% 0.1259 252.32);
+	--color-blue-800: oklch(43.46% 0.091 255.18);
+	--color-blue-900: oklch(37.93% 0.0663 256.38);
+	--color-red-500: oklch(64.27% 0.2153 28.81);
+	--bg-position-r-c: right center;
+	--scale-1: scale(0.9);
+	--scale-2: scale(1.1);
+}

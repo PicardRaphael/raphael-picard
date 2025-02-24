@@ -1,12 +1,8 @@
 ---
-description: 
-globs: 
----
----
 description: Guidelines for structuring the project using Clean Architecture. Covers separation of concerns, modularity, and best practices for organizing layers (Domain, Application, Infrastructure, Presentation, State Management, Utilities, and Testing).
-globs: *.ts, *.tsx, *.json, *.md, *.css, *.mdc
+globs: globs: *.ts, *.tsx, *.json, *.md, *.css, *.mdc
 ---
-# Clean Architecture Structure
+# Rules for Clean Architecture Structure
 
 ## Overview
 This document provides a structured breakdown of a Next.js 15 project using Clean Architecture. Each layer serves a distinct purpose to ensure scalability, maintainability, and separation of concerns.

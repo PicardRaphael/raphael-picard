@@ -1,8 +1,4 @@
 ---
-description: 
-globs: 
----
----
 description: Guidelines for maintaining high-quality, scalable, and maintainable code in a Next.js 15 and React 19 project. Covers project structure, TypeScript best practices, component architecture, state management, error handling, security, performance optimization, and testing strategies. References specific guidelines for deeper insights into each domain.
 globs: *.tsx, *.ts, *.md, *.mdc, *.json, *.yml
 ---
@@ -73,7 +69,7 @@ Read guidelines NextJS 15 [nextjs.mdc](mdc:.cursor/rules/nextjs.mdc)
 
 - Use useActionState instead of deprecated useFormState
 - Use modern state management solutions (e.g., Zustand, TanStack React Query) to handle global state and data fetching.
-- Implement validation using Zod for schema validation.
+- Implement validation using Zod for schema validation. Read guidelines [zod-schema.mdc](mdc:.cursor/rules/zod-schema.mdc)
 - Minimize client-side state
 
 ### Error Handling and Validation

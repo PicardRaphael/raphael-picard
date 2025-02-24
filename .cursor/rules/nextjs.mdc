@@ -1,6 +1,6 @@
 ---
-description: 
-globs: 
+description:  Guidelines for leveraging Next.js 15 in the project. Covers App Router structure, data fetching, routing strategies, state management, caching mechanisms, and UI best practices. Ensures AI-generated code follows Next.js official recommendations for performance, maintainability, and security.
+globs: *.tsx, *.ts
 ---
 # Next.js 15 Overview
 

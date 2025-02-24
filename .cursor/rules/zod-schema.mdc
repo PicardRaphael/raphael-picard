@@ -1,8 +1,8 @@
 ---
-description: Guidelines for Zod
+description: Guidelines for defining and validating data structures using Zod. Covers schema naming conventions, type inference, validation rules, and best practices for forms, API endpoints, and data transformation. Ensures data integrity, consistency, and scalability.
 globs: *.store.ts, *.ts
 ---
-Zod Schema is used to parse data for Form, API Endpoint and other stuff. You must always follow the rules.
+# Rules for Zod
 
 ## Naming rules
 
@@ -33,3 +33,110 @@ export type CreateRuleSchema = z.infer<typeof createRuleSchema>;
 The name is always : NameOfSchemaType
 
 `Type` is the suffix.
+
+##  Refinement & Custom Validation
+Use .refine() to apply custom validation logic beyond basic constraints:
+```ts
+import { z } from "zod";
+
+export const PasswordSchema = z.string()
+  .min(8, "Password must be at least 8 characters")
+  .refine((val) => /[A-Z]/.test(val), {
+    message: "Password must contain at least one uppercase letter",
+  });
+
+export type PasswordSchemaType = z.infer<typeof PasswordSchema>;
+```
+## Extending & Merging Schemas 
+Use .extend() or .merge() to reuse and compose schemas:
+```ts
+import { z } from "zod";
+
+const BaseUserSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().min(2),
+});
+
+export const AdminSchema = BaseUserSchema.extend({
+  role: z.literal("admin"),
+});
+
+export type AdminSchemaType = z.infer<typeof AdminSchema>;
+```
+
+## Transforming Data
+Use .transform() to modify values before storing or displaying them:
+```ts
+const DateSchema = z.string().transform((val) => new Date(val));
+
+export type DateSchemaType = z.infer<typeof DateSchema>;
+```
+When to Use .transform():
+
+For simple transformations inside DTOs (e.g., trimming text, normalizing case).
+For type conversions that do not require business logic (e.g., string to number, date conversion).
+When you want to ensure all incoming data is formatted correctly before processing.
+
+When NOT to Use .transform():
+
+If the transformation requires business logic (use a Mapper instead).
+If it requires dependencies (like calling an API).
+If different transformations are needed based on the context (handle it in Use Cases).
+
+Example where a Mapper is preferred:
+```ts
+export class ProductMapper {
+  static toBackEnd(product: Product): ProductDTOType {
+    return {
+      ...product,
+      price: parseFloat(product.price.replace('$', '')), // Convert price to number
+      createdAt: new Date(product.createdAt), // Convert string to Date
+    };
+  }
+}
+```
+## Strict vs. Passthrough Mode
+* strict() → Rejects unknown fields (useful for API input validation).
+* passthrough() → Allows extra fields without errors.
+
+```ts
+const StrictUserSchema = z.object({
+  username: z.string(),
+}).strict();
+```
+
+## Using Default Values
+Define default values for schema fields using .default():
+
+```ts
+const UserSettingsSchema = z.object({
+  theme: z.string().default("light"),
+  notifications: z.boolean().default(true),
+});
+```
+
+## Union & Enum Validation
+Use z.union() for multiple valid types and z.enum() for predefined values:
+```ts
+const StatusSchema = z.union([z.literal("active"), z.literal("inactive")]);
+
+const RoleSchema = z.enum(["admin", "user", "editor"]);
+
+```
+
+## Example: Validating an API Request
+```ts
+const CreateUserSchema = z.object({
+  name: z.string().min(3),
+  email: z.string().email(),
+  age: z.number().int().positive(),
+});
+
+async function handleRequest(req: Request) {
+  const body = await req.json();
+  const validatedData = CreateUserSchema.parse(body);
+  
+  return validatedData;
+}
+```
+

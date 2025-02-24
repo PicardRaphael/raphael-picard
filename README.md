@@ -34,7 +34,3 @@ Le projet est structuré selon une architecture modulaire et maintenable, facili
 ## Contact
 
 Pour en savoir plus sur mes projets et compétences, vous pouvez me contacter au 06 50 93 15 73.
-
----
-
-Ce projet est en constante évolution, et vos retours sont les bienvenus. Consultez le [dépôt GitHub de Next.js](https://github.com/vercel/next.js) pour plus d'informations sur la contribution au framework.

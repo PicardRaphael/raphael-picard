@@ -39,4 +39,3 @@ portfolio/node_modules
 .env
 old/
 utils/docs/me.txt
-.cursor/rules/*

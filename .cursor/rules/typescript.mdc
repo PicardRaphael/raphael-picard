@@ -1,4 +1,8 @@
 ---
+description: 
+globs: 
+---
+---
 description: Guidelines for TypeScript code. Covers type safety, best practices, advanced features, and modern TypeScript techniques based on the latest version.
 globs: *.ts, *.tsx
 ---

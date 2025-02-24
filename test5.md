@@ -1,21 +1,20 @@
 ---
-description: 
-globs: 
----
----
 description: Guidelines for structuring the project using Clean Architecture. Covers separation of concerns, modularity, and best practices for organizing layers (Domain, Application, Infrastructure, Presentation, State Management, Utilities, and Testing).
 globs: *.ts, *.tsx, *.json, *.md, *.css, *.mdc
 ---
+
 # Clean Architecture Structure
 
 ## Overview
+
 This document provides a structured breakdown of a Next.js 15 project using Clean Architecture. Each layer serves a distinct purpose to ensure scalability, maintainability, and separation of concerns.
 
 ## Related Guidelines
-- **Domain Layer** → [domain-layer.mdc](mdc:.cursor/rules/domain-layer.mdc)
-- **Application Layer** → [application-layer.mdc](mdc:.cursor/rules/application-layer.mdc)
-- **Infrastructure Layer** →  [infrastructure-layer.mdc](mdc:.cursor/rules/infrastructure-layer.mdc)
-- **Presentation Layer** → [presentation-layer.mdc](mdc:.cursor/rules/presentation-layer.mdc)
+
+- **Domain Layer** → @domain-layer.mdc
+- **Application Layer** → @application-layer.mdc
+- **Infrastructure Layer** → @infrastructure-layer.mdc
+- **Presentation Layer** → @presentation-layer.mdc
 
 ## Project Structure
 
@@ -43,13 +42,14 @@ This document provides a structured breakdown of a Next.js 15 project using Clea
 │   │   ├── errors/           # Custom Error Handling
 │   ├── application/          # Application logic (Use Cases)
 │   │   ├── use-cases/        # Business use cases
-│   │   ├── services/        # Business use cases
+│   │   ├── services/         # Business services
 │
 ├── infrastructure/           # External system integrations
 │   ├── repositories/
 │   │   ├── prisma/           # Database access layer
-│   │   ├── storage/           # Database access layer
+│   │   ├── storage/          # Client-side storage layer
 │   ├── factories/            # Factory pattern for repositories
+│   ├── adapters/             # API and service adapters
 │
 ├── libs/                     # External Libraries config (Prisma, React-Query, Supabase...)
 │
@@ -58,6 +58,7 @@ This document provides a structured breakdown of a Next.js 15 project using Clea
 │   │   ├── product/
 │   │   │   ├── queries/      # React Query queries
 │   │   │   ├── mutations/    # React Query mutations
+│   ├── adapters/             # State management adapters
 │
 ├── utils/                    # Utility functions (helpers, formatters, etc.)
 │
@@ -72,49 +73,66 @@ This document provides a structured breakdown of a Next.js 15 project using Clea
 
 ## Explanation of Each Layer
 
-### **Domain Layer (`/src/core/domain/`)**  
+### **Domain Layer (`/src/core/domain/`)**
+
 **Business Logic & Data Models**
+
 - **Entities** → Define the core data structures (e.g., `Product`).
 - **Repositories** → Interfaces defining data access operations.
 - **DTOs** → Data Transfer Objects ensure consistent validation.
 - **Mappers** → Convert between entities and DTOs.
 - **Errors** → Centralized custom error handling.
 
-### **Application Layer (`/src/core/application/`)**  
+### **Application Layer (`/src/core/application/`)**
+
 **Use Cases & Business Rules**
+
 - **Services** → Contain business logic independent of UI and infrastructure.
-- **Use Cases** → Encapsulate application logic (e.g., fetching, creating products).
+- **Use Cases** → Encapsulate application logic (e.g., fetching, creating products) using adapters and factories.
 - **Rules** → This layer must **not depend on UI or external services**.
 
-### **Infrastructure Layer (`/src/core/infrastructure/`)**  
+### **Infrastructure Layer (`/src/core/infrastructure/`)**
+
 **Database, APIs & Adapters**
+
 - **Repositories (Prisma, LocalStorage, Supabase, etc.)** → Implement data access logic.
 - **Factories** → Resolve dependencies dynamically.
+- **Adapters** → Provide a consistent API for external services.
 
-### **Presentation Layer (`/src/app/` & `/src/components/`)**  
+### **Presentation Layer (`/src/app/` & `/src/components/`)**
+
 **UI & User Interactions**
+
 - **Next.js Pages (`/src/app/`)** → Define Server Components and routes.
 - **Reusable Components (`/src/components/`)** → Shared UI elements across the app.
 - **API Routes (`/src/app/api/`)** → Handle API calls via Next.js server functions.
 
-### **State Management (`/src/store/`)**  
+### **State Management (`/src/store/`)**
+
 **Global State Management**
+
 - **React Query (`/src/store/react-query/`)** → Manages API state and caching.
 - **Redux/Zustand (`/src/store/`)** → Centralized client-side state.
+- **Adapters** → Provide a unified interface for state management.
 
-### **Utilities & Config (`/src/utils/` & `/src/libs/`)**  
+### **Utilities & Config (`/src/utils/` & `/src/libs/`)**
+
 **Helpers & External Configurations**
+
 - **Utils** → Helper functions (e.g., formatting, string manipulation).
 - **Libs** → Prisma configuration, third-party integrations.
 
-### **Testing (`/src/tests/`)**  
+### **Testing (`/src/tests/`)**
+
 **Ensuring Code Reliability**
+
 - **Unit Tests** → Ensure business logic works as expected.
 - **Integration Tests** → Verify interactions between different layers.
 
 ---
 
 ## **Why Use This Architecture in Next.js 15?**
+
 - **Maintainability** → Modular and easy to update.
 - **Scalability** → Supports new features without major refactors.
 - **Framework Independence** → Business logic remains decoupled from UI.
@@ -123,10 +141,11 @@ This document provides a structured breakdown of a Next.js 15 project using Clea
 ---
 
 ## **Next Steps**
-- Read more about each layer:  
-  - **Domain Layer** → [domain-layer.mdc](mdc:.cursor/rules/domain-layer.mdc)
-  - **Application Layer** → [application-layer.mdc](mdc:.cursor/rules/application-layer.mdc)
-  - **Infrastructure Layer** → [infrastructure-layer.mdc](mdc:.cursor/rules/infrastructure-layer.mdc)
-  - **Presentation Layer** → [presentation-layer.mdc](mdc:.cursor/rules/presentation-layer.mdc)
+
+- Read more about each layer:
+    - **Domain Layer** → @domain-layer.mdc
+    - **Application Layer** → @application-layer.mdc
+    - **Infrastructure Layer** → @infrastructure-layer.mdc
+    - **Presentation Layer** → @presentation-layer.mdc
 
 ---

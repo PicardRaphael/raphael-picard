@@ -1,6 +1,6 @@
 ---
 description: Guidelines for structuring the Domain Layer in the project. Covers entities, repositories, services, DTOs, mappers, and custom errors, ensuring business logic remains isolated, testable, and independent of external dependencies.
-globs: '*.ts', '*.md', '*.mdc'
+globs: ['*.ts', '*.md', '*.mdc']
 ---
 
 # Domain Layer Rules

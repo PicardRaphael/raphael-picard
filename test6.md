@@ -1,7 +1,3 @@
----
-description: Guidelines for animations in the project. Covers motion components, variants, transitions, and best practices using Framer Motion and Tailwind CSS v4.
-globs: *.tsx, *.css, *mdc
----
 Here is how you need to create Animation.
 Framer motion : Using for animation with @tailwind-css.mdc
 
@@ -231,8 +227,8 @@ This guide provides best practices for integrating Framer Motion with Tailwind C
 
 ## 9. Resources
 
-- **Framer Motion Documentation:** [Framer Motion Docs](mdc:https:/www.framer.com/motion)
-- **Tailwind CSS Documentation:** [Tailwind CSS Docs](mdc:https:/tailwindcss.com/docs)
+- **Framer Motion Documentation:** [Framer Motion Docs](https://www.framer.com/motion/)
+- **Tailwind CSS Documentation:** [Tailwind CSS Docs](https://tailwindcss.com/docs)
 
 ---
 

@@ -1,12 +1,11 @@
-import { IRepository } from '@/core/domain/repositories/repository.interface';
-import { SanityRepository } from '../sanity/sanity.repository';
+import { DatastaxRepository } from '../repositories/datastax/datastax.repository';
+import { OpenAIRepository } from '../repositories/openai/openai.repository';
+import { SanityRepository } from '../repositories/sanity/sanity.repository';
 
-export type RepositoryType = 'sanity';
-
-export const getRepository = (type: RepositoryType = 'sanity'): IRepository => {
-	const repositories: Record<RepositoryType, IRepository> = {
+export const getRepository = () => {
+	return {
 		sanity: SanityRepository.getInstance(),
+		openai: OpenAIRepository.getInstance(),
+		datastax: DatastaxRepository.getInstance(),
 	};
-
-	return repositories[type];
 };

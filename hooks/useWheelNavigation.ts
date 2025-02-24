@@ -21,8 +21,9 @@ const useWheelNavigation = (navigationConfig: NavigationConfig) => {
 			// Check if the event target is inside a scrollable card
 			const target = event.target as HTMLElement;
 			const isInsideScrollableCard = target.closest('.description-portable-text');
+			const isInsideScrollableChat = target.closest('.chatbot');
 
-			if (isInsideScrollableCard) return; // Do not navigate if scrolling inside a card
+			if (isInsideScrollableCard || isInsideScrollableChat) return; // Do not navigate if scrolling inside a card
 
 			const isScrollingUp = event.deltaY < 0;
 			const currentPath = pathname;

@@ -72,7 +72,7 @@
 	}
 
 	.description-portable-text {
-		@apply overflow-y-auto md:h-80 lg:h-60;
+		@apply h-50 overflow-y-auto md:h-80;
 	}
 	.description-portable-text p {
 		@apply text-xs lg:text-sm;

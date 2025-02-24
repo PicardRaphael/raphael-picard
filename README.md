@@ -1,36 +1,40 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Portfolio de Raphaël Picard
 
-## Getting Started
+Bienvenue dans mon portfolio, développé pour présenter mes compétences en tant que développeur full-stack freelance. Ce projet utilise Next.js, React.js, TypeScript, Tailwind CSS, Framer Motion, et Sanity pour créer une solution web moderne et performante.
 
-First, run the development server:
+## Aperçu du Projet
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Ce portfolio illustre une application web haute performance construite avec les technologies les plus récentes, garantissant des temps de chargement rapides, une optimisation SEO et un design réactif.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Architecture du Projet
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Le projet est structuré selon une architecture modulaire et maintenable, facilitant l'évolutivité et la séparation des préoccupations :
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Couche de Présentation** : Gère les interactions utilisateur, les composants UI et les routes API dans une application Next.js 15. Utilise des composants tels que `ClientLayout`, `Header`, et `Footer` pour structurer l'interface utilisateur.
+- **Couche Domaine** : Contient la logique métier principale, incluant les entités (par exemple, `ProductEntity`, `SkillEntity`) et les mappers (par exemple, `SkillsMapper`, `ProjectMapper`) pour transformer les données entre les formats de l'application et ceux de la base de données.
+- **Couche Application** : Orchestration de la logique métier, gestion des cas d'utilisation et des règles d'application. Utilise des services pour encapsuler la logique métier complexe.
+- **Couche Infrastructure** : Intégration avec les systèmes externes, gestion des accès aux données et des adaptateurs. Utilise des configurations pour gérer les connexions aux bases de données et autres services externes.
 
-## Learn More
+## Technologies Utilisées
 
-To learn more about Next.js, take a look at the following resources:
+- **Next.js 15** : Framework moderne pour le développement d'applications web avec rendu côté serveur et génération de sites statiques.
+- **React.js 19** : Bibliothèque JavaScript pour construire des interfaces utilisateur dynamiques et interactives.
+- **TypeScript** : Sur-ensemble typé de JavaScript qui améliore la qualité et la maintenabilité du code.
+- **Tailwind CSS v4** : Framework CSS utilitaire pour créer rapidement des designs personnalisés.
+- **Framer Motion** : Utilisé pour créer des animations fluides et interactives dans l'application.
+- **Sanity** : Plateforme de gestion de contenu utilisée pour gérer et mettre à jour dynamiquement les données affichées sur le site.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Fonctionnalités
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Optimisation SEO** : Fonctionnalités intégrées pour améliorer la visibilité sur les moteurs de recherche.
+- **Design Réactif** : Assure une expérience fluide sur tous les appareils.
+- **Intégration IA** : Intègre un chatbot interactif utilisant `@ai-sdk/react` pour améliorer l'engagement utilisateur. Le composant `ChatButton` permet aux utilisateurs d'interagir avec le chatbot de manière fluide et intuitive.
+- **Gestion de Contenu** : Utilise Sanity pour la gestion de contenu, permettant une mise à jour facile et dynamique des données affichées sur le site.
 
-## Deploy on Vercel
+## Contact
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Pour en savoir plus sur mes projets et compétences, vous pouvez me contacter au 06 50 93 15 73.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+Ce projet est en constante évolution, et vos retours sont les bienvenus. Consultez le [dépôt GitHub de Next.js](https://github.com/vercel/next.js) pour plus d'informations sur la contribution au framework.

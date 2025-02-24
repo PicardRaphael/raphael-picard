@@ -23,14 +23,6 @@ const CardPortfolio = ({ portfolio, slide }: CardPortfolioProps) => {
 			animate={{ opacity: 1, scale: 1, y: 0 }}
 			exit={{ opacity: 0, scale: 0.85, y: -20 }}
 			transition={{ duration: 0.3, ease: 'easeInOut' }}
-			drag="x"
-			onDragEnd={(event, info) => {
-				if (info.offset.x < -100) {
-					slide && slide('right');
-				} else if (info.offset.x > 100) {
-					slide && slide('left');
-				}
-			}}
 			className="bg-black-500 z-5 flex w-[350px] shrink-0 cursor-pointer flex-col space-y-7 overflow-hidden rounded-md p-4 select-none md:h-[600px] md:w-[500px] lg:mt-5 lg:min-h-[627px] lg:min-w-[820px] lg:p-8"
 		>
 			<header className="m-0 flex w-full flex-col space-y-2">

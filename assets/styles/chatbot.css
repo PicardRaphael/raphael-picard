@@ -1,0 +1,70 @@
+/* Base des bulles */
+.chat-bubble {
+	@apply relative max-w-xs rounded-2xl px-4 py-2 text-sm text-white;
+}
+
+/* Queue des bulles */
+.chat-bubble::after {
+	content: '';
+	position: absolute;
+	bottom: 0.2rem;
+	width: 12px;
+	height: 12px;
+	background-color: inherit;
+	border-radius: 50%;
+}
+
+/* Bulle utilisateur */
+.chat-bubble-user {
+	@apply bg-primary-dark;
+	padding-left: 16px; /* Ajuste l'espace interne */
+}
+
+.chat-bubble-user::after {
+	left: -6px;
+	clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+
+/* Bulle bot */
+.chat-bubble-bot {
+	@apply bg-secondary-dark;
+	padding-right: 16px; /* Ajuste l'espace interne */
+}
+
+.chat-bubble-bot::after {
+	right: -6px;
+	clip-path: polygon(0 0, 100% 0, 0 100%);
+}
+
+.loading-bubble {
+	width: 60px;
+	margin: 10px;
+	aspect-ratio: 4;
+	background:
+		no-repeat radial-gradient(circle closest-side, #383838 90%, #0000) 0 50%,
+		no-repeat radial-gradient(circle closest-side, #383838 90%, #0000) 50% 50%,
+		no-repeat radial-gradient(circle closest-side, #383838 90%, #0000) 100% 50%;
+	background-size: calc(100% / 3) 100%;
+	animation: loading 1s infinite linear;
+}
+
+@keyframes loading {
+	33% {
+		background-size:
+			calc(100% / 3) 0,
+			calc(100% / 3) 100%,
+			calc(100% / 3) 100%;
+	}
+	50% {
+		background-size:
+			calc(100% / 3) 100%,
+			calc(100% / 3) 0,
+			calc(100% / 3) 100%;
+	}
+	66% {
+		background-size:
+			calc(100% / 3) 100%,
+			calc(100% / 3) 100%,
+			calc(100% / 3) 0;
+	}
+}

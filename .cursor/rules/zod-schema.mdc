@@ -1,0 +1,35 @@
+---
+description: Guidelines for Zod
+globs: *.store.ts, *.ts
+---
+Zod Schema is used to parse data for Form, API Endpoint and other stuff. You must always follow the rules.
+
+## Naming rules
+
+All Schema must start with uppercase and be suffixed by `Schema` :
+
+* UserSchema
+* CreateUserSchema
+* UpdateUserSchema
+* UserDTOSchema
+
+## Extract types
+
+To extract type, with use `z.infer` :
+
+```ts
+import { z } from "zod";
+
+export const createRuleSchema = z.object({
+  title: z.string(),
+  content: z.string(),
+  isPrivate: z.boolean(),
+  tags: z.array(z.string()),
+});
+
+export type CreateRuleSchema = z.infer<typeof createRuleSchema>;
+```
+
+The name is always : NameOfSchemaType
+
+`Type` is the suffix.

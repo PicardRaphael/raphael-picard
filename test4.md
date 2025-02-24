@@ -2,6 +2,7 @@
 description: Guidelines for structuring the Presentation Layer in the project. Covers client and server components, UI structure, API routes, and state management using React Query.
 globs: *.ts, *.tsx, *.md, *.mdc
 ---
+
 # Presentation Layer Rules
 
 ## Overview

@@ -1,7 +1,3 @@
----
-description: Guidelines for structuring the Application Layer in the project. Covers use cases, business logic orchestration, DTO handling, and best practices for keeping the application maintainable and testable.
-globs: '*.tsx', '*.ts', '*.md', '*.mdc'
----
 # Application Layer Rules
 
 ## Overview

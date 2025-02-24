@@ -1,7 +1,3 @@
----
-description: uidelines for structuring the Infrastructure Layer in the project. Covers repository implementations, adapters, factory patterns, and best practices for data persistence and external integrations.
-globs: '*.ts', '*.md', '*.mdc'
----
 # Infrastructure Layer Rules
 
 ## Overview

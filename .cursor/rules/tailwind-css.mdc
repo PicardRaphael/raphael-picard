@@ -1,4 +1,8 @@
 ---
+description: 
+globs: 
+---
+---
 description: Guidelines for using Tailwind CSS v4 in the project. Covers global styles, theme variables, custom utilities, component classes, variants, functions, and new features.
 globs: *.tsx, *.css, *.md, *.mdc
 ---

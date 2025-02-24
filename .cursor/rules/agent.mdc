@@ -1,4 +1,8 @@
 ---
+description: 
+globs: 
+---
+---
 description: Guidelines for maintaining high-quality, scalable, and maintainable code in a Next.js 15 and React 19 project. Covers project structure, TypeScript best practices, component architecture, state management, error handling, security, performance optimization, and testing strategies. References specific guidelines for deeper insights into each domain.
 globs: *.tsx, *.ts, *.md, *.mdc, *.json, *.yml
 ---
@@ -61,7 +65,9 @@ Read guidelines [tailwind-css.mdc](mdc:.cursor/rules/tailwind-css.mdc) and [anim
 
 ### Component Architecture
 
-React guidelines [component.mdc](mdc:.cursor/rules/component.mdc)
+Read guidelines [component.mdc](mdc:.cursor/rules/component.mdc)
+Read guidelines React 19 [react.mdc](mdc:.cursor/rules/react.mdc)
+Read guidelines NextJS 15 [nextjs.mdc](mdc:.cursor/rules/nextjs.mdc)
 
 ### State Management
 

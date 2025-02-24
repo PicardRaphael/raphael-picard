@@ -1,0 +1,272 @@
+---
+description: 
+globs: 
+---
+# Next.js 15 Overview
+
+These rules optimize Cursor AI assistance for **Next.js 15**, focusing on **routing, data fetching, state management, caching, and UI structuring**. The goal is to ensure AI-generated code aligns with **Next.js best practices** and official guidelines.
+
+---
+
+## Best Practices
+- **Follow Next.js App Router guidelines** → Use layouts, pages, and segment configurations.
+- **Optimize Routing** → Utilize **parallel, dynamic, and intercepting routes** effectively.
+- **Enhance Data Fetching** → Prioritize **Server Actions, caching strategies, and React Query**.
+- **Secure API & Middleware** → Implement robust **authentication and request handling**.
+- **Use Server Components by Default** → Reduce client-side JavaScript for better performance.
+- **Utilize Turbopack** → Take advantage of **Next.js 15's stable bundler** for faster development.
+- **Adopt Partial Prerendering (PPR)** → Improve page rendering speed for dynamic content.
+
+---
+
+## Responsibilities
+Cursor AI must generate suggestions that align with:
+- **Next.js 15 App Router** → Follows @official documentation.
+- **Efficient Component Composition** → Suggest **React Server Components (RSC)** when possible.
+- **Optimized API Handling** → Implements caching and data fetching optimally.
+- **Secure and Scalable Middleware** → Uses authentication and request handling best practices.
+- **New Next.js Features** → Incorporate **React 19 hooks and Next Form API** where applicable.
+
+---
+
+## Rules
+
+###  App Router & Layouts
+- Use the **App Router structure** with layouts and segment configurations.
+- Define global layouts in `/app/layout.tsx`.
+- Utilize **nested layouts** for consistent UI structure.
+- Define **loading states per segment** using `loading.tsx`.
+- Implement **not found pages per segment** with `not-found.tsx`.
+- Handle **errors locally in segments** with `error.tsx`.
+
+**Example:**
+```tsx
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body>{children}</body>
+    </html>
+  );
+}
+```
+**Why?** → Provides a scalable and reusable layout system.
+
+**Example: Segment-Based Loading States**
+```tsx
+// app/dashboard/loading.tsx
+export default function Loading() {
+  return <p>Loading dashboard...</p>;
+}
+```
+**Why?** → Prevents displaying empty pages while data is being fetched.
+
+**Example: Segment-Based Not Found Handling**
+```tsx
+// app/dashboard/not-found.tsx
+export default function NotFound() {
+  return <p>Dashboard section not found</p>;
+}
+```
+**Why?** → Provides a meaningful response when a segment doesn't exist.
+### Routing Strategies
+#### **Parallel Routes**
+- Use **Parallel Routes** to render independent sections simultaneously.
+- Implement **slot-based layouts** by defining folders prefixed with `@` (e.g., `@dashboard`).
+- Slots are passed as props to the layout, ensuring independent rendering of components.
+
+**Example:**
+```tsx
+// app/layout.tsx
+export default function Layout({ children, team, analytics }: { children: React.ReactNode; team: React.ReactNode; analytics: React.ReactNode }) {
+  return (
+    <div>
+      <main>{children}</main>
+      <aside>{team}</aside>
+      <section>{analytics}</section>
+    </div>
+  );
+}
+```
+
+**Why?** → Enables **modular layouts**, improving performance and maintainability.
+
+#### **Intercepting Routes**
+Intercepting routes allow loading content from another part of your app **within the current layout** without a full page transition. This is useful for **modals, previews, and contextual navigation**.
+
+##### **Intercepting Route Syntax**
+- **(.)** → Matches segments at the same level.
+- **(..)** → Matches segments one level above.
+- **(..)(..)** → Matches segments two levels above.
+- **(...)** → Matches segments from the root app directory.
+
+##### **Example: Intercepting Routes for Modals**
+```tsx
+// app/feed/(..)photo/[id]/page.tsx
+export default function PhotoModal({ params }) {
+  const photo = photos.find((p) => p.id === params.id);
+  return (
+    <Modal>
+      <Photo photo={photo} />
+    </Modal>
+  );
+}
+```
+```tsx
+// app/photo/[id]/page.tsx
+export default function PhotoPage({ params }) {
+  const photo = photos.find((p) => p.id === params.id);
+  return <Photo photo={photo} />;
+}
+```
+**Why?** → Enables **modals without losing page context** and supports **shareable URLs**.
+
+### Metadata & SEO Optimization
+Next.js 15 provides a **Metadata API** that simplifies SEO, social sharing (Open Graph, Twitter Cards), and structured data.
+
+#### **Defining Metadata in Pages**
+```tsx
+export const metadata = {
+  title: "Next.js 15 - Best Practices",
+  description: "A complete guide to optimizing Next.js 15 applications.",
+  openGraph: {
+    title: "Next.js 15 - Optimized Guide",
+    description: "A structured best-practices guide for Next.js 15.",
+    url: "https://example.com",
+    images: [
+      {
+        url: "https://example.com/og-image.jpg",
+        width: 1200,
+        height: 630,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: "@example",
+  },
+};
+```
+**Why?** → Improves SEO rankings and enhances social media sharing.
+
+#### **Dynamic Metadata Handling**
+- Use **async functions** in `generateMetadata` for dynamic metadata updates.
+
+**Example: Fetching Dynamic Metadata**
+```tsx
+export async function generateMetadata({ params }) {
+  const product = await fetch(`https://api.example.com/products/${params.id}`).then(res => res.json());
+  return {
+    title: product.name,
+    description: product.description,
+    openGraph: {
+      title: product.name,
+      images: [{ url: product.image }],
+    },
+  };
+}
+```
+**Why?** → Ensures up-to-date metadata for dynamically generated content.
+
+
+### Data Fetching & Caching
+
+#### **Advanced Caching Strategies**
+Next.js 15 introduces enhanced caching mechanisms to optimize performance and reduce redundant network requests. The caching system consists of:
+
+- **Data Cache** → Stores fetched data between requests and deployments.
+- **Full Route Cache** → Caches entire HTML responses and RSC payloads.
+- **Client Router Cache** → Persists RSC payloads across navigations for improved UX.
+
+#### **Caching Directives & Usage**
+- **`force-cache`** → Forces Next.js to always serve a cached response when available.
+- **`no-store`** → Disables caching and ensures every request fetches fresh data.
+- **`revalidate`** → Defines revalidation intervals to refresh cached data.
+
+**Example: Fetching with Caching Strategy**
+```tsx
+export async function getData() {
+  const res = await fetch("https://api.example.com/data", { cache: "force-cache" });
+  return res.json();
+}
+```
+**Why?** → Ensures efficient response times by serving pre-cached data.
+
+#### **Dynamic Data Handling & `force-dynamic`**
+By default, Next.js **caches all requests**, but in cases where dynamic data is required (e.g., frequently updating content), the **`force-dynamic`** directive can be used.
+
+- **`force-dynamic`** → Ensures a fresh request every time, even inside a static page.
+
+**Example: Using `force-dynamic`**
+```tsx
+export async function getDynamicData() {
+  const res = await fetch("https://api.example.com/live-data", { cache: "no-store" });
+  return res.json();
+}
+```
+**Why?** → Guarantees real-time updates by bypassing Next.js cache.
+
+#### **Revalidation & Cache Invalidation**
+For controlled revalidation, Next.js offers **tag-based** and **path-based** cache invalidation mechanisms:
+
+- **`revalidatePath`** → Clears the cache for a specific route.
+- **`revalidateTag`** → Invalidates cached data for a specific tag.
+
+**Example: Revalidating Cached Content**
+```tsx
+import { revalidatePath } from 'next/cache';
+
+export async function updateData() {
+  await revalidatePath("/dashboard");
+}
+```
+**Why?** → Keeps data fresh without unnecessary full re-fetching.
+
+#### **Using `'use cache'` Directive**
+For finer control over caching at the function level, Next.js provides the `'use cache'` directive.
+
+**Example:**
+```tsx
+export async function getStaticData() {
+  'use cache';
+  return fetch("https://api.example.com/data").then((res) => res.json());
+}
+```
+**Why?** → Optimizes performance by caching function calls explicitly.
+### 4️⃣ Middleware & Security
+- Implement middleware for authentication and permissions.
+- Redirect unauthenticated users appropriately.
+
+**Example:**
+```tsx
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+export function middleware(request: NextRequest) {
+  if (!request.cookies.get("token")) {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+}
+```
+**Why?** → Enhances security and access control in Next.js applications.
+
+---
+
+## Snippets & Examples
+- @Optimizing caching
+- @Error handling
+- @Advanced redirections
+- @Parallel Routes
+- @Intercepting Routes
+- @Turbopack Documentation
+- @React 19 Features
+
+---
+
+## Summary
+- **App Router** → Uses layouts, pages, and segment configurations properly.
+- **Routing** → Implements parallel, dynamic, and intercepting routes correctly.
+- **Data Fetching** → Utilizes Server Actions, caching mechanisms, `force-dynamic`, and `'use cache'` appropriately.
+- **Middleware** → Ensures security with authentication and request handling.
+- **State Management** → Uses React Query and new React 19 hooks for optimized API handling.
+- **Turbopack** → Faster bundling and development performance.
+- **Partial Prerendering (PPR)** → Improves rendering speed for dynamic pages.

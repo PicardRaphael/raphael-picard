@@ -2,7 +2,7 @@ import { defineQuery } from 'next-sanity';
 import { sanityFetch } from '../live';
 
 export const getPortfolios = async () => {
-	const PROTFOLIO_QUERY = defineQuery(`*[_type == "portfolio"] | order(dateStarted desc){
+	const PROTFOLIO_QUERY = defineQuery(`*[_type == "portfolio"] | order(_createdAt desc){
 		...,
 		technologies[]->
 	}`);

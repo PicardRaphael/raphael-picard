@@ -9,6 +9,7 @@ export const getExperiences = async () => {
 
 	try {
 		const experiences = await sanityFetch({ query: EXPERIENCES_QUERY });
+		console.log(experiences, 'experiences');
 		return experiences.data || [];
 	} catch (error) {
 		console.log(error);

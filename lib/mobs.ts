@@ -29,15 +29,15 @@ export type Mob = {
 };
 
 const SPECS: { name: string; lesson: string; zone: Zone; x: number; z: number }[] = [
-	{ name: 'Hallucination', lesson: 'Vaincue par un RAG hybride et une extraction verbatim : chaque réponse cite sa source.', zone: 'val', x: -22, z: -62 },
-	{ name: 'Régression', lesson: 'Vaincue par les tests DeepEval LLM-as-judge lancés avant chaque mise en production.', zone: 'val', x: 30, z: -64 },
-	{ name: 'Bug 404', lesson: 'Corrigé : contrats OpenAPI et 496 schémas Zod valident chaque entrée.', zone: 'val', x: 48, z: -8 },
-	{ name: 'Dette technique', lesson: 'Remboursée par une architecture hexagonale aux frontières vérifiées en CI.', zone: 'val', x: -52, z: -18 },
-	{ name: 'Fuite de contexte', lesson: 'Colmatée par le context caching : −33 % de coûts d’inférence.', zone: 'val', x: 12, z: 46 },
-	{ name: 'Prompt injection', lesson: 'Bloquée : les sorties du modèle sont validées comme des saisies utilisateur.', zone: 'nexus', x: -30, z: NEXUS_Z - 95 },
-	{ name: 'Timeout', lesson: 'Évité par le routage hybride : un LLM n’est appelé qu’en repli.', zone: 'nexus', x: 34, z: NEXUS_Z - 100 },
-	{ name: 'Coût explosif', lesson: 'Maîtrisé grâce au suivi FinOps Langfuse et au bon modèle pour chaque tâche.', zone: 'nexus', x: 60, z: NEXUS_Z - 30 },
-	{ name: 'Agent perdu', lesson: 'Retrouvé : chaque agent a son graphe LangGraph, ses outils et ses garde-fous.', zone: 'nexus', x: -64, z: NEXUS_Z - 60 },
+	{ name: 'Hallucination', lesson: 'Vaincue par un RAG hybride et une extraction verbatim : chaque réponse cite sa source.', zone: 'val', x: -24, z: 2 },
+	{ name: 'Régression', lesson: 'Vaincue par les tests DeepEval LLM-as-judge lancés avant chaque mise en production.', zone: 'val', x: 26, z: -2 },
+	{ name: 'Bug 404', lesson: 'Corrigé : contrats OpenAPI et 496 schémas Zod valident chaque entrée.', zone: 'val', x: 12, z: -58 },
+	{ name: 'Dette technique', lesson: 'Remboursée par une architecture hexagonale aux frontières vérifiées en CI.', zone: 'val', x: -30, z: -40 },
+	{ name: 'Fuite de contexte', lesson: 'Colmatée par le context caching : −33 % de coûts d’inférence.', zone: 'val', x: 14, z: 28 },
+	{ name: 'Prompt injection', lesson: 'Bloquée : les sorties du modèle sont validées comme des saisies utilisateur.', zone: 'nexus', x: -20, z: NEXUS_Z - 30 },
+	{ name: 'Timeout', lesson: 'Évité par le routage hybride : un LLM n’est appelé qu’en repli.', zone: 'nexus', x: 22, z: NEXUS_Z - 34 },
+	{ name: 'Coût explosif', lesson: 'Maîtrisé grâce au suivi FinOps Langfuse et au bon modèle pour chaque tâche.', zone: 'nexus', x: 30, z: NEXUS_Z - 100 },
+	{ name: 'Agent perdu', lesson: 'Retrouvé : chaque agent a son graphe LangGraph, ses outils et ses garde-fous.', zone: 'nexus', x: -30, z: NEXUS_Z - 105 },
 ];
 
 export const mobs: Mob[] = SPECS.map((s, i) => ({

@@ -8,9 +8,12 @@ import { player } from '@/lib/player-state';
 import { mobs } from '@/lib/mobs';
 import { QUESTS } from '@/lib/quests';
 import { LANDMARKS, NEXUS_CENTER, NEXUS_RADIUS, VAL_RADIUS, landmark } from '@/lib/world';
+import { AchievementWatcher, Menu } from './Menu';
 import { Panel } from './Panels';
+import { Soundtrack } from './Soundtrack';
 import { StartScreen } from './StartScreen';
 import { HurtFlash, TouchControls, ZoomButtons } from './TouchControls';
+import { WorldMap } from './WorldMap';
 
 function ZoneBanner() {
 	const banner = useGame((s) => s.banner);
@@ -53,7 +56,7 @@ function QuestTracker() {
 	const available = QUESTS.find((q) => quests[q.id] === 'available');
 	const kills = useGame((s) => s.kills);
 	return (
-		<aside className="pointer-events-none fixed top-4 right-4 z-20 w-72 max-w-[calc(100vw-2rem)] text-right" aria-label="Suivi des quêtes">
+		<aside className="pointer-events-none fixed top-4 right-20 z-20 w-72 max-w-[calc(100vw-2rem)] text-right" aria-label="Suivi des quêtes">
 			<p className="mb-3 font-mono text-xs text-[#ff8a80] drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">☠ Bugs corrigés : {kills} / {mobs.length}</p>
 			{active.length === 0 && available && (
 				<p className="text-sm text-[#ffd100] drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">
@@ -164,6 +167,19 @@ function Minimap() {
 	return <canvas ref={ref} width={150} height={150} className="fixed bottom-4 left-4 z-20 h-[120px] w-[120px] pointer-coarse:top-16 pointer-coarse:bottom-auto sm:h-[150px] sm:w-[150px]" aria-hidden />;
 }
 
+function MenuButtons() {
+	return (
+		<div className="fixed top-4 right-4 z-30 flex flex-col gap-2">
+			<button onClick={() => game.set({ overlay: 'menu' })} aria-label="Menu" className="grid h-11 w-11 place-items-center rounded-xl border border-white/25 bg-[#5b1a3a]/85 text-xl text-white backdrop-blur-md hover:brightness-125">
+				☰
+			</button>
+			<button onClick={() => game.set({ overlay: 'map' })} aria-label="Carte" className="grid h-11 w-11 place-items-center rounded-xl border border-white/25 bg-[#5b1a3a]/85 text-xl text-white backdrop-blur-md hover:brightness-125">
+				⌖
+			</button>
+		</div>
+	);
+}
+
 function Corner() {
 	const sound = useGame((s) => s.sound);
 	return (
@@ -200,6 +216,7 @@ export function GameUI() {
 			{started && (
 				<>
 					<Corner />
+					<MenuButtons />
 					<QuestTracker />
 					<Minimap />
 					<Controls />
@@ -210,8 +227,12 @@ export function GameUI() {
 			)}
 			<ZoneBanner />
 			<Toast />
+			<Soundtrack />
 			<HurtFlash />
 			<Panel />
+			<Menu />
+			<AchievementWatcher />
+			<WorldMap />
 		</>
 	);
 }

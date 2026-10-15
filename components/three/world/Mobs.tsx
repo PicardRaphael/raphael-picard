@@ -181,7 +181,10 @@ function MobUnit({ mob }: { mob: Mob }) {
 			label.draw(Math.max(mob.hp, 0), mob.maxHp);
 		}
 		mixer.update(dt);
-		g.position.set(mob.x, groundAt(mob.x, mob.z), mob.z);
+		// corpses stay solid for 2 s, then sink into the ground before respawning later
+		const sink = mob.state === 'dead' && mob.t > 2 ? (mob.t - 2) * 0.9 : 0;
+		g.position.set(mob.x, groundAt(mob.x, mob.z) - sink, mob.z);
+		if (mob.state === 'dead' && mob.t > 4.5) g.visible = false;
 		g.rotation.y = mob.yaw;
 		if (sprite.current) sprite.current.visible = mob.state !== 'dead' || mob.t < 1.5;
 	});

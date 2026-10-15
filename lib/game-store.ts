@@ -25,6 +25,15 @@ type GameState = {
 	visited: string[];
 	/** Bugs defeated. */
 	kills: number;
+	/** One-off events used by achievements (left_spawn, map, sound…). */
+	flags: string[];
+	jumps: number;
+	/** Open UI overlay. */
+	overlay: null | 'menu' | 'map';
+	/** Time of day: auto follows the visitor's clock. */
+	timeMode: 'auto' | 'day' | 'dusk' | 'night';
+	weather: 'auto' | 'clear' | 'rain' | 'fog';
+	quality: 'high' | 'low';
 	race: RaceState;
 	toast: { id: number; title: string; text: string } | null;
 	banner: { id: number; title: string; subtitle: string } | null;
@@ -41,6 +50,12 @@ let state: GameState = {
 	quests: Object.fromEntries(QUESTS.map((q, i) => [q.id, i === 0 ? 'available' : 'locked'])) as Record<string, QuestStatus>,
 	visited: [],
 	kills: 0,
+	flags: [],
+	jumps: 0,
+	overlay: null,
+	timeMode: 'auto',
+	weather: 'auto',
+	quality: 'high',
 	race: { status: 'idle', checkpoint: 0, total: 0, startedAt: 0, time: 0 },
 	toast: null,
 	banner: null,
@@ -60,6 +75,9 @@ export const game = {
 		return () => {
 			listeners.delete(l);
 		};
+	},
+	flag(name: string) {
+		if (!state.flags.includes(name)) game.set((s) => ({ flags: [...s.flags, name] }));
 	},
 	toast(title: string, text: string) {
 		game.set({ toast: { id: Date.now(), title, text } });

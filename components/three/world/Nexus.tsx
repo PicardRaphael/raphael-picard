@@ -5,8 +5,9 @@ import { Suspense, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 
 import { projects } from '@/content/work';
-import { NEXUS_CENTER, NEXUS_RADIUS, landmark } from '@/lib/world';
+import { NEXUS_CENTER, landmark } from '@/lib/world';
 import { constellation, knot, mulberry32 } from '../shapes';
+import { Cyber } from './Cyber';
 import { PortalGate, QuestMarker } from './Landmarks';
 import { RaphyModel } from './Raphy';
 
@@ -81,34 +82,9 @@ function Hologram({ positions, a, b, pixelRatio, ...props }: { positions: Float3
 	);
 }
 
-const towerMat = new THREE.MeshStandardMaterial({ color: '#0d0a1f', metalness: 0.9, roughness: 0.25, emissive: '#1a0b3d', emissiveIntensity: 0.6 });
-const edgeMat = new THREE.LineBasicMaterial({ color: '#8b5cf6', transparent: true, opacity: 0.75 });
 const padMat = new THREE.MeshStandardMaterial({ color: '#141026', metalness: 0.8, roughness: 0.3 });
 const neon = new THREE.MeshBasicMaterial({ color: '#38bdf8', toneMapped: false });
 const neonMagenta = new THREE.MeshBasicMaterial({ color: '#e879f9', toneMapped: false });
-
-function Skyline() {
-	const towers = useMemo(() => {
-		const rng = mulberry32(404);
-		return Array.from({ length: 46 }, () => {
-			const a = rng() * Math.PI * 2;
-			const r = NEXUS_RADIUS + 10 + rng() * 60;
-			return { x: NEXUS_CENTER.x + Math.cos(a) * r, z: NEXUS_CENTER.z + Math.sin(a) * r, w: 6 + rng() * 10, h: 20 + rng() * 70, d: 6 + rng() * 10 };
-		});
-	}, []);
-	const box = useMemo(() => new THREE.BoxGeometry(1, 1, 1), []);
-	const edges = useMemo(() => new THREE.EdgesGeometry(box), [box]);
-	return (
-		<group>
-			{towers.map((t, i) => (
-				<group key={i} position={[t.x, t.h / 2, t.z]} scale={[t.w, t.h, t.d]}>
-					<mesh geometry={box} material={towerMat} />
-					<lineSegments geometry={edges} material={edgeMat} />
-				</group>
-			))}
-		</group>
-	);
-}
 
 function Pad({ x, z, r = 7 }: { x: number; z: number; r?: number }) {
 	return (
@@ -252,7 +228,7 @@ export function Nexus({ pixelRatio }: { pixelRatio: number }) {
 				<planeGeometry args={[520, 520]} />
 				<shaderMaterial vertexShader={gridVertex} fragmentShader={gridFragment} uniforms={uniforms} extensions={{ derivatives: true } as never} />
 			</mesh>
-			<Skyline />
+			<Cyber />
 			<group position={[agents.x, 0, agents.z]}>
 				<Pad x={0} z={0} r={6} />
 				<Hologram positions={shapes.agents} a="#38bdf8" b="#c50eff" pixelRatio={pixelRatio} position={[0, 7, 0]} scale={1.7} />

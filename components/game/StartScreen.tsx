@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 
 import { game, useGame } from '@/lib/game-store';
 import { ACTIONS, type Action, keyLabel, keymap } from '@/lib/keymap';
@@ -91,12 +91,18 @@ export function StartScreen() {
 	const hero = useGame((s) => s.hero);
 	const [keys, setKeys] = useState(false);
 	const label = useLayoutLabels();
+	// key bindings live in localStorage: only print them once mounted (no hydration mismatch)
+	const client = useSyncExternalStore(
+		() => () => undefined,
+		() => true,
+		() => false,
+	);
 	const k = keymap.get();
 
 	useEffect(() => {
 		if (started) return;
 		const on = (e: KeyboardEvent) => {
-			if (e.code === 'Enter' && !keys) game.set({ started: true });
+			if (e.code === 'Enter' && !keys) game.set({ started: true, sound: true });
 		};
 		window.addEventListener('keydown', on);
 		return () => window.removeEventListener('keydown', on);
@@ -135,7 +141,7 @@ export function StartScreen() {
 
 				<div className="mt-6 flex flex-wrap items-center justify-center gap-3">
 					<button
-						onClick={() => game.set({ started: true })}
+						onClick={() => game.set({ started: true, sound: true })}
 						className="font-display rounded-full bg-gradient-to-r from-[#651fff] to-[#c50eff] px-9 py-3.5 text-lg font-bold text-white shadow-[0_0_40px_-6px_#c50eff] transition-transform hover:scale-105"
 					>
 						Jouer
@@ -147,10 +153,9 @@ export function StartScreen() {
 				<p className="mt-4 max-w-xl font-mono text-[11px] leading-5 text-white/65">
 					Clic / toucher : se déplacer, parler, attaquer · glisser : tourner la caméra · molette / pincer : zoom
 					<br />
-					{label(k.forward[0])}
-					{label(k.left[0])}
-					{label(k.back[0])}
-					{label(k.right[0])} ou flèches · {label(k.jump[0])} sauter · {label(k.attack[0])} attaquer · {label(k.interact[0])} interagir
+					{client
+						? `${label(k.forward[0])}${label(k.left[0])}${label(k.back[0])}${label(k.right[0])} ou flèches · ${label(k.jump[0])} sauter · ${label(k.attack[0])} attaquer · ${label(k.interact[0])} interagir`
+						: 'Flèches pour bouger · Espace sauter · F attaquer · E interagir'}
 				</p>
 				<Link href="/portfolio" className="mt-4 text-sm text-white/70 underline-offset-4 hover:text-white hover:underline">
 					Version classique du portfolio →

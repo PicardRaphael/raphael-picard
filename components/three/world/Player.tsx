@@ -7,7 +7,9 @@ import * as THREE from 'three';
 import { game, useGame } from '@/lib/game-store';
 import { keymap } from '@/lib/keymap';
 import { mobs, nearestMob } from '@/lib/mobs';
+import { music } from '@/lib/music';
 import { player } from '@/lib/player-state';
+import { vegetationObstacles } from '@/lib/vegetation';
 import { HOUSES, LANDMARKS, NEXUS_CENTER, NEXUS_RADIUS, NEXUS_SPAWN, SPAWN, VAL_RADIUS, landmark, valHeight } from '@/lib/world';
 import { HeroModel } from './Hero';
 
@@ -36,6 +38,7 @@ export function interact(id: string) {
 export function attack() {
 	if (player.attack > 0 || !game.get().started || game.get().panel) return;
 	player.attack = 0.65;
+	music.sfx('swing');
 	const target = nearestMob(player.x, player.z, 3.4);
 	if (!target) return;
 	player.yaw = Math.atan2(-(target.x - player.x), -(target.z - player.z));
@@ -43,6 +46,7 @@ export function attack() {
 	setTimeout(() => {
 		if (target.state === 'dead') return;
 		target.hp -= 1;
+		music.sfx('hit');
 		target.state = 'hit';
 		target.t = 0;
 		if (target.hp <= 0) {
@@ -55,6 +59,8 @@ export function attack() {
 export function jump() {
 	if (player.jump.h > 0.01 || !game.get().started || game.get().panel) return;
 	player.jump.vy = 9.5;
+	game.set((s) => ({ jumps: s.jumps + 1 }));
+	music.sfx('jump');
 }
 
 /**
@@ -79,9 +85,13 @@ function useKeyboard() {
 			if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) e.preventDefault();
 			if (!s.started) return;
 			if (s.panel) {
-				if (e.code === 'Escape') game.set({ panel: null });
+				if (e.code === 'Escape') {
+					e.stopImmediatePropagation();
+					game.set({ panel: null });
+				}
 				return;
 			}
+			if (s.overlay) return;
 			if (keymap.is('jump', e.code)) {
 				jump();
 				return;
@@ -158,7 +168,7 @@ function usePointerControls() {
 		const ndc = new THREE.Vector2();
 
 		const down = (e: PointerEvent) => {
-			if (!game.get().started || game.get().panel) return;
+			if (!game.get().started || game.get().panel || game.get().overlay) return;
 			el.setPointerCapture(e.pointerId);
 			pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY });
 			if (pointers.size === 2) {
@@ -316,6 +326,7 @@ export function Player() {
 			facing: 0,
 			hurt: 0,
 			swing: 0,
+			solid: null as null | { x: number; z: number; r: number }[],
 			swinging: false,
 		}),
 		[],
@@ -350,7 +361,7 @@ export function Player() {
 		const dt = Math.min(delta, 1 / 20);
 		v.time += dt;
 		const g = game.get();
-		const canMove = g.started && !g.panel;
+		const canMove = g.started && !g.panel && !g.overlay;
 
 		if (player.teleport) {
 			player.x = player.teleport.x;
@@ -418,8 +429,11 @@ export function Player() {
 		let nx = player.x + dirX * player.speed * dt;
 		let nz = player.z + dirZ * player.speed * dt;
 
-		// collisions: push out of obstacles (the push is radial, so the player slides around them)
-		for (const o of OBSTACLES) {
+		// collisions: buildings, trees, rocks and bugs (the push is radial, so the player slides around them)
+		v.solid ??= [...OBSTACLES, ...vegetationObstacles()];
+		const dyn = mobs.filter((m) => m.zone === g.zone && !(m.state === 'dead' && m.t > 2)).map((m) => ({ x: m.x, z: m.z, r: 0.75 }));
+		for (const o of [...v.solid, ...dyn]) {
+			if (Math.abs(nx - o.x) > o.r + 1 || Math.abs(nz - o.z) > o.r + 1) continue;
 			const dx = nx - o.x;
 			const dz = nz - o.z;
 			const d = Math.hypot(dx, dz);
@@ -455,6 +469,7 @@ export function Player() {
 			if (player.jump.h === 0) player.jump.vy = 0;
 		}
 		player.y = groundAt(nx, nz) + player.jump.h;
+		if (g.started && Math.hypot(nx - SPAWN.x, nz - SPAWN.z) > 25) game.flag('left_spawn');
 
 		// face the movement direction
 		if (want > 0 && (dirX || dirZ)) {
@@ -534,6 +549,7 @@ export function Player() {
 				game.visit('portal');
 				player.teleport = { ...NEXUS_SPAWN };
 				game.set({ zone: 'nexus' });
+				game.flag('nexus');
 				game.banner('Le Nexus', "L'ère des agents");
 			}
 			if (Math.hypot(player.x - back.x, player.z - back.z) < 2.4) {

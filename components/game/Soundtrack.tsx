@@ -1,0 +1,39 @@
+'use client';
+
+import { useEffect } from 'react';
+
+import { game, useGame } from '@/lib/game-store';
+import { music } from '@/lib/music';
+
+/** Bridges the game store to the generative soundtrack and sound effects. */
+export function Soundtrack() {
+	const sound = useGame((s) => s.sound);
+	const zone = useGame((s) => s.zone);
+	const toast = useGame((s) => s.toast);
+
+	useEffect(() => {
+		if (sound) void music.start();
+		else music.stop();
+	}, [sound]);
+
+	useEffect(() => {
+		if (sound) game.flag(zone === 'val' ? 'music_val' : 'music_nexus');
+	}, [sound, zone]);
+
+	useEffect(() => {
+		music.setTheme(zone);
+		if (game.get().started) music.sfx('portal');
+	}, [zone]);
+
+	useEffect(() => {
+		if (toast) music.sfx('quest');
+	}, [toast]);
+
+	useEffect(() => {
+		const hit = () => music.sfx('hit');
+		window.addEventListener('player:hit', hit);
+		return () => window.removeEventListener('player:hit', hit);
+	}, []);
+
+	return null;
+}

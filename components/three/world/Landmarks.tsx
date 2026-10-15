@@ -8,6 +8,7 @@ import { useGame } from '@/lib/game-store';
 import { QUESTS } from '@/lib/quests';
 import { LANDMARKS, landmark, valHeight } from '@/lib/world';
 import { Village } from './Buildings';
+import { DarkGate } from './DarkGate';
 import { RaphyModel } from './Raphy';
 
 const stone = new THREE.MeshStandardMaterial({ color: '#9a9184', roughness: 0.95, flatShading: true });
@@ -180,7 +181,7 @@ export function ValleyLandmarks() {
 			</Suspense>
 			<Stones />
 			<RaphyNpc />
-			<Portal x={portal.x} z={portal.z} y={ground(portal.x, portal.z)} />
+			<DarkGate x={portal.x} z={portal.z - 1} y={ground(portal.x, portal.z) - 0.4} />
 			{LANDMARKS.filter((l) => l.zone === 'val' && l.id !== 'raphy').map((l) => (
 				<group key={l.id} position={[l.x, ground(l.x, l.z), l.z]}>
 					<QuestMarker id={l.id} height={l.id === 'tower' ? 29 : 13} />

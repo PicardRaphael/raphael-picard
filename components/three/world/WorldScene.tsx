@@ -9,6 +9,9 @@ import { useGame } from '@/lib/game-store';
 import { player } from '@/lib/player-state';
 import { Starfield } from '../Cosmos';
 import { ValleyLandmarks } from './Landmarks';
+import { phaseFor, NIGHT } from '@/lib/daytime';
+import { Rain } from './Cyber';
+import { Lanterns } from './Lanterns';
 import { Mobs } from './Mobs';
 import { Nature } from './Nature';
 import { Nexus } from './Nexus';
@@ -26,12 +29,25 @@ function detect(): Quality {
 	return { dpr: [1, 1.5], post: true, shadows: true, pr };
 }
 
-/** Sun, fog and background follow the zone: golden sunset in the valley, neon night in the Nexus. */
+const LIGHT = {
+	day: { hemi: ['#d6ebff', '#55752f', 1.25], sun: ['#fff1d6', 2.8], fog: '#c4dcf2', near: 90, far: 300 },
+	dusk: { hemi: ['#ffe2b8', '#4a6b2a', 1.1], sun: ['#ffc58a', 2.6], fog: '#f2c79a', near: 80, far: 260 },
+	night: { hemi: ['#4b5aa8', '#0d1020', 0.55], sun: ['#9fb4ff', 0.75], fog: '#151b36', near: 45, far: 210 },
+} as const;
+
+/** Sun, fog, sky and weather: the visitor's clock (or the options) in the valley, eternal rainy neon night in the Nexus. */
 function Atmosphere({ shadows }: { shadows: boolean }) {
 	const zone = useGame((s) => s.zone);
+	const timeMode = useGame((s) => s.timeMode);
+	const weatherMode = useGame((s) => s.weather);
 	const { scene } = useThree();
 	const sun = useRef<THREE.DirectionalLight>(null);
 	const target = useMemo(() => new THREE.Object3D(), []);
+	const phase = phaseFor(timeMode);
+	const night = NIGHT[phase];
+	const val = zone === 'val';
+	const weather = weatherMode === 'auto' ? (val ? (phase === 'dusk' ? 'clear' : 'clear') : 'rain') : weatherMode;
+	const L = LIGHT[phase];
 
 	useEffect(() => {
 		scene.add(target);
@@ -41,29 +57,29 @@ function Atmosphere({ shadows }: { shadows: boolean }) {
 	}, [scene, target]);
 
 	useEffect(() => {
-		const val = zone === 'val';
-		scene.fog = new THREE.Fog(val ? '#f2c79a' : '#120726', val ? 80 : 40, val ? 260 : 230);
+		const fogK = weather === 'fog' ? 0.35 : weather === 'rain' ? 0.7 : 1;
+		scene.fog = val ? new THREE.Fog(weather === 'rain' ? '#7d8796' : L.fog, L.near * fogK, L.far * fogK) : new THREE.Fog('#160828', 30 * fogK, 210 * fogK);
 		scene.background = val ? null : new THREE.Color('#07030f');
-	}, [zone, scene]);
+	}, [val, scene, L, weather]);
 
 	// the shadow camera follows the player so shadows stay crisp everywhere
 	useFrame(() => {
 		const s = sun.current;
 		if (!s) return;
-		s.position.set(player.x + 40, player.y + 55, player.z + 25);
+		s.position.set(player.x + 40, player.y + (phase === 'day' ? 80 : 45), player.z + 25);
 		target.position.set(player.x, player.y, player.z);
 		s.target = target;
 	});
 
-	const val = zone === 'val';
+	const dim = weather === 'rain' ? 0.6 : 1;
 	return (
 		<>
-			{val && <SkyDome />}
-			<hemisphereLight args={[val ? '#ffe2b8' : '#6d4bd8', val ? '#4a6b2a' : '#0b0618', val ? 1.1 : 0.7]} />
+			{val && <SkyDome night={weather === 'rain' ? Math.max(night, 0.35) : night} />}
+			<hemisphereLight args={[val ? L.hemi[0] : '#6d4bd8', val ? L.hemi[1] : '#0b0618', (val ? L.hemi[2] : 0.7) * dim]} />
 			<directionalLight
 				ref={sun}
-				color={val ? '#ffc58a' : '#9f7aea'}
-				intensity={val ? 2.6 : 0.9}
+				color={val ? L.sun[0] : '#9f7aea'}
+				intensity={(val ? L.sun[1] : 0.9) * dim}
 				castShadow={shadows}
 				shadow-mapSize={[2048, 2048]}
 				shadow-camera-left={-60}
@@ -76,6 +92,8 @@ function Atmosphere({ shadows }: { shadows: boolean }) {
 				shadow-normalBias={0.04}
 			/>
 			{!val && <Starfield count={2500} pixelRatio={1} />}
+			{weather === 'rain' && <Rain count={val ? 1100 : 1500} />}
+			{val && <Lanterns night={Math.max(night, weather === 'rain' ? 0.5 : 0)} />}
 		</>
 	);
 }

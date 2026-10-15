@@ -19,6 +19,7 @@ void main() {
 const fragment = /* glsl */ `
 uniform float uTime;
 uniform vec3 uSun;
+uniform float uNight;
 varying vec3 vDir;
 float hash(vec2 p) { return fract(sin(dot(p, vec2(41.3, 289.1))) * 43758.5); }
 float noise(vec2 p) {
@@ -28,29 +29,39 @@ float noise(vec2 p) {
 }
 void main() {
 	float h = vDir.y;
-	vec3 zenith = vec3(0.17, 0.12, 0.42);
-	vec3 mid = vec3(0.62, 0.38, 0.62);
-	vec3 rose = vec3(0.98, 0.58, 0.48);
-	vec3 horizon = vec3(1.0, 0.8, 0.52);
-	vec3 col = mix(horizon, rose, smoothstep(0.0, 0.12, h));
-	col = mix(col, mid, smoothstep(0.1, 0.35, h));
-	col = mix(col, zenith, smoothstep(0.3, 0.9, h));
-	col = mix(col, vec3(0.93, 0.72, 0.55), smoothstep(0.0, -0.2, h));
+	// three palettes: day, dusk, night
+	vec3 dZen = vec3(0.22, 0.45, 0.88), dHor = vec3(0.78, 0.88, 0.98);
+	vec3 sZen = vec3(0.17, 0.12, 0.42), sMid = vec3(0.62, 0.38, 0.62), sHor = vec3(1.0, 0.72, 0.5);
+	vec3 nZen = vec3(0.01, 0.015, 0.06), nHor = vec3(0.08, 0.1, 0.24);
+	vec3 day = mix(dHor, dZen, smoothstep(0.0, 0.6, h));
+	vec3 dusk = mix(sHor, sMid, smoothstep(0.02, 0.3, h));
+	dusk = mix(dusk, sZen, smoothstep(0.3, 0.9, h));
+	vec3 night = mix(nHor, nZen, smoothstep(0.0, 0.5, h));
+	vec3 col = uNight < 0.5 ? mix(day, dusk, uNight * 2.0) : mix(dusk, night, (uNight - 0.5) * 2.0);
+	col = mix(col, col * 0.85 + vec3(0.05), smoothstep(0.0, -0.2, h));
 	float s = max(dot(vDir, normalize(uSun)), 0.0);
-	col += vec3(1.0, 0.75, 0.45) * pow(s, 18.0) * 0.6 + vec3(1.0, 0.95, 0.8) * pow(s, 900.0) * 2.0;
+	vec3 sunCol = mix(vec3(1.0, 0.95, 0.8), vec3(0.75, 0.82, 1.0), step(0.75, uNight));
+	col += sunCol * pow(s, 18.0) * 0.5 * (1.0 - uNight * 0.5) + sunCol * pow(s, 900.0) * 2.0;
+	// stars at night
+	vec2 sp = floor(vDir.xz / max(h, 0.05) * 90.0);
+	float star = step(0.997, hash(sp)) * smoothstep(0.05, 0.3, h) * smoothstep(0.6, 1.0, uNight);
+	col += vec3(star);
 	// cloud streaks
 	vec2 uv = vDir.xz / max(h + 0.15, 0.05) * 1.4 + vec2(uTime * 0.01, 0.0);
 	float cl = smoothstep(0.55, 0.85, noise(uv * vec2(1.0, 3.5)) * 0.7 + noise(uv * 3.0) * 0.3);
-	col = mix(col, vec3(1.0, 0.82, 0.76), cl * smoothstep(0.02, 0.25, h) * 0.55);
+	vec3 cloudCol = mix(vec3(1.0), vec3(1.0, 0.82, 0.76), min(uNight * 2.0, 1.0)) * (1.0 - uNight * 0.75);
+	col = mix(col, cloudCol, cl * smoothstep(0.02, 0.25, h) * 0.55);
 	gl_FragColor = vec4(col, 1.0);
 }
 `;
 
 const SUN = new THREE.Vector3(120, 30, 60);
 
-export function SkyDome() {
+export function SkyDome({ night }: { night: number }) {
 	const ref = useRef<THREE.Mesh>(null);
-	const uniforms = useMemo(() => ({ uTime: { value: 0 }, uSun: { value: SUN } }), []);
+	const uniforms = useMemo(() => ({ uTime: { value: 0 }, uSun: { value: SUN.clone() }, uNight: { value: night } }), []); // eslint-disable-line react-hooks/exhaustive-deps
+	uniforms.uNight.value = night;
+	uniforms.uSun.value.set(120, night < 0.25 ? 140 : night < 0.75 ? 30 : 90, 60);
 	useFrame(({ camera }, dt) => {
 		uniforms.uTime.value += dt;
 		ref.current?.position.copy(camera.position);

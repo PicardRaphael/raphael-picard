@@ -44,8 +44,10 @@ function damage(target: (typeof mobs)[number]) {
 	target.state = 'hit';
 	target.t = 0;
 	if (target.hp <= 0) {
-		game.set((s) => ({ kills: s.kills + 1, bugCard: target.id, defeated: s.defeated.includes(target.id) ? s.defeated : [...s.defeated, target.id] }));
-		game.kill(target.zone);
+		const fresh = !game.get().defeated.includes(target.id);
+		// a respawned bug shows its card again, but only a bug never beaten counts (HUD, hunt quests, achievements)
+		game.set((s) => (fresh ? { kills: s.kills + 1, bugCard: target.id, defeated: [...s.defeated, target.id] } : { bugCard: target.id }));
+		if (fresh) game.kill(target.zone);
 		music.sfx('quest');
 	}
 }
@@ -152,6 +154,11 @@ function useKeyboard() {
 			const s = game.get();
 			if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) e.preventDefault();
 			if (!s.started) return;
+			if (s.bugCard !== null && e.code === 'Escape') {
+				e.stopImmediatePropagation();
+				game.set({ bugCard: null });
+				return;
+			}
 			if (s.panel) {
 				if (e.code === 'Escape') {
 					e.stopImmediatePropagation();
@@ -551,10 +558,11 @@ export function Player() {
 		let want = 0;
 		if (canMove && (inp.forward || inp.strafe)) {
 			// camera-relative movement: arrows / keys (forward) and touch joystick (forward + strafe)
-			const fx = -Math.sin(viewYaw);
-			const fz = -Math.cos(viewYaw);
-			dirX = fx * inp.forward + Math.cos(viewYaw) * inp.strafe;
-			dirZ = fz * inp.forward - Math.sin(viewYaw) * inp.strafe;
+			const walkYaw = isFps() ? viewYaw : player.camera.yaw;
+			const fx = -Math.sin(walkYaw);
+			const fz = -Math.cos(walkYaw);
+			dirX = fx * inp.forward + Math.cos(walkYaw) * inp.strafe;
+			dirZ = fz * inp.forward - Math.sin(walkYaw) * inp.strafe;
 			const len = Math.hypot(dirX, dirZ);
 			const mag = Math.min(1, len);
 			if (len > 0) {

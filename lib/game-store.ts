@@ -82,6 +82,34 @@ let state: GameState = {
 
 const listeners = new Set<() => void>();
 
+/** What the server rendered: React hydrates from it, then switches to the restored save. */
+const INITIAL: GameState = state;
+const SAVE_KEY = 'rp-save-v1';
+const SAVED = ['quests', 'progress', 'tracked', 'visited', 'kills', 'defeated', 'flags', 'jumps', 'hero', 'timeMode'] as const;
+if (typeof window !== 'undefined') {
+	try {
+		const raw = window.localStorage.getItem(SAVE_KEY);
+		if (raw) {
+			const saved = JSON.parse(raw) as Partial<GameState>;
+			// quests added since the save start from their initial status
+			state = { ...state, ...saved, quests: { ...state.quests, ...saved.quests } };
+		}
+	} catch {
+		// private mode or corrupt save: a fresh game
+	}
+	let timer = 0;
+	listeners.add(() => {
+		clearTimeout(timer);
+		timer = window.setTimeout(() => {
+			try {
+				window.localStorage.setItem(SAVE_KEY, JSON.stringify(Object.fromEntries(SAVED.map((k) => [k, state[k]]))));
+			} catch {
+				// storage full or blocked: progress simply isn't kept
+			}
+		}, 400);
+	});
+}
+
 export const game = {
 	get: () => state,
 	set(patch: Partial<GameState> | ((s: GameState) => Partial<GameState>)) {
@@ -148,6 +176,6 @@ export function useGame<T>(selector: (s: GameState) => T): T {
 	return useSyncExternalStore(
 		game.subscribe,
 		() => selector(state),
-		() => selector(state),
+		() => selector(INITIAL),
 	);
 }

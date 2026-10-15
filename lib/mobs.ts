@@ -34,8 +34,8 @@ export type Mob = {
 const PROBLEMS: Record<string, string> = {
 	Hallucination: "Le modèle invente une réponse plausible mais fausse : un chiffre, une loi ou une procédure qui n’existe pas.",
 	'Régression': "Un changement de prompt ou de modèle améliore un cas… et en casse dix autres sans que personne ne le voie.",
-	'Bug 404': "Une donnée mal formée traverse l’API et fait planter un écran ou un agent plus loin, loin de sa cause.",
-	'Dette technique': "Chaque raccourci rend la suivante plus coûteuse : le code devient fragile et les livraisons ralentissent.",
+	'Donnée invalide': "Une donnée mal formée traverse l’API et fait planter un écran ou un agent, loin de sa cause.",
+	'Dette technique': "Chaque raccourci rend le suivant plus coûteux : le code devient fragile et les livraisons ralentissent.",
 	'Fuite de contexte': "On renvoie au modèle les mêmes milliers de tokens à chaque appel : lent et cher.",
 	Overfitting: "Le système brille sur les exemples de test mais échoue face aux vraies questions des utilisateurs.",
 	'Boucle infinie': "Un agent rappelle le même outil en boucle sans jamais conclure, en brûlant des tokens.",
@@ -55,8 +55,8 @@ const PROBLEMS: Record<string, string> = {
 
 const SPECS: { name: string; lesson: string; zone: Zone; x: number; z: number }[] = [
 	{ name: 'Hallucination', lesson: 'Vaincue par un RAG hybride et une extraction verbatim : chaque réponse cite sa source.', zone: 'val', x: -24, z: 2 },
-	{ name: 'Régression', lesson: 'Vaincue : DeepEval LLM-as-judge et des tests représentant 1,68× le volume du code de production.', zone: 'val', x: 26, z: -2 },
-	{ name: 'Bug 404', lesson: 'Corrigé : contrats OpenAPI et 496 schémas Zod valident chaque entrée.', zone: 'val', x: 12, z: -58 },
+	{ name: 'Régression', lesson: 'Vaincue : plus de 7 000 tests et un golden set de 64 cas rejoué 5 fois avec DeepEval.', zone: 'val', x: 26, z: -2 },
+	{ name: 'Donnée invalide', lesson: 'Corrigé : contrats OpenAPI et 496 schémas Zod valident chaque entrée.', zone: 'val', x: 12, z: -58 },
 	{ name: 'Dette technique', lesson: 'Remboursée par une architecture hexagonale aux frontières vérifiées en CI.', zone: 'val', x: -30, z: -40 },
 	{ name: 'Fuite de contexte', lesson: 'Colmatée par le context caching : −33 % de coûts d’inférence.', zone: 'val', x: 14, z: 28 },
 	{ name: 'Overfitting', lesson: 'Évité : jeux d’évaluation séparés et tests de non-régression sur des cas réels.', zone: 'val', x: -44, z: -10 },
@@ -65,7 +65,7 @@ const SPECS: { name: string; lesson: string; zone: Zone; x: number; z: number }[
 	{ name: 'Code spaghetti', lesson: 'Démêlé : architecture hexagonale et frontières vérifiées par import-linter.', zone: 'val', x: 44, z: 30 },
 	{ name: 'Merge conflict', lesson: 'Résolu : petites tranches verticales, revues et CI qui juge.', zone: 'val', x: -58, z: 14 },
 	{ name: 'Null pointer', lesson: 'Écrasé : typage strict, Zod et Pydantic valident chaque frontière.', zone: 'val', x: 16, z: -76 },
-	{ name: 'Prompt injection', lesson: 'Contenue : la recherche web n’interroge que 6 sources whitelistées et les sorties du modèle sont validées comme des saisies utilisateur.', zone: 'nexus', x: -8, z: NEXUS_Z - 30 },
+	{ name: 'Prompt injection', lesson: 'Contenue : la recherche web n’interroge que 6 sources autorisées (liste blanche) et les sorties du modèle sont validées comme des saisies utilisateur.', zone: 'nexus', x: -8, z: NEXUS_Z - 30 },
 	{ name: 'Timeout', lesson: 'Évité par le routage hybride : un LLM n’est appelé qu’en repli.', zone: 'nexus', x: 26, z: NEXUS_Z - 36 },
 	{ name: 'Coût explosif', lesson: 'Maîtrisé grâce au suivi FinOps Langfuse et au bon modèle pour chaque tâche.', zone: 'nexus', x: 9, z: NEXUS_Z - 100 },
 	{ name: 'Dérive du modèle', lesson: 'Détectée : traces Langfuse et évaluations LLM-as-judge en continu.', zone: 'nexus', x: -9, z: NEXUS_Z - 72 },

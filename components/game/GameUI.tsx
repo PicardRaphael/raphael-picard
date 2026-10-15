@@ -1,13 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { game, useGame } from '@/lib/game-store';
 import { player } from '@/lib/player-state';
 import { mobs } from '@/lib/mobs';
 import { music } from '@/lib/music';
-import { QUESTS, markerFor } from '@/lib/quests';
+import { QUESTS, markerFor, objectiveDone } from '@/lib/quests';
 import { LANDMARKS, NEXUS_CENTER, NEXUS_RADIUS, VAL_RADIUS, landmark } from '@/lib/world';
 import { AchievementWatcher, Menu } from './Menu';
 import { drawMarker } from './mapMarkers';
@@ -27,8 +27,8 @@ function ZoneBanner() {
 	const visible = banner;
 	useEffect(() => {
 		if (!started) return;
-		if (game.get().zone === 'nexus') game.banner('Le Nexus', "L'ère des agents");
-		else game.banner('Val des Origines', "L'ère du code");
+		if (game.get().zone === 'nexus') game.banner('Le Nexus', 'L’ère des agents');
+		else game.banner('Val des Origines', 'L’ère du code');
 	}, [started]);
 	if (!visible) return null;
 	return (
@@ -56,33 +56,101 @@ function Toast() {
 	);
 }
 
+/** True on touch screens, where the HUD folds itself to leave the world visible. */
+function useCoarse() {
+	const [coarse, setCoarse] = useState(false);
+	useEffect(() => {
+		const mq = window.matchMedia('(pointer: coarse)');
+		const on = () => setCoarse(mq.matches);
+		on();
+		mq.addEventListener('change', on);
+		return () => mq.removeEventListener('change', on);
+	}, []);
+	return coarse;
+}
+
 function QuestTracker() {
 	const quests = useGame((s) => s.quests);
 	const visited = useGame((s) => s.visited);
-	const active = QUESTS.filter((q) => quests[q.id] === 'active' || quests[q.id] === 'ready');
-	const available = QUESTS.find((q) => quests[q.id] === 'available');
+	const progress = useGame((s) => s.progress);
+	const tracked = useGame((s) => s.tracked);
 	const kills = useGame((s) => s.kills);
+	const running = QUESTS.filter((q) => quests[q.id] === 'active' || quests[q.id] === 'ready');
+	const offered = QUESTS.filter((q) => quests[q.id] === 'available');
+	// the followed quest first, so the trail and the list agree
+	const sorted = [...running].sort((a, b) => (a.id === tracked ? -1 : b.id === tracked ? 1 : 0));
+	const who = (id: string) => landmark(id).name.split(',')[0];
+	const [open, setOpen] = useState(false);
+	const coarse = useCoarse();
+	if (coarse && !open) {
+		const q = sorted[0];
+		const next = q && quests[q.id] !== 'ready' ? q.objectives.find((o) => !objectiveDone(q, o, visited, progress)) : undefined;
+		return (
+			<button
+				onClick={() => setOpen(true)}
+				aria-label="Afficher le suivi des quêtes"
+				className="fixed top-3 right-16 z-20 max-w-[44vw] rounded-xl border border-[#ffd100]/30 bg-black/55 px-3 py-1.5 text-right text-xs backdrop-blur-md"
+			>
+				{q ? (
+					<>
+						<span className="font-display block truncate font-bold text-[#ffd100]">➤ {q.title}</span>
+						<span className="block truncate text-white/85">{quests[q.id] === 'ready' ? `À rendre : ${who(q.turnIn)}` : next?.label}</span>
+					</>
+				) : (
+					<span className="text-[#ffd100]">{offered.length ? `! ${offered.length} quête${offered.length > 1 ? 's' : ''} à prendre` : `☠ ${kills} / ${mobs.length}`}</span>
+				)}
+			</button>
+		);
+	}
 	return (
-		<aside className="pointer-events-none fixed top-4 right-20 z-20 w-72 max-w-[calc(100vw-2rem)] text-right max-sm:top-auto max-sm:right-3 max-sm:bottom-48 max-sm:w-52 max-sm:text-xs" aria-label="Suivi des quêtes">
-			<p className="mb-3 font-mono text-xs text-[#ff8a80] drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">☠ Bugs corrigés : {kills} / {mobs.length}</p>
-			{active.length === 0 && available && (
-				<p className="text-sm text-[#ffd100] drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">
-					<span className="font-bold">!</span> Parle à {landmark(available.giver).name.split(',')[0]}
-				</p>
+		<aside
+			className="pointer-events-none fixed top-4 right-20 z-20 w-72 max-w-[calc(100vw-2rem)] text-right pointer-coarse:top-3 pointer-coarse:right-16 pointer-coarse:max-h-[70vh] pointer-coarse:w-60 pointer-coarse:overflow-y-auto pointer-coarse:rounded-xl pointer-coarse:bg-black/70 pointer-coarse:p-3 pointer-coarse:text-xs pointer-coarse:backdrop-blur-md"
+			aria-label="Suivi des quêtes"
+		>
+			{coarse && (
+				<button onClick={() => setOpen(false)} className="pointer-events-auto mb-2 block w-full text-right font-mono text-white/70" aria-label="Replier le suivi des quêtes">
+					Replier ▴
+				</button>
 			)}
-			{active.map((q) => (
-				<div key={q.id} className="mb-3 drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">
-					<p className="font-display font-bold text-[#ffd100]">{q.title}</p>
-					{quests[q.id] === 'ready' ? (
-						<p className="text-sm text-white">Retourne voir {landmark(q.turnIn).name.split(',')[0]} ?</p>
-					) : (
-						q.objectives.map((o) => (
-							<p key={o.id} className={`text-sm ${visited.includes(o.id) ? 'text-white/50 line-through' : 'text-white'}`}>
-								- {o.label} {visited.includes(o.id) ? '1/1' : '0/1'}
-							</p>
-						))
-					)}
-				</div>
+			<p className="mb-3 font-mono text-xs text-[#ff8a80] drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">☠ Bugs corrigés : {kills} / {mobs.length}</p>
+			{sorted.map((q) => {
+				const followed = q.id === tracked || (!tracked && q === sorted[0]);
+				return (
+					<button
+						key={q.id}
+						onClick={() => game.set({ tracked: q.id })}
+						title="Suivre cette quête"
+						className={`pointer-events-auto mb-3 block w-full text-right drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] ${followed ? '' : 'opacity-70 hover:opacity-100'}`}
+					>
+						<span className="font-display font-bold text-[#ffd100]">
+							{followed && <span className="mr-1 text-xs">➤</span>}
+							{q.title}
+						</span>
+						{quests[q.id] === 'ready' ? (
+							<span className="block text-sm text-white">À rendre : {who(q.turnIn)}</span>
+						) : (
+							(followed ? q.objectives : q.objectives.filter((o) => !objectiveDone(q, o, visited, progress)).slice(0, 1)).map((o) => {
+								const done = objectiveDone(q, o, visited, progress);
+								const count = o.kills ? `${Math.min(progress[q.id] ?? 0, o.kills.n)}/${o.kills.n}` : done ? '1/1' : '0/1';
+								return (
+									<span key={o.id} className={`block text-sm ${done ? 'text-white/50 line-through' : 'text-white'}`}>
+										- {o.label} {count}
+									</span>
+								);
+							})
+						)}
+					</button>
+				);
+			})}
+			{offered.map((q) => (
+				<button
+					key={q.id}
+					onClick={() => game.set({ tracked: q.id })}
+					title="Suivre : le chemin mène à celui qui donne la quête"
+					className={`pointer-events-auto mb-1.5 block w-full text-right text-sm drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] ${q.id === tracked ? 'text-[#ffd100]' : 'text-[#ffd100]/75 hover:text-[#ffd100]'}`}
+				>
+					<span className="font-bold">!</span> {q.title} — {who(q.giver)}
+				</button>
 			))}
 		</aside>
 	);
@@ -178,7 +246,7 @@ function Minimap() {
 		draw();
 		return () => cancelAnimationFrame(raf);
 	}, [zone, quests, visited]);
-	return <canvas ref={ref} width={150} height={150} className="fixed bottom-4 left-4 z-20 h-[120px] w-[120px] pointer-coarse:top-16 pointer-coarse:bottom-auto sm:h-[150px] sm:w-[150px]" aria-hidden />;
+	return <canvas ref={ref} width={150} height={150} className="fixed bottom-4 left-4 z-20 h-[150px] w-[150px] pointer-coarse:top-14 pointer-coarse:bottom-auto pointer-coarse:left-3 pointer-coarse:h-[84px] pointer-coarse:w-[84px]" aria-hidden />;
 }
 
 function MenuButtons() {
@@ -197,9 +265,10 @@ function MenuButtons() {
 function Corner() {
 	const sound = useGame((s) => s.sound);
 	return (
-		<div className="fixed top-4 left-4 z-20 flex items-center gap-2">
-			<Link href="/portfolio" className="rounded-full border border-white/20 bg-black/50 px-4 py-2 text-sm text-white backdrop-blur-md hover:bg-black/70">
-				Version classique
+		<div className="fixed top-4 left-4 z-20 flex items-center gap-2 pointer-coarse:top-3 pointer-coarse:left-3">
+			<Link href="/portfolio" aria-label="Version classique du portfolio" className="rounded-full border border-white/20 bg-black/50 px-4 py-2 text-sm text-white backdrop-blur-md hover:bg-black/70 pointer-coarse:px-3">
+				<span className="pointer-coarse:hidden">Version classique</span>
+				<span className="hidden pointer-coarse:inline">Classique</span>
 			</Link>
 			<button
 				onClick={() => {
@@ -207,10 +276,28 @@ function Corner() {
 					game.set({ sound: !sound });
 				}}
 				aria-pressed={sound}
+				aria-label={sound ? 'Son activé' : 'Son coupé'}
 				className="rounded-full border border-white/20 bg-black/50 px-3 py-2 text-sm text-white backdrop-blur-md hover:bg-black/70"
 			>
-				{sound ? '♪ Son' : '♪ Muet'}
+				<span className="pointer-coarse:hidden">{sound ? '♪ Son activé' : '♪ Son coupé'}</span>
+				<span className="hidden pointer-coarse:inline">{sound ? '♪' : '🔇'}</span>
 			</button>
+		</div>
+	);
+}
+
+/** The game is played sideways on phones: in portrait, a full-screen hint asks to turn the device. */
+function RotateHint() {
+	return (
+		<div className="fixed inset-0 z-[70] hidden flex-col items-center justify-center gap-5 bg-[#07050f]/95 px-8 text-center pointer-coarse:portrait:flex" role="alert">
+			<span className="animate-[spin_2.4s_ease-in-out_infinite] text-6xl text-[#ffd100]" aria-hidden>
+				⟳
+			</span>
+			<p className="font-display text-2xl font-bold text-white">Tourne ton téléphone</p>
+			<p className="text-white/75">Le monde se joue à l’horizontale, comme une console.</p>
+			<Link href="/portfolio" className="text-sm text-white/70 underline underline-offset-4">
+				Ou lire la version classique →
+			</Link>
 		</div>
 	);
 }
@@ -236,6 +323,7 @@ export function GameUI() {
 					<Crosshair />
 					<ZoomButtons />
 					<TouchControls />
+					<RotateHint />
 				</>
 			)}
 			<ZoneBanner />

@@ -63,7 +63,6 @@ function Hologram({ positions, a, b, pixelRatio, ...props }: { positions: Float3
 
 const padMat = new THREE.MeshStandardMaterial({ color: '#141026', metalness: 0.8, roughness: 0.3 });
 const neon = new THREE.MeshBasicMaterial({ color: '#38bdf8', toneMapped: false });
-const neonMagenta = new THREE.MeshBasicMaterial({ color: '#e879f9', toneMapped: false });
 
 function Pad({ x, z, r = 7 }: { x: number; z: number; r?: number }) {
 	return (
@@ -155,19 +154,16 @@ function Gallery() {
 					ctx.fillText(p.name, 28, 120);
 					ctx.fillStyle = '#e9e5ff';
 					ctx.font = '400 22px sans-serif';
-					const words = p.pitch.split(' ');
-					let line = '';
-					let y = 170;
-					for (const w of words) {
-						if (ctx.measureText(line + w).width > 450) {
-							ctx.fillText(line, 28, y);
-							line = '';
-							y += 30;
-							if (y > 290) break;
-						}
-						line += `${w} `;
+					// word-wrap the pitch on 5 lines; one too long for the card ends with an ellipsis, never mid-sentence
+					const lines: string[] = [''];
+					for (const w of p.pitch.split(' ')) {
+						const last = lines[lines.length - 1];
+						if (last && ctx.measureText(`${last} ${w}`).width > 450) lines.push(w);
+						else lines[lines.length - 1] = last ? `${last} ${w}` : w;
 					}
-					if (y <= 290) ctx.fillText(line, 28, y);
+					const shown = lines.slice(0, 5);
+					if (lines.length > 5) shown[4] = `${shown[4].replace(/[\s,;:.]*\S*$/, '')}…`;
+					shown.forEach((t, k) => ctx.fillText(t, 28, 170 + k * 30));
 				}
 				const tex = new THREE.CanvasTexture(c);
 				tex.colorSpace = THREE.SRGBColorSpace;
@@ -245,7 +241,6 @@ export function Nexus({ pixelRatio }: { pixelRatio: number; reflect?: boolean })
 	const agents = landmark('agents');
 	const core = landmark('core');
 	const back = landmark('portal-back');
-	const race = landmark('race');
 	const shapes = useMemo(() => ({ agents: constellation(5000, mulberry32(3)), core: knot(4500, mulberry32(4)) }), []);
 	const uniforms = useMemo(() => ({ uTime: { value: 0 }, uCenter: { value: new THREE.Vector2(NEXUS_CENTER.x, NEXUS_CENTER.z) } }), []);
 	const started = useGame((s) => s.started);
@@ -280,9 +275,9 @@ export function Nexus({ pixelRatio }: { pixelRatio: number; reflect?: boolean })
 				<Hologram positions={shapes.core} a="#e879f9" b="#651fff" pixelRatio={pixelRatio} position={[0, 7, 0]} scale={1.8} />
 			</group>
 			<Gallery />
-			<Kiosk id="neochat" title="NeoChat" subtitle="Assistant métier · agent ReAct" color="#5ef2ff" />
-			<Kiosk id="neosupport" title="NeoSupport" subtitle="RAG support · extraits verbatim" color="#e879f9" />
-			<Kiosk id="neoagent" title="NeoAgent" subtitle="Devis · annonces · trames" color="#ffb45c" />
+			<Kiosk id="neochat" title="NeoChat" subtitle="42 vues · 5 outils · validation humaine" color="#5ef2ff" />
+			<Kiosk id="neosupport" title="NeoSupport" subtitle="RAG hybride · support autonome" color="#e879f9" />
+			<Kiosk id="neoagent" title="NeoAgent" subtitle="Devis · annonces · documents" color="#ffb45c" />
 			<Beacon />
 			<HoloNpc />
 			<Suspense fallback={<Stargate x={back.x} z={back.z} rotation={Math.PI} />}>
@@ -290,17 +285,6 @@ export function Nexus({ pixelRatio }: { pixelRatio: number; reflect?: boolean })
 				{/* the ring of the gate model (13 m tall, centred 6.4 m up, set 3 m in front of the base) gets a real event horizon */}
 				<EventHorizon radius={5.2} position={[back.x, 6.4, back.z + 3.06]} rotation={[0, Math.PI, 0]} />
 			</Suspense>
-			<group position={[race.x, 0, race.z]}>
-				<Pad x={0} z={0} r={5} />
-				{[-1, 1].map((s) => (
-					<mesh key={s} position={[s * 5, 3, 0]} material={s > 0 ? neonMagenta : neon}>
-						<boxGeometry args={[0.4, 6, 0.4]} />
-					</mesh>
-				))}
-				<mesh position={[0, 6, 0]} material={neonMagenta}>
-					<boxGeometry args={[10.4, 0.4, 0.4]} />
-				</mesh>
-			</group>
 		</group>
 	);
 }

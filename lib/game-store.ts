@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from 'react';
 
-import { QUESTS, type QuestStatus, quest } from './quests';
+import { QUESTS, type QuestStatus, initialQuests, objectiveDone, quest } from './quests';
 import type { Zone } from './world';
 
 /** UI store shared by the 3D world and the DOM overlay (quests, panels, race, sound). */
@@ -22,6 +22,10 @@ type GameState = {
 	/** Landmark whose panel is open. */
 	panel: string | null;
 	quests: Record<string, QuestStatus>;
+	/** Bugs defeated since each hunt quest was accepted. */
+	progress: Record<string, number>;
+	/** Quest the visitor chose to follow (trail and tracker); null = the next one in the story. */
+	tracked: string | null;
 	visited: string[];
 	/** Bugs defeated. */
 	kills: number;
@@ -52,7 +56,9 @@ let state: GameState = {
 	inRange: null,
 	panel: null,
 	// every quest that no other quest leads to is open from the start (side quests run in parallel, like in an MMO)
-	quests: Object.fromEntries(QUESTS.map((q) => [q.id, QUESTS.some((o) => o.next === q.id) ? 'locked' : 'available'])) as Record<string, QuestStatus>,
+	quests: initialQuests(),
+	progress: {},
+	tracked: null,
 	visited: [],
 	kills: 0,
 	defeated: [],
@@ -99,12 +105,19 @@ export const game = {
 		const quests = { ...s.quests };
 		for (const q of QUESTS) {
 			if (quests[q.id] !== 'active') continue;
-			if (q.objectives.every((o) => visited.includes(o.id))) quests[q.id] = 'ready';
+			if (q.objectives.every((o) => objectiveDone(q, o, visited, s.progress))) quests[q.id] = 'ready';
 		}
 		game.set({ visited, quests });
 	},
+	/** A bug was defeated in a realm: counts for every active hunt quest of that realm. */
+	kill(zone: 'val' | 'nexus') {
+		const progress = { ...state.progress };
+		for (const q of QUESTS) if (state.quests[q.id] === 'active' && q.objectives.some((o) => o.kills?.zone === zone)) progress[q.id] = (progress[q.id] ?? 0) + 1;
+		game.set({ progress });
+		game.visit();
+	},
 	accept(id: string) {
-		game.set((s) => ({ quests: { ...s.quests, [id]: 'active' } }));
+		game.set((s) => ({ quests: { ...s.quests, [id]: 'active' }, progress: { ...s.progress, [id]: 0 }, tracked: id }));
 		game.visit();
 	},
 	complete(id: string) {
@@ -113,9 +126,10 @@ export const game = {
 		game.set((s) => {
 			const quests = { ...s.quests, [id]: 'done' as QuestStatus };
 			if (q.next && quests[q.next] === 'locked') quests[q.next] = 'available';
-			return { quests };
+			for (const side of QUESTS) if (side.requires === id && quests[side.id] === 'locked') quests[side.id] = 'available';
+			return { quests, tracked: s.tracked === id ? null : s.tracked };
 		});
-		game.toast(q.reward.title, q.reward.text);
+		game.toast(`Haut fait : ${q.reward.title}`, q.reward.text);
 		// a follow-up quest given by the same NPC starts right away
 		if (q.next) {
 			const n = quest(q.next);

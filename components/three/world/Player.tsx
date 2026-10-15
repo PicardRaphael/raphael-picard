@@ -45,6 +45,7 @@ function damage(target: (typeof mobs)[number]) {
 	target.t = 0;
 	if (target.hp <= 0) {
 		game.set((s) => ({ kills: s.kills + 1, bugCard: target.id, defeated: s.defeated.includes(target.id) ? s.defeated : [...s.defeated, target.id] }));
+		game.kill(target.zone);
 		music.sfx('quest');
 	}
 }
@@ -58,7 +59,7 @@ export const attackRange = () => (game.get().hero === 'runner' ? 22 : 4.6);
 /** FPS shot: the bug closest to the aiming ray (within 45 m) is hit; otherwise the bolt flies straight ahead. */
 function fpsShot() {
 	const yaw = player.camera.yaw;
-	const dir = player.aim.clone();
+	const dir = new THREE.Vector3(player.aim.x, player.aim.y, player.aim.z);
 	const eye = new THREE.Vector3(player.x, player.y + 1.65, player.z);
 	let best: (typeof mobs)[number] | null = null;
 	let bestD = 1.8;
@@ -326,6 +327,12 @@ function usePointerControls() {
 					break;
 				}
 			}
+			// a click on the water walks to the nearest point of the shore
+			const ld = Math.hypot(target.x - LAKE.x, target.z - LAKE.z);
+			if (!target.landmark && target.z > -300 && ld < LAKE.r + 2.8) {
+				const k = (LAKE.r + 3) / (ld || 1);
+				target = { x: LAKE.x + (target.x - LAKE.x) * k, z: LAKE.z + (target.z - LAKE.z) * k };
+			}
 			player.moveTarget = target;
 			window.dispatchEvent(new CustomEvent('world:click', { detail: { x: hit.x, y: hit.y, z: hit.z } }));
 		};
@@ -397,8 +404,10 @@ const OBSTACLES: { x: number; z: number; r: number }[] = [
 	...LANDMARKS.filter((l) => l.solid > 0).map((l) => ({ x: l.x, z: l.z, r: l.solid })),
 	...HOUSES.map((h) => ({ x: h.x, z: h.z, r: h.c })),
 	// the standing stones of the circle and its altar
-	...STONE_RING.map((st) => ({ x: landmark('stones').x + Math.cos(st.a) * 6.8, z: landmark('stones').z + Math.sin(st.a) * 6.8, r: 1.1 })),
+	...STONE_RING.map((st) => ({ x: landmark('stones').x + Math.cos(st.a) * 6.8, z: landmark('stones').z + Math.sin(st.a) * 6.8, r: 0.8 })),
 	{ x: landmark('stones').x, z: landmark('stones').z, r: 1.9 },
+	// the lake: the hero walks round its shore, never into the water
+	{ x: LAKE.x, z: LAKE.z, r: LAKE.r + 1.8 },
 ];
 
 /** Ring that flashes where the player clicked. */
@@ -600,8 +609,20 @@ export function Player() {
 			if (d < min) {
 				const ux = d > 1e-3 ? dx / d : 1;
 				const uz = d > 1e-3 ? dz / d : 0;
-				nx = o.x + ux * min;
-				nz = o.z + uz * min;
+				// walking head-on into it: the radial push alone cancels the step, so slide along the tangent instead
+				const into = -(dirX * ux + dirZ * uz);
+				if (into > 0.2) {
+					const side = dirX * -uz + dirZ * ux >= 0 ? 1 : -1;
+					const step = player.speed * dt * into;
+					const a = (side * step) / min;
+					const c = Math.cos(a);
+					const s = Math.sin(a);
+					nx = o.x + (ux * c - uz * s) * min;
+					nz = o.z + (uz * c + ux * s) * min;
+				} else {
+					nx = o.x + ux * min;
+					nz = o.z + uz * min;
+				}
 			}
 		}
 		const inNexus = nz < -300;
@@ -763,7 +784,7 @@ export function Player() {
 			v.look.set(player.x, player.y + 1.8, player.z);
 			camera.updateMatrixWorld();
 			v.ray.setFromCamera(v.ndc.set(0, 0), camera);
-			player.aim.copy(v.ray.ray.direction);
+			({ x: player.aim.x, y: player.aim.y, z: player.aim.z } = v.ray.ray.direction);
 		} else {
 			v.camPos.lerp(v.tmp, 1 - Math.exp(-dt * (g.started ? 10 : 1.5)));
 			camera.position.copy(v.camPos);

@@ -3,7 +3,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import type { Metadata, Viewport } from 'next';
 import { Inter, JetBrains_Mono, Sora } from 'next/font/google';
 
-import { JsonLd } from '@/components/ui/JsonLd';
+import { SiteJsonLd } from '@/components/ui/JsonLd';
 import { site } from '@/lib/site';
 
 import './globals.css';
@@ -20,7 +20,8 @@ export const metadata: Metadata = {
 	keywords: [...site.keywords],
 	authors: [{ name: site.name, url: site.url }],
 	creator: site.name,
-	alternates: { canonical: '/' },
+	publisher: site.name,
+	// no root canonical: each page declares its own, so an unknown URL never claims to be "/"
 	openGraph: {
 		type: 'profile',
 		locale: site.locale,
@@ -53,7 +54,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
 		<html lang="fr" className={`${sora.variable} ${inter.variable} ${mono.variable}`}>
 			<body className="min-h-screen">
 				{children}
-				<JsonLd />
+				<SiteJsonLd />
 				<Analytics />
 				<SpeedInsights />
 			</body>

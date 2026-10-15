@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import { game, useGame } from '@/lib/game-store';
 import { music } from '@/lib/music';
 
-/** Bridges the game store to the generative soundtrack and sound effects. */
+/** Bridges the game store to the soundtrack (recorded playlists per zone) and sound effects. */
 export function Soundtrack() {
 	const sound = useGame((s) => s.sound);
 	const zone = useGame((s) => s.zone);

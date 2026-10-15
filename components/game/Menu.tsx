@@ -8,7 +8,7 @@ import { game, useGame } from '@/lib/game-store';
 import { mobs } from '@/lib/mobs';
 import { keymap } from '@/lib/keymap';
 import { player } from '@/lib/player-state';
-import { QUESTS } from '@/lib/quests';
+import { QUESTS, initialQuests } from '@/lib/quests';
 import { site } from '@/lib/site';
 import { SPAWN } from '@/lib/world';
 
@@ -54,7 +54,7 @@ function Options() {
 	return (
 		<div className="divide-y divide-white/10">
 			<Row label="Musique & sons">
-				<Choice value={s.sound ? 'on' : 'off'} options={[{ v: 'on', l: 'Activés' }, { v: 'off', l: 'Coupés' }]} onChange={(v) => game.set({ sound: v === 'on' })} />
+				<Choice value={s.sound ? 'on' : 'off'} options={[{ v: 'on', l: 'Son activé' }, { v: 'off', l: 'Son coupé' }]} onChange={(v) => game.set({ sound: v === 'on' })} />
 			</Row>
 			<Row label="Heure">
 				<Choice
@@ -84,8 +84,8 @@ function Options() {
 				<Choice
 					value={s.hero}
 					options={[
-						{ v: 'knight', l: 'Chevalier' },
-						{ v: 'runner', l: 'Runner cyber' },
+						{ v: 'knight', l: 'Chevalier du val' },
+						{ v: 'runner', l: 'Runner du Nexus' },
 					]}
 					onChange={(v) => game.set({ hero: v })}
 				/>
@@ -105,7 +105,9 @@ function Options() {
 				<button
 					onClick={() => {
 						game.set({
-							quests: Object.fromEntries(QUESTS.map((q) => [q.id, QUESTS.some((o) => o.next === q.id) ? 'locked' : 'available'])),
+							quests: initialQuests(),
+								progress: {},
+								tracked: null,
 							visited: [],
 							kills: 0,
 							defeated: [],
@@ -172,7 +174,7 @@ function Bestiary() {
 					return (
 						<li key={m.id} className={`rounded-xl border p-3 ${known ? 'border-white/15 bg-white/5' : 'border-white/5 bg-black/30'}`}>
 							<p className={`font-display font-bold ${known ? (m.zone === 'nexus' ? 'text-[#ff7ae6]' : 'text-[#ffd100]') : 'text-white/40'}`}>{known ? m.name : '???'}</p>
-							<p className="mt-1 text-xs leading-relaxed text-white/70">{known ? m.problem : m.zone === 'nexus' ? 'Rôde quelque part dans le Nexus.' : 'Rôde quelque part dans le Val.'}</p>
+							<p className="mt-1 text-xs leading-relaxed text-white/70">{known ? m.problem : m.zone === 'nexus' ? 'Rôde quelque part dans le Nexus.' : 'Rôde quelque part dans le val.'}</p>
 							{known && <p className="mt-1.5 text-xs leading-relaxed text-[#86efac]">↳ {m.lesson}</p>}
 						</li>
 					);
@@ -189,7 +191,7 @@ function Body({ tab }: { tab: Tab }) {
 				<div className="space-y-3 leading-relaxed text-white/85">
 					<p>Bienvenue !</p>
 					<p>
-						Je m’appelle <b className="text-white">Raphaël Picard</b>, je suis <b className="text-white">ingénieur IA</b> à Lyon : agents LangGraph en production, RAG, serveurs MCP et
+						Je m’appelle <b className="text-white">Raphaël Picard</b>, je suis <b className="text-white">Senior AI Engineer & Responsable IA</b> à Lyon : agents LangGraph en production, RAG, serveurs MCP et
 						outillage Claude Code.
 					</p>
 					<p>Ceci est mon portfolio. Explore le monde, parle à Raphy, accomplis les quêtes et corrige les bugs pour découvrir mon parcours.</p>
@@ -227,7 +229,7 @@ function Body({ tab }: { tab: Tab }) {
 							<li>Glisser : caméra · Pincer : zoom</li>
 							<li>⚔ attaquer · ⤒ sauter</li>
 						</ul>
-						<p className="mt-3 text-white/60">Les touches se reconfigurent depuis l’écran d’accueil (⌨ Touches).</p>
+						<p className="mt-3 text-white/60">Touches par défaut : elles se reconfigurent sur l’écran d’accueil (⌨ Touches), avant de lancer la partie.</p>
 					</div>
 				</div>
 			);
@@ -238,7 +240,35 @@ function Body({ tab }: { tab: Tab }) {
 		case 'credits':
 			return (
 				<div className="space-y-4 text-sm text-white/85">
-					<p>Conception, code et textes : Raphaël Picard. Musique générée en direct (Web Audio API). Moteur : Next.js, React Three Fiber, three.js, shaders GLSL maison.</p>
+					<p>Conception, code et textes : Raphaël Picard. Bruitages générés en direct (Web Audio API). Moteur : Next.js, React Three Fiber, three.js, shaders GLSL maison.</p>
+					<div>
+						<p className="mb-1 font-semibold text-white">Musiques (OpenGameArt)</p>
+						<ul className="space-y-1">
+							<li><a className="underline decoration-white/30 hover:text-white" href="https://opengameart.org/content/medieval-the-bards-tale" target="_blank" rel="noreferrer">Medieval: The Bard’s Tale</a> (Val des Origines) — RandomMind, CC0</li>
+							<li><a className="underline decoration-white/30 hover:text-white" href="https://opengameart.org/content/medieval-exploration" target="_blank" rel="noreferrer">Medieval: Exploration</a> (Val des Origines) — RandomMind, CC0</li>
+							<li>
+								<a className="underline decoration-white/30 hover:text-white" href="https://opengameart.org/content/chillwave-nightdrive" target="_blank" rel="noreferrer">Chillwave Nightdrive</a> (Nexus) — Bogart VGM,{' '}
+								<a className="underline decoration-white/30 hover:text-white" href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noreferrer">CC BY 3.0</a>
+							</li>
+							<li><a className="underline decoration-white/30 hover:text-white" href="https://opengameart.org/content/calm-ambient-1-synthwave-4k" target="_blank" rel="noreferrer">Calm Ambient 1 (Synthwave 4k)</a> (Nexus) — The Cynic Project / cynicmusic.com / pixelsphere.org, CC0</li>
+						</ul>
+						<p className="mt-1 text-white/60">Pistes réencodées en MP3 et volume harmonisé.</p>
+					</div>
+					<div>
+						<p className="mb-1 font-semibold text-white">Voix des quêtes (synthèse vocale hors ligne)</p>
+						<ul className="space-y-1">
+							<li>
+								Nexus : <a className="underline decoration-white/30 hover:text-white" href="https://huggingface.co/hexgrad/Kokoro-82M" target="_blank" rel="noreferrer">Kokoro-82M</a> — hexgrad, Apache-2.0 ; voix ff_siwis, corpus{' '}
+								<a className="underline decoration-white/30 hover:text-white" href="https://datashare.ed.ac.uk/handle/10283/2353" target="_blank" rel="noreferrer">SIWIS</a> (CC BY 4.0)
+							</li>
+							<li>
+								Val : <a className="underline decoration-white/30 hover:text-white" href="https://github.com/OHF-Voice/piper1-gpl" target="_blank" rel="noreferrer">Piper</a> — Open Home Foundation, GPL-3.0 ; voix{' '}
+								<a className="underline decoration-white/30 hover:text-white" href="https://huggingface.co/rhasspy/piper-voices/tree/main/fr/fr_FR/upmc/medium" target="_blank" rel="noreferrer">fr_FR-upmc-medium</a> (locuteur pierre), corpus{' '}
+								<a className="underline decoration-white/30 hover:text-white" href="https://github.com/marytts/upmc-pierre-data" target="_blank" rel="noreferrer">UPMC / MaryTTS</a> (CC BY-SA 4.0)
+							</li>
+						</ul>
+						<p className="mt-1 text-white/60">Répliques générées hors ligne ; les enregistrements des voix du val sont partagés sous CC BY-SA 4.0.</p>
+					</div>
 					<div>
 						<p className="mb-1 font-semibold text-white">Modèles 3D Sketchfab — licence CC BY 4.0</p>
 						<ul className="space-y-1">
@@ -264,7 +294,7 @@ function Body({ tab }: { tab: Tab }) {
 		case 'help':
 			return (
 				<div className="space-y-3 text-sm leading-relaxed text-white/85">
-					<p>Suis les « ! » jaunes : ils donnent des quêtes. Les « ? » indiquent où les rendre.</p>
+					<p>Suis les « ! » jaunes : ils donnent des quêtes. Les « ? » dorés marquent les lieux à visiter et les quêtes à rendre.</p>
 					<p>La grande porte au nord du val mène au Nexus, le monde des agents IA.</p>
 					<p>Ça rame ? La version classique du portfolio contient exactement les mêmes informations.</p>
 				</div>
@@ -338,7 +368,8 @@ export function AchievementWatcher() {
 		if (prev === null) return;
 		const fresh = list.find((id) => !prev.includes(id));
 		const a = ACHIEVEMENTS.find((x) => x.id === fresh);
-		if (a) game.toast(`Haut fait : ${a.title}`, a.text);
+		// a quest reward already announced itself when the quest was handed in
+		if (a && !QUESTS.some((q) => q.reward.title === a.title)) game.toast(`Haut fait : ${a.title}`, a.text);
 	}, [key]);
 	return null;
 }

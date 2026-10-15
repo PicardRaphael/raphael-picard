@@ -83,8 +83,18 @@ function KeyConfig({ onClose }: { onClose: () => void }) {
 	);
 }
 
+/** Full screen + landscape lock; iOS Safari supports neither, the rotate hint of the HUD covers it. */
+async function playLandscape() {
+	try {
+		if (!document.fullscreenElement) await document.documentElement.requestFullscreen?.({ navigationUI: 'hide' });
+		await (screen.orientation as ScreenOrientation & { lock?: (o: string) => Promise<void> }).lock?.('landscape');
+	} catch {
+		// refused or unsupported: the portrait overlay asks to turn the phone
+	}
+}
+
 const HEROES = [
-	{ id: 'knight' as const, name: 'Chevalier du Val', tag: 'Fantasy', text: 'Armure, épée et bouclier : le héros des Terres anciennes.', ring: '#ffd100' },
+	{ id: 'knight' as const, name: 'Chevalier du val', tag: 'Fantasy', text: 'Armure, épée et bouclier : le héros du Val des Origines.', ring: '#ffd100' },
 	{ id: 'runner' as const, name: 'Runner du Nexus', tag: 'Cyberpunk', text: 'Vue à la première personne, fusil sci-fi : la ville à hauteur d’yeux.', ring: '#e879f9' },
 ];
 
@@ -108,16 +118,18 @@ export function StartScreen() {
 	return (
 		<>
 			<div
-				className={`fixed inset-0 z-30 flex flex-col items-center justify-end overflow-y-auto bg-gradient-to-t from-black/85 via-black/35 to-transparent px-4 pb-[6vh] text-center transition-opacity duration-700 ${
+				className={`fixed inset-0 z-30 flex flex-col items-center overflow-y-auto bg-gradient-to-t from-black/85 via-black/35 to-transparent px-4 pt-6 pb-[6vh] text-center transition-opacity duration-700 ${
 					started ? 'pointer-events-none opacity-0' : 'opacity-100'
 				}`}
 				aria-hidden={started}
 			>
-				<p className="font-mono text-xs tracking-[0.35em] text-[#ffd9a0] uppercase">Ingénieur IA · Lyon</p>
-				<h1 className="font-display mt-3 text-5xl font-extrabold tracking-tight text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.6)] sm:text-7xl">Raphaël Picard</h1>
-				<p className="mt-3 max-w-xl text-lg text-white/85">Agents IA, RAG, MCP, Claude Code. Choisis ton héros et explore mon monde pour découvrir mon parcours.</p>
+				<p className="mt-auto font-mono text-xs tracking-[0.35em] text-[#ffd9a0] uppercase">Senior AI Engineer & Responsable IA · Lyon</p>
+				<h1 className="font-display mt-3 text-5xl font-extrabold tracking-tight text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.6)] sm:text-7xl [@media(max-height:500px)]:text-4xl">
+					Raphaël Picard<span className="sr-only">, Senior AI Engineer &amp; Responsable IA à Lyon</span>
+				</h1>
+				<p className="mt-3 max-w-xl text-lg text-white/85 [@media(max-height:500px)]:hidden">Agents IA, RAG, MCP, Claude Code. Choisis ton héros et explore mon monde pour découvrir mon parcours.</p>
 
-				<div className="mt-7 grid w-full max-w-xl grid-cols-2 gap-3" role="radiogroup" aria-label="Choix du personnage">
+				<div className="mt-7 grid w-full max-w-xl grid-cols-2 gap-3 [@media(max-height:500px)]:mt-4" role="radiogroup" aria-label="Choix du personnage">
 					{HEROES.map((h) => (
 						<button
 							key={h.id}
@@ -131,7 +143,7 @@ export function StartScreen() {
 								{h.tag}
 							</p>
 							<p className="font-display mt-1 text-lg font-bold text-white">{h.name}</p>
-							<p className="mt-1 text-xs leading-snug text-white/70">{h.text}</p>
+							<p className="mt-1 text-xs leading-snug text-white/70 [@media(max-height:500px)]:hidden">{h.text}</p>
 						</button>
 					))}
 				</div>
@@ -142,16 +154,19 @@ export function StartScreen() {
 							// unlock audio inside the gesture itself (required by Safari / iOS)
 							void music.start();
 							game.set({ started: true, sound: true });
+							// on phones the game is played sideways: full screen, then lock landscape where the browser allows it (Android)
+							if (window.matchMedia('(pointer: coarse)').matches) void playLandscape();
 						}}
 						className="font-display rounded-full bg-gradient-to-r from-[#651fff] to-[#c50eff] px-9 py-3.5 text-lg font-bold text-white shadow-[0_0_40px_-6px_#c50eff] transition-transform hover:scale-105"
 					>
 						Jouer
 					</button>
-					<button onClick={() => setKeys(true)} className="rounded-full border border-white/30 bg-black/40 px-5 py-3 text-sm text-white hover:bg-black/60">
+					<button onClick={() => setKeys(true)} className="pointer-coarse:hidden rounded-full border border-white/30 bg-black/40 px-5 py-3 text-sm text-white hover:bg-black/60">
 						⌨ Touches
 					</button>
 				</div>
-				<KeyHints withMouse className="mt-5 max-w-xl justify-center" />
+				<KeyHints withMouse className="mt-5 max-w-xl justify-center pointer-coarse:hidden" />
+				<p className="mt-5 hidden text-sm text-white/75 pointer-coarse:block">Joystick pour bouger, ⚔ attaquer, ⤒ sauter, touche un lieu pour y aller ou parler. Glisse pour la caméra, pince pour zoomer.</p>
 				<Link href="/portfolio" className="mt-4 text-sm text-white/70 underline-offset-4 hover:text-white hover:underline">
 					Version classique du portfolio →
 				</Link>

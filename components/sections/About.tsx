@@ -5,17 +5,18 @@ const sheet = [
 	{ k: 'Classe', v: 'Ingénieur IA' },
 	{ k: 'Spécialisation', v: 'Agents · RAG · MCP' },
 	{ k: 'Rôle', v: 'Senior AI Engineer & Responsable IA chez Neoteem' },
-	{ k: 'Expérience', v: "9 ans d'XP" },
-	{ k: 'Base', v: 'Lyon · remote' },
-	{ k: 'Langues', v: 'Python · TypeScript' },
+	{ k: 'Expérience', v: '9 ans d’XP' },
+	{ k: 'Base', v: 'Lyon · télétravail' },
+	{ k: 'Langages', v: 'Python · TypeScript' },
 ];
 
+/** Concrete proofs rather than self-rated skill bars (figures from content/work.ts and content/profile.ts). */
 const attributes = [
-	{ k: 'Agents & orchestration', v: 95 },
-	{ k: 'RAG & données', v: 90 },
-	{ k: 'Architecture backend', v: 90 },
-	{ k: 'Outillage Claude Code', v: 98 },
-	{ k: 'Leadership & formation', v: 85 },
+	{ k: 'Agents & orchestration', v: '7 agents LangGraph en production' },
+	{ k: 'RAG & données', v: 'RAG support en 9 nœuds, 42 vues métier en lecture seule' },
+	{ k: 'Architecture backend', v: '41 endpoints OpenAPI, 496 schémas Zod' },
+	{ k: 'Outillage Claude Code', v: '13 sous-agents, 38 skills, 27 hooks' },
+	{ k: 'Leadership & formation', v: 'Pôle IA de 2 à 3 personnes, 3 à 5 formations' },
 ];
 
 /** `principles` off in the game: there the stone circle carries the manifesto. */
@@ -66,22 +67,19 @@ export function About({ principles = true }: { principles?: boolean }) {
 								</div>
 							))}
 						</dl>
-						<div className="relative mt-7 space-y-3.5">
+						<dl className="relative mt-7 space-y-3.5 border-t border-white/10 pt-5">
 							{attributes.map((a) => (
 								<div key={a.k}>
-									<div className="flex justify-between text-xs">
-										<span className="text-mist">{a.k}</span>
-										<span className="text-signal font-mono">{a.v}</span>
-									</div>
-									<div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/5">
-										<div
-											className="from-violet via-magenta to-orchid h-full rounded-full bg-gradient-to-r"
-											style={{ width: `${a.v}%` }}
-										/>
-									</div>
+									<dt className="text-mist text-xs">{a.k}</dt>
+									<dd className="mt-0.5 flex gap-2 text-sm font-medium">
+										<span className="text-signal font-mono" aria-hidden>
+											▸
+										</span>
+										{a.v}
+									</dd>
 								</div>
 							))}
-						</div>
+						</dl>
 					</aside>
 				</Reveal>
 			</div>

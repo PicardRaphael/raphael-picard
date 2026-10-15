@@ -39,3 +39,8 @@ portfolio/node_modules
 .env
 old/
 utils/docs/me.txt
+
+# test runs
+/test-results/
+/playwright-report/
+/blob-report/

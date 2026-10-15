@@ -1,0 +1,100 @@
+{
+	"origines-intro": {
+		"text": "a424be55",
+		"key": "2faf85c3a16b",
+		"voice": "val",
+		"seconds": 13.82,
+		"bytes": 86085
+	},
+	"origines-outro": {
+		"text": "16ab677c",
+		"key": "561814d99d59",
+		"voice": "val",
+		"seconds": 12.29,
+		"bytes": 78662
+	},
+	"parcours-intro": {
+		"text": "33796de9",
+		"key": "d17fa3b36a11",
+		"voice": "val",
+		"seconds": 14.24,
+		"bytes": 91934
+	},
+	"parcours-outro": {
+		"text": "5350712b",
+		"key": "12acbb9273f0",
+		"voice": "val",
+		"seconds": 8.45,
+		"bytes": 56628
+	},
+	"portail-intro": {
+		"text": "7d10fffe",
+		"key": "ceee33f31820",
+		"voice": "val",
+		"seconds": 4.31,
+		"bytes": 28686
+	},
+	"portail-outro": {
+		"text": "1a1287dd",
+		"key": "2a7b125c6986",
+		"voice": "nexus",
+		"seconds": 7.82,
+		"bytes": 55656
+	},
+	"production-intro": {
+		"text": "246e18d5",
+		"key": "c22d64df07c1",
+		"voice": "nexus",
+		"seconds": 12.52,
+		"bytes": 90792
+	},
+	"production-outro": {
+		"text": "2bf2af17",
+		"key": "a0ac59c68573",
+		"voice": "nexus",
+		"seconds": 10.67,
+		"bytes": 78144
+	},
+	"agents-intro": {
+		"text": "7e1a01ee",
+		"key": "9054bf958d0c",
+		"voice": "nexus",
+		"seconds": 11.92,
+		"bytes": 89160
+	},
+	"agents-outro": {
+		"text": "63a853e6",
+		"key": "2d79f14a11f6",
+		"voice": "nexus",
+		"seconds": 6.02,
+		"bytes": 42768
+	},
+	"chasse-intro": {
+		"text": "2b128699",
+		"key": "ded365b738e5",
+		"voice": "val",
+		"seconds": 10.29,
+		"bytes": 65047
+	},
+	"chasse-outro": {
+		"text": "bed1d5db",
+		"key": "5cb96ade4994",
+		"voice": "val",
+		"seconds": 7.37,
+		"bytes": 50102
+	},
+	"purge-intro": {
+		"text": "862329f4",
+		"key": "ff5e333eb21a",
+		"voice": "nexus",
+		"seconds": 10.58,
+		"bytes": 75960
+	},
+	"purge-outro": {
+		"text": "7429543c",
+		"key": "8465035ea4f4",
+		"voice": "nexus",
+		"seconds": 7.99,
+		"bytes": 57768
+	}
+}

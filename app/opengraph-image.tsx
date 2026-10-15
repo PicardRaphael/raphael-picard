@@ -2,7 +2,7 @@ import { ImageResponse } from 'next/og';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-export const alt = 'Raphaël Picard — Ingénieur IA : agents, RAG, MCP & Claude Code';
+export const alt = 'Raphaël Picard — Senior AI Engineer & Responsable IA : agents, RAG, MCP & Claude Code';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -28,7 +28,7 @@ export default async function OpengraphImage() {
 					<div key={i} style={{ position: 'absolute', left: s.x, top: s.y, width: s.s, height: s.s, borderRadius: 9, background: '#ffffff', opacity: 0.5 }} />
 				))}
 				<div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 80px', width: 780 }}>
-					<div style={{ fontSize: 24, letterSpacing: 6, color: '#38bdf8', textTransform: 'uppercase' }}>Senior AI Engineer · Responsable IA · Lyon</div>
+					<div style={{ fontSize: 24, letterSpacing: 6, color: '#38bdf8', textTransform: 'uppercase' }}>Senior AI Engineer & Responsable IA · Lyon</div>
 					<div style={{ fontSize: 88, fontWeight: 800, marginTop: 18, lineHeight: 1 }}>Raphaël Picard</div>
 					<div style={{ fontSize: 40, marginTop: 22, color: '#e879f9' }}>J’industrialise l’IA agentique.</div>
 					<div style={{ fontSize: 26, marginTop: 28, color: '#a39fc4' }}>Agents LangGraph · RAG hybrides · serveurs MCP · Claude Code</div>

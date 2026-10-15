@@ -6,14 +6,18 @@ type State = { quests: Record<string, QuestStatus>; visited: string[]; kills: nu
 
 export type Achievement = { id: string; title: string; text: string; progress: (s: State) => [number, number] };
 
-const places = LANDMARKS.filter((l) => !['race', 'portal-back'].includes(l.id));
+const places = LANDMARKS.filter((l) => !['portal-back'].includes(l.id));
 
 export const ACHIEVEMENTS: Achievement[] = [
 	{ id: 'adventure', title: 'En route pour l’aventure !', text: 'Quitter la clairière de départ.', progress: (s) => [s.flags.includes('left_spawn') ? 1 : 0, 1] },
 	{ id: 'traveler', title: 'Grand voyageur', text: 'Visiter tous les lieux du monde.', progress: (s) => [places.filter((l) => s.visited.includes(l.id)).length, places.length] },
 	{ id: 'origins', title: 'Artisan du code', text: 'Terminer « Les origines du développeur ».', progress: (s) => [s.quests.origines === 'done' ? 1 : 0, 1] },
+	{ id: 'career', title: 'Compagnon du val', text: 'Terminer « Le parcours de l’artisan ».', progress: (s) => [s.quests.parcours === 'done' ? 1 : 0, 1] },
 	{ id: 'portal', title: 'Passe-portail', text: 'Traverser la grande porte vers le Nexus.', progress: (s) => [s.flags.includes('nexus') ? 1 : 0, 1] },
+	{ id: 'operator', title: 'Opérateur du Nexus', text: 'Terminer « Les agents en production ».', progress: (s) => [s.quests.production === 'done' ? 1 : 0, 1] },
 	{ id: 'nexus', title: 'Ingénieur du Nexus', text: 'Terminer « L’ère des agents ».', progress: (s) => [s.quests.agents === 'done' ? 1 : 0, 1] },
+	{ id: 'tracker', title: 'Traqueur de bugs', text: 'Terminer « La chasse aux bugs ».', progress: (s) => [s.quests.chasse === 'done' ? 1 : 0, 1] },
+	{ id: 'guardian', title: 'Gardien du Nexus', text: 'Terminer « Purge du Nexus ».', progress: (s) => [s.quests.purge === 'done' ? 1 : 0, 1] },
 	{ id: 'hunter', title: 'Chasseur de bugs', text: 'Corriger tous les bugs du monde.', progress: (s) => [Math.min(s.kills, mobs.length), mobs.length] },
 	{ id: 'jumper', title: 'Saut de foi', text: 'Sauter 20 fois.', progress: (s) => [Math.min(s.jumps, 20), 20] },
 	{ id: 'map', title: 'Cartographe', text: 'Ouvrir la carte du monde.', progress: (s) => [s.flags.includes('map') ? 1 : 0, 1] },

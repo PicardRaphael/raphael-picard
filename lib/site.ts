@@ -1,11 +1,16 @@
+import type { Metadata } from 'next';
+
 export const site = {
 	url: 'https://www.raphaelpicard.com',
 	name: 'Raphaël Picard',
 	role: 'Senior AI Engineer & Responsable IA',
 	jobTitle: 'Senior AI Engineer & Responsable IA',
-	title: 'Raphaël Picard — Senior AI Engineer & Responsable IA : agents, RAG, MCP',
+	/** ≤ 60 characters: the search result title. */
+	title: 'Raphaël Picard · Senior AI Engineer & Responsable IA, Lyon',
+	/** ≤ 155 characters: the search result snippet. */
 	description:
-		'Senior AI Engineer & Responsable IA à Lyon : 8 agents LangGraph en production, RAG hybride, MCP, évaluations Langfuse et DeepEval. 9 ans de Python et TypeScript.',
+		'Senior AI Engineer & Responsable IA à Lyon : 7 agents LangGraph en production, RAG hybride, serveurs MCP, évals DeepEval et Langfuse. 9 ans d’ingénierie.',
+	employer: { name: 'Neoteem', url: 'https://www.neoteem.fr' },
 	locale: 'fr_FR',
 	location: 'Lyon, France',
 	email: 'raphaelpicard@outlook.fr',
@@ -42,3 +47,31 @@ export const site = {
 		'Lyon',
 	],
 } as const;
+
+/**
+ * Per-page metadata. Next.js replaces (it does not deep-merge) a layout's openGraph and twitter objects,
+ * so each page gets complete ones: its own URL, title and description plus the shared fields.
+ * The share image is app/opengraph-image.tsx; it is named explicitly because a nested route that sets
+ * its own openGraph does not inherit the root's file-based image.
+ */
+export function pageMetadata({ path, title, description }: { path: string; title: string; description: string }): Metadata {
+	const images = [{ url: '/opengraph-image', width: 1200, height: 630, alt: `${site.name}, ${site.role} à Lyon` }];
+	return {
+		title: { absolute: title },
+		description,
+		alternates: { canonical: path },
+		openGraph: {
+			type: 'profile',
+			locale: site.locale,
+			url: path,
+			siteName: site.name,
+			title,
+			description,
+			firstName: 'Raphaël',
+			lastName: 'Picard',
+			username: 'PicardRaphael',
+			images,
+		},
+		twitter: { card: 'summary_large_image', title, description, creator: '@RPRaphaelPicard', images },
+	};
+}

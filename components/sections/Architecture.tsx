@@ -8,41 +8,40 @@ import { Reveal } from '@/components/ui/Reveal';
 type Node = { id: string; label: string; sub: string; x: number; y: number; detail: string };
 
 const NODES: Node[] = [
-	{ id: 'user', label: 'Utilisateur', sub: 'question métier', x: 60, y: 170, detail: 'Une question en langage naturel arrive, avec son contexte : utilisateur authentifié, quota, historique de conversation.' },
-	{ id: 'router', label: 'Routeur hybride', sub: 'embeddings + RRF', x: 230, y: 170, detail: 'Un classifieur par embeddings choisit les outils et l’agent ; un LLM n’est appelé qu’en repli. Rapide, peu coûteux, explicable.' },
-	{ id: 'agents', label: 'Agents spécialisés', sub: 'ReAct · LangGraph', x: 410, y: 80, detail: 'Chatbot métier, support, devis, recherche web : chaque agent a son graphe, ses outils et ses garde-fous, plutôt qu’un généraliste qui fait tout.' },
-	{ id: 'tools', label: 'Outils & MCP', sub: 'tools · serveurs MCP', x: 410, y: 260, detail: 'Les chiffres et les données viennent d’outils déterministes et testés, exposés aussi via MCP. Le modèle ne calcule jamais.' },
-	{ id: 'rag', label: 'RAG hybride', sub: 'pgvector + rerank', x: 590, y: 80, detail: 'Recherche vectorielle et lexicale fusionnée, reranking cross-encoder, extraction verbatim : chaque réponse cite sa source.' },
-	{ id: 'llm', label: 'LLM', sub: 'Gemini 2.5 · Claude', x: 590, y: 260, detail: 'Le bon modèle pour la bonne tâche, context caching activé : −33 % de coûts d’inférence.' },
-	{ id: 'obs', label: 'Évals & traces', sub: 'Langfuse · DeepEval', x: 760, y: 170, detail: 'Chaque appel est tracé ; chaque agent passe des évaluations LLM-as-judge et des tests de non-régression avant la mise en production.' },
+	{ id: 'user', label: 'Gestionnaire', sub: 'question métier', x: 76, y: 170, detail: 'Une question sur ses données, ses mails ou ses documents, posée comme à un collègue. L’identité vient du jeton vérifié, jamais de ce que le modèle envoie.' },
+	{ id: 'agent', label: 'Agent ReAct', sub: 'LangGraph · Gemini', x: 242, y: 170, detail: '5 outils de données génériques et 8 outils mail et documents, toujours chargés : un outil manquant fait échouer l’agent explicitement, sans dégradation silencieuse.' },
+	{ id: 'catalog', label: 'Catalogue sémantique', sub: 'pgvector · HNSW', x: 410, y: 70, detail: 'Les données sont un catalogue, pas une liste d’outils : l’agent cherche la vue ou le rapport pertinent par similarité. Couvrir un nouveau sujet = publier une vue documentée.' },
+	{ id: 'hitl', label: 'Validation humaine', sub: '5 interruptions', x: 410, y: 280, detail: 'Choix entre homonymes, destinataire, rédaction, aperçu avant envoi, confirmation de suppression : aucun mail ne part sans validation humaine.' },
+	{ id: 'gateway', label: 'Passerelle IA', sub: 'Hono · Zod · OpenAPI', x: 578, y: 170, detail: 'Seule porte d’accès aux données, en lecture seule par construction : vues autorisées par introspection, colonnes validées, opérateurs en liste fermée, paramètres liés, uniquement des SELECT.' },
+	{ id: 'data', label: 'Vues métier', sub: '42 vues SQL', x: 744, y: 90, detail: 'Un schéma de vues SQL dédié à l’IA, une base par client choisie par le déploiement. Résultats paginés par curseur opaque : jamais de liste tronquée présentée comme complète.' },
+	{ id: 'obs', label: 'Évals & traces', sub: 'DeepEval · Langfuse', x: 744, y: 260, detail: 'Chaque conversation est tracée de bout en bout ; golden set de 64 cas rejoué 5 fois, Faithfulness, Answer Relevancy, G-Eval métier et contrôle des outils appelés.' },
 ];
 
 const EDGES: [string, string][] = [
-	['user', 'router'],
-	['router', 'agents'],
-	['router', 'tools'],
-	['agents', 'rag'],
-	['agents', 'llm'],
-	['tools', 'llm'],
-	['rag', 'obs'],
-	['llm', 'obs'],
-	['tools', 'agents'],
+	['user', 'agent'],
+	['agent', 'catalog'],
+	['agent', 'hitl'],
+	['agent', 'gateway'],
+	['catalog', 'gateway'],
+	['gateway', 'data'],
+	['agent', 'obs'],
 ];
 
 const TRACE = [
-	{ t: '00.000', s: 'info', m: 'POST /agents/chat  user=gestionnaire  quota=ok' },
-	{ t: '00.041', s: 'route', m: 'HybridToolSelector → rrf_top3=[search_contacts, list_records, web_search]' },
-	{ t: '00.044', s: 'route', m: 'confiance=0.91  → repli LLM inutile' },
-	{ t: '00.212', s: 'tool', m: 'search_contacts(name="Durand")  → 3 résultats  [déterministe]' },
-	{ t: '00.389', s: 'rag', m: 'pgvector k=20 ⨝ bm25 k=20 → rerank cross-encoder → 4 passages' },
-	{ t: '01.104', s: 'llm', m: 'gemini-2.5-flash  cache=HIT  tokens in=3.1k out=412' },
-	{ t: '01.390', s: 'eval', m: 'faithfulness=0.97  sources=4/4 citées' },
-	{ t: '01.392', s: 'ok', m: 'stream SSE terminé · trace envoyée à Langfuse' },
+	{ t: '00.000', s: 'info', m: 'question="Quels sont les impayés de Mme Martin ?"' },
+	{ t: '00.118', s: 'tool', m: 'résoudre_nom("Mme Martin") → 2 homonymes' },
+	{ t: '00.120', s: 'hitl', m: 'interruption LangGraph → « Laquelle ? » (choix humain)' },
+	{ t: '03.402', s: 'hitl', m: 'reprise → Mme Martin, lot 12' },
+	{ t: '03.561', s: 'rag', m: 'catalogue (pgvector) → vue « impayés »' },
+	{ t: '03.744', s: 'tool', m: 'lire_vue(impayés, filtre=locataire) → 3 lignes  [lecture seule]' },
+	{ t: '04.390', s: 'llm', m: 'réponse rédigée, données citées, tableau structuré' },
+	{ t: '04.402', s: 'ok', m: 'stream SSE terminé · trace envoyée à Langfuse' },
 ];
 
 const tone: Record<string, string> = {
 	info: 'text-mist',
 	route: 'text-signal',
+	hitl: 'text-[#ffb45c]',
 	tool: 'text-orchid',
 	rag: 'text-[#c77dff]',
 	llm: 'text-[#ffd100]',
@@ -56,7 +55,7 @@ function pos(id: string) {
 }
 
 export function Architecture() {
-	const [active, setActive] = useState('router');
+	const [active, setActive] = useState('agent');
 	const [lines, setLines] = useState(0);
 	const ref = useRef<HTMLDivElement>(null);
 	const current = NODES.find((n) => n.id === active) ?? NODES[1];
@@ -89,11 +88,12 @@ export function Architecture() {
 					<h2 id="archi-title" className="font-display mt-4 max-w-3xl text-4xl leading-tight font-bold text-balance sm:text-5xl">
 						Anatomie d’un agent IA <span className="text-gradient">en production</span>.
 					</h2>
-					<p className="text-mist mt-4 max-w-2xl">Le schéma que je déploie : cliquez sur un composant pour voir son rôle, et regardez une requête traverser le système en direct.</p>
+					<p className="text-mist mt-4 max-w-2xl">L’architecture de NeoChat, en production : cliquez sur un composant pour voir son rôle, et regardez une vraie question traverser le système.</p>
 				</Reveal>
 
-				<div className="mt-12 grid gap-6 xl:grid-cols-[1.45fr_1fr]">
+				<div className="mt-12 grid gap-6 xl:grid-cols-[1.45fr_1fr] [&>*]:min-w-0">
 					<Reveal className="glass rounded-3xl p-3 sm:p-5">
+						<p className="text-dim mb-2 font-mono text-[11px] sm:hidden" aria-hidden>← faites glisser le schéma →</p>
 						<div className="overflow-x-auto">
 							<svg viewBox="0 0 820 340" className="min-w-[640px]" role="group" aria-label="Schéma d’architecture d’un agent IA">
 								<defs>
@@ -136,7 +136,7 @@ export function Architecture() {
 											onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setActive(n.id)}
 											className="cursor-pointer outline-none"
 										>
-											<rect x={-68} y={-30} width={136} height={60} rx={14} fill={selected ? '#1d1240' : '#0d0a1f'} stroke={selected ? '#e879f9' : '#ffffff22'} strokeWidth={selected ? 1.6 : 1} filter={selected ? 'url(#glow)' : undefined} />
+											<rect x={-74} y={-30} width={148} height={60} rx={14} fill={selected ? '#1d1240' : '#0d0a1f'} stroke={selected ? '#e879f9' : '#ffffff22'} strokeWidth={selected ? 1.6 : 1} filter={selected ? 'url(#glow)' : undefined} />
 											<text textAnchor="middle" y={-3} className="fill-white font-sans text-[13px] font-semibold">
 												{n.label}
 											</text>

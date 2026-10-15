@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect } from 'react';
+
 import { About } from '@/components/sections/About';
 import { Architecture } from '@/components/sections/Architecture';
 import { Contact } from '@/components/sections/Contact';
@@ -10,29 +12,51 @@ import { MotionProvider } from '@/components/ui/MotionProvider';
 import { about } from '@/content/profile';
 import { experiences, projects } from '@/content/work';
 import { game, useGame } from '@/lib/game-store';
-import { QUESTS } from '@/lib/quests';
+import { QUESTS, objectiveDone } from '@/lib/quests';
+import { voice, voiceClip, useVoice } from '@/lib/voice';
 import { landmark } from '@/lib/world';
 
 /** Quest dialog of an NPC: offer, progress or turn-in. */
 function QuestBlock({ id }: { id: string }) {
 	const quests = useGame((s) => s.quests);
 	const visited = useGame((s) => s.visited);
+	const progress = useGame((s) => s.progress);
 	const offer = QUESTS.find((q) => q.giver === id && quests[q.id] === 'available');
 	const ready = QUESTS.find((q) => q.turnIn === id && quests[q.id] === 'ready');
 	const active = QUESTS.find((q) => (q.giver === id || q.turnIn === id) && quests[q.id] === 'active');
 	const q = ready ?? offer ?? active;
+	// voice-over of the line shown, read aloud when it appears (a follow-up quest takes over), replayable on demand
+	const sound = useGame((s) => s.sound);
+	const playing = useVoice();
+	const clip = q ? voiceClip(`${q.id}-${ready ? 'outro' : 'intro'}`, ready ? q.outro : q.intro) : null;
+	useEffect(() => () => voice.stop(), []);
+	useEffect(() => {
+		if (clip) voice.play(clip);
+	}, [clip]);
 	if (!q) return null;
 	return (
 		<div className="rounded-2xl border border-[#ffd100]/40 bg-black/40 p-5 sm:p-6">
-			<p className="font-mono text-xs tracking-widest text-[#ffd100] uppercase">
-				{ready ? 'Quête terminée' : offer ? 'Nouvelle quête' : 'Quête en cours'} · {q.title}
-			</p>
+			<div className="flex items-start justify-between gap-3">
+				<p className="font-mono text-xs tracking-widest text-[#ffd100] uppercase">
+					{ready ? 'Quête terminée' : offer ? 'Nouvelle quête' : 'Quête en cours'} · {q.title}
+				</p>
+				{clip && sound && (
+					<button
+						onClick={() => (playing === clip ? voice.stop() : voice.play(clip))}
+						aria-pressed={playing === clip}
+						className="shrink-0 rounded-lg border border-[#ffd100]/60 bg-[#ffd100]/10 px-2.5 py-1 font-mono text-xs text-[#ffd100] transition hover:bg-[#ffd100]/20"
+					>
+						{playing === clip ? '⏹ Stop' : '🔊 Écouter'}
+					</button>
+				)}
+			</div>
 			<p className="mt-3 text-lg leading-relaxed text-[#f3e9cf]">{ready ? q.outro : q.intro}</p>
 			{!ready && (
 				<ul className="mt-4 space-y-1.5">
 					{q.objectives.map((o) => (
-						<li key={o.id} className={visited.includes(o.id) ? 'text-white/45 line-through' : 'text-[#e8dcc0]'}>
+						<li key={o.id} className={objectiveDone(q, o, visited, progress) ? 'text-white/45 line-through' : 'text-[#e8dcc0]'}>
 							◆ {o.label}
+							{o.kills && ` (${Math.min(progress[q.id] ?? 0, o.kills.n)}/${o.kills.n})`}
 						</li>
 					))}
 				</ul>
@@ -40,7 +64,7 @@ function QuestBlock({ id }: { id: string }) {
 			{ready && (
 				<p className="mt-4 flex items-center gap-3 text-[#ffd100]">
 					<span className="grid h-10 w-10 place-items-center rounded-lg border border-[#ffd100] bg-[#ffd100]/15">★</span>
-					Récompense : {q.reward.title}
+					Haut fait obtenu : {q.reward.title}
 				</p>
 			)}
 			{(offer || ready) && (
@@ -58,9 +82,10 @@ function QuestBlock({ id }: { id: string }) {
 /** Raphy reacts to where the visitor stands in the story instead of repeating the same line. */
 const RAPHY_TIPS = [
 	'Astuce : les bugs du val ont chacun une fiche « problème / parade ». Retrouve-les toutes dans le Bestiaire du menu.',
-	'Neuf ans de développement web avant de mettre des agents IA en production : la Forge raconte ce chemin.',
-	'La Tour du Savoir garde ses compétences : agents, RAG, MCP, évaluation, FinOps.',
-	'Le Cercle de pierres porte son manifeste : des agents utiles, mesurés et sûrs.',
+	'Neuf ans d’ingénierie logicielle, dont l’IA en production depuis 2018 : la Forge raconte ce chemin.',
+	'La Tour du Savoir garde sa fiche de personnage : son parcours et son virage vers l’IA.',
+	'Le Cercle du Manifeste porte ses quatre règles : des agents utiles, mesurés, et sous contrôle humain.',
+	'Dans le Nexus, le Noyau d’orchestration montre l’architecture réelle de NeoChat, une vraie question à l’appui.',
 	'Tu préfères lire tranquillement ? La « Version classique » en haut à gauche ouvre le portfolio en une page.',
 ];
 function raphyLine(g: ReturnType<typeof game.get>) {
@@ -74,16 +99,21 @@ function raphyLine(g: ReturnType<typeof game.get>) {
 		const left = ['leasys', 'schoolmouv', 'royal'].filter((id) => !g.visited.includes(id)).map((id) => landmark(id).name);
 		return left.length ? `Les maisons du val t’attendent : ${left.join(', ')}.` : 'Tu connais tout son parcours ! Reviens me parler pour terminer la quête.';
 	}
+	if (g.quests.agents === 'done') {
+		const left = QUESTS.filter((q) => g.quests[q.id] !== 'done').map((q) => `« ${q.title} »`);
+		return left.length
+			? `Tu as exploré les deux mondes ! Il reste ${left.length > 1 ? `${left.length} quêtes` : `une quête`} à finir si tu veux : ${left.join(', ')}. Et la Balise de contact reste ouverte.`
+			: `Toutes les quêtes sont terminées, ${g.kills} bug${g.kills > 1 ? 's' : ''} corrigé${g.kills > 1 ? 's' : ''} : tu connais Raphaël. Un poste IA à pourvoir ? La Balise de contact du Nexus est ouverte, et le CV se télécharge depuis la version classique.`;
+	}
 	if (g.flags.includes('nexus')) return `De retour du Nexus ! ${g.kills} bug${g.kills > 1 ? 's' : ''} corrigé${g.kills > 1 ? 's' : ''} jusqu’ici. Raphy·OS t’attend là-bas pour la suite.`;
 	if (g.quests.portail === 'active' || g.quests.portail === 'available') return 'Le Portail arcanique t’attend au bout du chemin, au nord : de l’autre côté, l’ère des agents.';
 	return RAPHY_TIPS[(g.kills + g.visited.length) % RAPHY_TIPS.length];
 }
 
 const NPC_TEXT: Record<string, string> = {
-	holo: 'Raphy·OS en ligne. Depuis novembre 2025, Raphaël est Senior AI Engineer & Responsable IA chez Neoteem.',
+	holo: 'Raphy·OS en ligne. Depuis novembre 2025, Raphaël est Senior AI Engineer & Responsable IA chez Neoteem : sept agents spécialisés en production.',
 	portal: 'Une arche ancienne parcourue d’énergie arcanique. Marche dedans pour rejoindre le Nexus : l’ère des agents.',
 	'portal-back': 'Ce portail te ramène au Val des Origines.',
-	race: 'Le défi du Nexus arrive bientôt.',
 };
 
 /** The stone circle carries the manifesto: the principles behind every agent Raphaël ships. */
@@ -101,7 +131,6 @@ function Manifesto() {
 					</li>
 				))}
 			</ul>
-			<QuestBlock id="stones" />
 		</div>
 	);
 }
@@ -132,7 +161,6 @@ function CareerChapter({ id }: { id: string }) {
 					</span>
 				))}
 			</p>
-			<QuestBlock id={id} />
 		</div>
 	);
 }
@@ -160,7 +188,6 @@ function ProductionAgent({ id }: { id: string }) {
 					</span>
 				))}
 			</p>
-			<QuestBlock id={id} />
 		</div>
 	);
 }
@@ -189,19 +216,11 @@ function Body({ id }: { id: string }) {
 		case 'neoagent':
 			return <ProductionAgent id={id} />;
 		case 'beacon':
-			return (
-				<>
-					<div className="mx-auto max-w-7xl px-4 sm:px-6">
-						<QuestBlock id="beacon" />
-					</div>
-					<Contact />
-				</>
-			);
+			return <Contact />;
 		default:
 			return (
 				<div className="mx-auto max-w-3xl space-y-5 px-4 sm:px-6">
 					{(id === 'raphy' || NPC_TEXT[id]) && <p className="text-xl leading-relaxed text-white/90">{id === 'raphy' ? raphyLine(game.get()) : NPC_TEXT[id]}</p>}
-					<QuestBlock id={id} />
 				</div>
 			);
 	}
@@ -222,11 +241,15 @@ export function Panel() {
 			>
 				<div className={`flex items-center justify-between gap-4 border-b px-5 py-3 ${nexus ? 'border-[#8b5cf6]/30' : 'border-[#c8a35a]/30'}`}>
 					<p className={`font-display text-lg font-bold ${nexus ? 'text-[#e879f9]' : 'text-[#ffd100]'}`}>{l.name}</p>
-					<button onClick={() => game.set({ panel: null })} className="rounded-lg border border-white/20 px-3 py-1 font-mono text-sm text-white hover:bg-white/10" autoFocus>
-						Échap ✕
+					<button onClick={() => game.set({ panel: null })} aria-label="Fermer" className="rounded-lg border border-white/20 px-3 py-1 font-mono text-sm text-white hover:bg-white/10" autoFocus>
+						<span className="pointer-coarse:hidden">Échap </span>✕
 					</button>
 				</div>
 				<div className="overflow-y-auto py-8" data-lenis-prevent>
+					{/* the quest offered or handed in here, above the place's own content */}
+					<div className="mx-auto mb-6 max-w-3xl px-4 empty:hidden sm:px-6">
+						<QuestBlock id={id} />
+					</div>
 					<MotionProvider>
 						<Body id={id} />
 					</MotionProvider>

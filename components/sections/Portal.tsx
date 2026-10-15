@@ -1,7 +1,7 @@
 import { Reveal } from '@/components/ui/Reveal';
 
 const steps = [
-	{ year: '2019', text: 'Première IA en production : Google Vision analyse des documents dans une PWA React.' },
+	{ year: '2018', text: 'Première IA en production : Google Vision analyse des documents dans une PWA React.' },
 	{ year: '2024', text: 'Agents autonomes, multi-agents et premier serveur MCP en indépendant.' },
 	{ year: '2025', text: 'Responsable IA chez Neoteem : le code devient le socle, les agents deviennent le métier.' },
 ];

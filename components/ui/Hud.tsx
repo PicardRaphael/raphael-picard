@@ -69,7 +69,7 @@ export function Hud() {
 		};
 	}, []);
 
-	// same generative soundtrack as the 3D world: harp in the ancient lands, synthwave in the Nexus
+	// same soundtrack as the 3D world: medieval folk in the ancient lands, synthwave in the Nexus
 	useEffect(() => {
 		if (!sound) music.stop();
 	}, [sound]);

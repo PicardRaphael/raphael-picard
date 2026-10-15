@@ -13,12 +13,12 @@ export function Header() {
 					<Logo className="h-8 w-8 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-[-8deg]" />
 					<span className="font-display text-sm font-semibold tracking-wide">
 						Raphaël Picard
-						<span className="text-mist hidden font-mono text-[0.68rem] font-normal tracking-[0.18em] uppercase sm:block">
+						<span className="text-mist hidden font-mono text-[0.68rem] font-normal tracking-[0.18em] whitespace-nowrap uppercase sm:block">
 							Ingénieur IA
 						</span>
 					</span>
 				</Link>
-				<ul className="hidden items-center gap-1 rounded-full border border-white/10 bg-white/[0.04] px-2 py-1.5 md:flex">
+				<ul className="hidden items-center gap-1 rounded-full border border-white/10 bg-white/[0.04] px-2 py-1.5 lg:flex">
 					{links.map((s) => (
 						<li key={s.id}>
 							<a
@@ -33,13 +33,13 @@ export function Header() {
 				<div className="flex items-center gap-2">
 					<Link
 						href="/"
-						className="border-signal/50 text-signal hover:bg-signal/10 rounded-full border px-4 py-2 font-mono text-sm transition-colors"
+						className="border-signal/50 text-signal hover:bg-signal/10 rounded-full border px-4 py-2 font-mono text-sm whitespace-nowrap transition-colors"
 					>
 						▲ Monde 3D
 					</Link>
 					<a
 						href="#contact"
-						className="from-violet to-magenta rounded-full bg-gradient-to-r px-4 py-2 text-sm font-semibold text-white shadow-[0_0_24px_-4px_rgb(197_14_255_/_0.7)] transition-transform hover:scale-[1.04]"
+						className="from-violet to-magenta rounded-full bg-gradient-to-r px-4 py-2 text-sm font-semibold whitespace-nowrap text-white shadow-[0_0_24px_-4px_rgb(197_14_255_/_0.7)] transition-transform hover:scale-[1.04]"
 					>
 						Contact
 					</a>

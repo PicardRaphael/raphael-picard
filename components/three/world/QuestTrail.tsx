@@ -6,34 +6,52 @@ import * as THREE from 'three';
 
 import { game } from '@/lib/game-store';
 import { player } from '@/lib/player-state';
-import { QUESTS } from '@/lib/quests';
+import { mobs } from '@/lib/mobs';
+import { QUESTS, objectiveDone } from '@/lib/quests';
 import { landmark } from '@/lib/world';
 import { groundAt } from './Player';
 
 /**
- * Where the story wants the visitor to go next: the nearest objective of the active quest, else the NPC to hand
- * a quest in to, else the next quest giver. In the other realm, the portal leads there.
+ * Where the visitor should go next: the quest they chose to follow, else the story order. For a quest that is
+ * running, its nearest unmet objective (a place, or the nearest bug of the realm for a hunt), then its turn-in;
+ * for a quest on offer, its giver. When the goal is in the other realm, the portal leads there.
  */
 function nextTarget(): { x: number; z: number } | null {
 	const g = game.get();
 	const here = g.zone;
+	const near = <T extends { x: number; z: number }>(list: T[]) =>
+		list.reduce((a, b) => (Math.hypot(a.x - player.x, a.z - player.z) < Math.hypot(b.x - player.x, b.z - player.z) ? a : b));
 	const pick = (ids: string[]) => {
 		const places = ids.map((id) => landmark(id));
 		const local = places.filter((l) => l.zone === here);
 		if (local.length === 0) return places.length ? landmark(here === 'val' ? 'portal' : 'portal-back') : null;
-		return local.reduce((a, b) => (Math.hypot(a.x - player.x, a.z - player.z) < Math.hypot(b.x - player.x, b.z - player.z) ? a : b));
+		return near(local);
 	};
-	for (const q of QUESTS) {
+	const goal = (q: (typeof QUESTS)[number]) => {
 		const st = g.quests[q.id];
-		if (st === 'active') {
-			const left = q.objectives.map((o) => o.id).filter((id) => !g.visited.includes(id));
-			if (left.length) return pick(left);
-			return pick([q.turnIn]);
-		}
+		if (st === 'available') return pick([q.giver]);
 		if (st === 'ready') return pick([q.turnIn]);
+		if (st !== 'active') return null;
+		const left = q.objectives.filter((o) => !objectiveDone(q, o, g.visited, g.progress));
+		const hunt = left.find((o) => o.kills);
+		if (hunt?.kills) {
+			if (hunt.kills.zone !== here) return landmark(here === 'val' ? 'portal' : 'portal-back');
+			const alive = mobs.filter((m) => m.zone === here && m.state !== 'dead');
+			return alive.length ? near(alive) : null;
+		}
+		return left.length ? pick(left.map((o) => o.id)) : pick([q.turnIn]);
+	};
+	const tracked = g.tracked ? QUESTS.find((q) => q.id === g.tracked) : undefined;
+	const order = [
+		...(tracked ? [tracked] : []),
+		...QUESTS.filter((q) => g.quests[q.id] === 'active' || g.quests[q.id] === 'ready'),
+		...QUESTS.filter((q) => g.quests[q.id] === 'available'),
+	];
+	for (const q of order) {
+		const t = goal(q);
+		if (t) return t;
 	}
-	const avail = QUESTS.find((q) => g.quests[q.id] === 'available');
-	return avail ? pick([avail.giver]) : null;
+	return null;
 }
 
 const DOTS = 26;

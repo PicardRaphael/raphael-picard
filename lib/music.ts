@@ -1,34 +1,226 @@
 'use client';
 
 /**
- * Generative soundtrack with the Web Audio API (no audio files):
- * - Val: slow harp arpeggios and warm pads in D dorian,
- * - Nexus: synthwave arpeggio, bass and soft kick in A minor.
- * The two themes crossfade with the zone. Plus a few sound effects.
+ * Soundtrack: recorded tracks (credited in the game menu) played as a playlist per zone,
+ * crossfading between tracks and when the zone changes:
+ * - Val: lute and flute medieval fantasy (RandomMind, CC0),
+ * - Nexus: mellow synthwave (Bogart VGM, CC-BY 3.0; The Cynic Project, CC0).
+ * Files are only fetched once the player turns the sound on (start() runs in a click), and are
+ * streamed by two reusable <audio> elements routed through Web Audio gains: iOS ignores
+ * HTMLMediaElement.volume, so fades must happen on GainNodes. Short sound effects stay synthesised.
  */
 
 type Theme = 'val' | 'nexus';
 
+const PLAYLISTS: Record<Theme, string[]> = {
+	val: ['/audio/music/val-bards-tale.mp3', '/audio/music/val-exploration.mp3'],
+	nexus: ['/audio/music/nexus-nightdrive.mp3', '/audio/music/nexus-synthwave-4k.mp3'],
+};
+/** Crossfade length in seconds (between tracks and on zone change). */
+const FADE = 2.5;
+/** Music level under the master gain (the recordings are much louder than the old synth). */
+const MUSIC_LEVEL = 0.55;
+/** Music bus, lowered while a character speaks. */
+let bus: GainNode | null = null;
+
+type Slot = { el: HTMLAudioElement; gain: GainNode; track: string; stopTimer: ReturnType<typeof setTimeout> | null };
+
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
-let reverb: ConvolverNode | null = null;
-const bus: Partial<Record<Theme, GainNode>> = {};
-let timer: ReturnType<typeof setInterval> | null = null;
-let step = 0;
-let nextTime = 0;
+let slots: Slot[] = [];
+let active = 0;
 let theme: Theme = 'val';
+const index: Record<Theme, number> = { val: 0, nexus: 0 };
+let playing = false;
+let advancing = false;
 
 const midi = (n: number) => 440 * Math.pow(2, (n - 69) / 12);
 
-function impulse(c: AudioContext, seconds = 2.8) {
-	const len = c.sampleRate * seconds;
-	const buf = c.createBuffer(2, len, c.sampleRate);
-	for (let ch = 0; ch < 2; ch++) {
-		const d = buf.getChannelData(ch);
-		for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.6);
-	}
-	return buf;
+/** A few ms of silent WAV, used to unlock an <audio> element during the user gesture (iOS). */
+function silentWav() {
+	const samples = 400;
+	const bytes = new Uint8Array(44 + samples);
+	const view = new DataView(bytes.buffer);
+	const str = (o: number, s: string) => [...s].forEach((c, i) => view.setUint8(o + i, c.charCodeAt(0)));
+	str(0, 'RIFF');
+	view.setUint32(4, 36 + samples, true);
+	str(8, 'WAVEfmt ');
+	view.setUint32(16, 16, true);
+	view.setUint16(20, 1, true); // PCM
+	view.setUint16(22, 1, true); // mono
+	view.setUint32(24, 8000, true);
+	view.setUint32(28, 8000, true);
+	view.setUint16(32, 1, true);
+	view.setUint16(34, 8, true);
+	str(36, 'data');
+	view.setUint32(40, samples, true);
+	bytes.fill(128, 44); // 8-bit silence
+	let bin = '';
+	bytes.forEach((b) => (bin += String.fromCharCode(b)));
+	return `data:audio/wav;base64,${btoa(bin)}`;
 }
+
+function fade(slot: Slot, to: number, seconds = FADE) {
+	if (!ctx) return;
+	const t = ctx.currentTime;
+	slot.gain.gain.cancelScheduledValues(t);
+	slot.gain.gain.setValueAtTime(slot.gain.gain.value, t);
+	slot.gain.gain.linearRampToValueAtTime(to, t + seconds);
+}
+
+function play(el: HTMLAudioElement) {
+	el.play().catch(() => {
+		/* blocked (no gesture yet) or interrupted by a src change: the next start() retries */
+	});
+}
+
+/** Fades the current slot out and the given track in on the other slot. */
+function crossfadeTo(track: string, fromStart: boolean) {
+	if (!ctx || slots.length < 2) return;
+	const from = slots[active];
+	const toIndex = 1 - active;
+	const to = slots[toIndex];
+	if (to.stopTimer) clearTimeout(to.stopTimer);
+	to.stopTimer = null;
+	if (to.track !== track) {
+		to.track = track;
+		to.el.src = track;
+	} else if (fromStart || to.el.duration - to.el.currentTime < FADE * 2) {
+		// same track still loaded (quick back-and-forth across a zone border): resume it, unless it is nearly over
+		to.el.currentTime = 0;
+	}
+	// the incoming slot is silent or still fading out: ramp up from wherever its gain is
+	if (playing) play(to.el);
+	fade(to, 1);
+	fade(from, 0);
+	if (from.stopTimer) clearTimeout(from.stopTimer);
+	from.stopTimer = setTimeout(() => {
+		from.el.pause();
+		from.stopTimer = null;
+	}, FADE * 1000 + 100);
+	active = toIndex;
+	advancing = false;
+}
+
+/** Next track of the current zone's playlist. */
+function advance() {
+	if (advancing || !playing) return;
+	advancing = true;
+	const list = PLAYLISTS[theme];
+	index[theme] = (index[theme] + 1) % list.length;
+	crossfadeTo(list[index[theme]], true);
+}
+
+function createSlot(c: AudioContext, bus: AudioNode): Slot {
+	const el = new Audio();
+	el.preload = 'none';
+	el.crossOrigin = 'anonymous';
+	const gain = c.createGain();
+	gain.gain.value = 0;
+	c.createMediaElementSource(el).connect(gain).connect(bus);
+	const slot: Slot = { el, gain, track: '', stopTimer: null };
+	el.addEventListener('timeupdate', () => {
+		if (slots[active] !== slot || !Number.isFinite(el.duration)) return;
+		if (el.duration - el.currentTime <= FADE + 0.25) advance();
+	});
+	el.addEventListener('ended', () => {
+		if (slots[active] === slot) advance();
+	});
+	el.addEventListener('error', () => {
+		// a track failed to load: skip it rather than staying silent
+		if (slots[active] === slot && slot.track) setTimeout(advance, 1000);
+	});
+	return slot;
+}
+
+/** Pause the music while the tab is hidden, resume when it comes back. */
+function onVisibility() {
+	if (!ctx || !playing) return;
+	if (document.hidden) {
+		slots.forEach((s) => s.el.pause());
+		void ctx.suspend();
+	} else {
+		void ctx.resume();
+		play(slots[active].el);
+	}
+}
+
+export const music = {
+	/** Lowers the music under a voice line, then brings it back. */
+	duck(on: boolean) {
+		if (!ctx || !bus) return;
+		bus.gain.setTargetAtTime(on ? MUSIC_LEVEL * 0.3 : MUSIC_LEVEL, ctx.currentTime, on ? 0.15 : 0.6);
+	},
+	/** Must be called from a user gesture the first time (click / key). */
+	async start() {
+		if (typeof window === 'undefined') return;
+		if (!ctx) {
+			const AC = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+			ctx = new AC();
+			master = ctx.createGain();
+			master.gain.value = 0.8;
+			master.connect(ctx.destination);
+			bus = ctx.createGain();
+			bus.gain.value = MUSIC_LEVEL;
+			bus.connect(master);
+			slots = [createSlot(ctx, bus), createSlot(ctx, bus)];
+			// unlock the idle element inside this gesture so later crossfades may start it (iOS)
+			const idle = slots[1].el;
+			idle.src = silentWav();
+			idle
+				.play()
+				.then(() => {
+					if (!slots[1].track) idle.pause();
+				})
+				.catch(() => {});
+			document.addEventListener('visibilitychange', onVisibility);
+		}
+		const first = !playing && !slots[active].track;
+		playing = true;
+		const resumed = ctx.resume();
+		const slot = slots[active];
+		if (first) {
+			slot.track = PLAYLISTS[theme][index[theme]];
+			slot.el.src = slot.track;
+			slot.gain.gain.setValueAtTime(0, ctx.currentTime);
+			fade(slot, 1, 1.5);
+		}
+		play(slot.el);
+		await resumed;
+	},
+	stop() {
+		playing = false;
+		advancing = false;
+		for (const s of slots) {
+			if (s.stopTimer) clearTimeout(s.stopTimer);
+			s.stopTimer = null;
+			s.el.pause();
+		}
+		// the faded-out slot keeps its gain at 0, the active one at 1: resuming continues where it stopped
+		void ctx?.suspend();
+	},
+	setTheme(next: Theme) {
+		if (next === theme) return;
+		theme = next;
+		// before the first start(), only remember the zone
+		if (!ctx || !slots[active].track) return;
+		crossfadeTo(PLAYLISTS[theme][index[theme]], false);
+	},
+	/** Short synthesised sound effects, only while the sound is on. */
+	sfx(kind: 'swing' | 'hit' | 'quest' | 'portal' | 'jump') {
+		if (!ctx || !master || !playing) return;
+		const t = ctx.currentTime;
+		const out = master;
+		if (kind === 'swing') voice(out, 220, t, 0.15, 'sawtooth', 0.05, 1200);
+		if (kind === 'hit') {
+			voice(out, 90, t, 0.2, 'square', 0.12, 500);
+			hat(out, t, 0.15);
+		}
+		if (kind === 'jump') voice(out, 330, t, 0.18, 'triangle', 0.08, 2000);
+		if (kind === 'quest') [72, 76, 79, 84].forEach((n, i) => voice(out, midi(n), t + i * 0.11, 0.9, 'triangle', 0.1, 4000));
+		if (kind === 'portal') [48, 55, 60, 67, 72].forEach((n, i) => voice(out, midi(n), t + i * 0.07, 1.6, 'sawtooth', 0.05, 2500));
+	},
+};
 
 function voice(dest: AudioNode, freq: number, t: number, dur: number, type: OscillatorType, gain: number, cutoff = 2400, detune = 0) {
 	if (!ctx) return;
@@ -48,41 +240,6 @@ function voice(dest: AudioNode, freq: number, t: number, dur: number, type: Osci
 	o.stop(t + dur + 0.05);
 }
 
-function pad(dest: AudioNode, notes: number[], t: number, dur: number, gain: number) {
-	if (!ctx) return;
-	for (const n of notes) {
-		for (const d of [-7, 7]) {
-			const o = ctx.createOscillator();
-			const g = ctx.createGain();
-			const f = ctx.createBiquadFilter();
-			o.type = 'sawtooth';
-			o.frequency.value = midi(n);
-			o.detune.value = d;
-			f.type = 'lowpass';
-			f.frequency.value = 900;
-			g.gain.setValueAtTime(0, t);
-			g.gain.linearRampToValueAtTime(gain, t + dur * 0.35);
-			g.gain.linearRampToValueAtTime(0, t + dur);
-			o.connect(f).connect(g).connect(dest);
-			o.start(t);
-			o.stop(t + dur + 0.1);
-		}
-	}
-}
-
-function kick(dest: AudioNode, t: number) {
-	if (!ctx) return;
-	const o = ctx.createOscillator();
-	const g = ctx.createGain();
-	o.frequency.setValueAtTime(140, t);
-	o.frequency.exponentialRampToValueAtTime(45, t + 0.18);
-	g.gain.setValueAtTime(0.5, t);
-	g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
-	o.connect(g).connect(dest);
-	o.start(t);
-	o.stop(t + 0.35);
-}
-
 function hat(dest: AudioNode, t: number, gain = 0.05) {
 	if (!ctx) return;
 	const buf = ctx.createBuffer(1, ctx.sampleRate * 0.05, ctx.sampleRate);
@@ -99,106 +256,3 @@ function hat(dest: AudioNode, t: number, gain = 0.05) {
 	s.connect(f).connect(g).connect(dest);
 	s.start(t);
 }
-
-// D dorian: Dm – C – Bb – C ; A minor: Am – F – C – G
-const VAL_CHORDS = [
-	[62, 65, 69],
-	[60, 64, 67],
-	[58, 62, 65],
-	[60, 64, 67],
-];
-const NEX_CHORDS = [
-	[57, 60, 64],
-	[53, 57, 60],
-	[60, 64, 67],
-	[55, 59, 62],
-];
-
-function schedule() {
-	if (!ctx) return;
-	const val = bus.val;
-	const nex = bus.nexus;
-	if (!val || !nex) return;
-	while (nextTime < ctx.currentTime + 0.25) {
-		const t = nextTime;
-		// 16th-note grid: val at 72 bpm, nexus at 100 bpm share the scheduler at the val tempo × 4/3 swing-free
-		const sixteenth = 60 / 96 / 4;
-		const bar = Math.floor(step / 16) % 4;
-		const s16 = step % 16;
-		// — Val —
-		const vc = VAL_CHORDS[bar];
-		if (s16 === 0) {
-			pad(val, vc.map((n) => n - 12), t, sixteenth * 16, 0.035);
-			voice(val, midi(vc[0] - 24), t, sixteenth * 14, 'triangle', 0.12, 600);
-		}
-		if (s16 % 2 === 0) {
-			const arp = [0, 1, 2, 1, 2, 0, 1, 2][(s16 / 2) % 8];
-			voice(val, midi(vc[arp] + (s16 >= 8 ? 12 : 0)), t, 1.4, 'triangle', 0.07, 3000);
-		}
-		// — Nexus —
-		const nc = NEX_CHORDS[bar];
-		if (s16 % 4 === 0) kick(nex, t);
-		if (s16 % 2 === 1) hat(nex, t);
-		if (s16 === 0) pad(nex, nc, t, sixteenth * 16, 0.025);
-		voice(nex, midi(nc[s16 % 3] + 12 + (s16 % 8 === 7 ? 12 : 0)), t, sixteenth * 0.9, 'sawtooth', 0.04, 1800 + 800 * Math.sin(step / 10));
-		if (s16 % 4 === 2) voice(nex, midi(nc[0] - 24), t, sixteenth * 2, 'square', 0.06, 400);
-		nextTime += sixteenth;
-		step++;
-	}
-}
-
-export const music = {
-	async start() {
-		if (typeof window === 'undefined') return;
-		if (!ctx) {
-			const AC = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-			ctx = new AC();
-			master = ctx.createGain();
-			master.gain.value = 0.8;
-			reverb = ctx.createConvolver();
-			reverb.buffer = impulse(ctx);
-			const wet = ctx.createGain();
-			wet.gain.value = 0.45;
-			reverb.connect(wet).connect(master);
-			master.connect(ctx.destination);
-			for (const th of ['val', 'nexus'] as Theme[]) {
-				const g = ctx.createGain();
-				g.gain.value = th === theme ? 1 : 0;
-				g.connect(master);
-				g.connect(reverb);
-				bus[th] = g;
-			}
-			nextTime = ctx.currentTime + 0.1;
-		}
-		await ctx.resume();
-		if (!timer) timer = setInterval(schedule, 60);
-	},
-	stop() {
-		if (timer) clearInterval(timer);
-		timer = null;
-		void ctx?.suspend();
-	},
-	setTheme(next: Theme) {
-		theme = next;
-		if (!ctx) return;
-		for (const th of ['val', 'nexus'] as Theme[]) {
-			const g = bus[th];
-			if (!g) continue;
-			g.gain.cancelScheduledValues(ctx.currentTime);
-			g.gain.setTargetAtTime(th === next ? 1 : 0, ctx.currentTime, 1.2);
-		}
-	},
-	/** Short sound effects, only while the music is on. */
-	sfx(kind: 'swing' | 'hit' | 'quest' | 'portal' | 'jump') {
-		if (!ctx || !master || !timer) return;
-		const t = ctx.currentTime;
-		if (kind === 'swing') voice(master, 220, t, 0.15, 'sawtooth', 0.05, 1200);
-		if (kind === 'hit') {
-			voice(master, 90, t, 0.2, 'square', 0.12, 500);
-			hat(master, t, 0.15);
-		}
-		if (kind === 'jump') voice(master, 330, t, 0.18, 'triangle', 0.08, 2000);
-		if (kind === 'quest') [72, 76, 79, 84].forEach((n, i) => voice(master as GainNode, midi(n), t + i * 0.11, 0.9, 'triangle', 0.1, 4000));
-		if (kind === 'portal') [48, 55, 60, 67, 72].forEach((n, i) => voice(master as GainNode, midi(n), t + i * 0.07, 1.6, 'sawtooth', 0.05, 2500));
-	},
-};

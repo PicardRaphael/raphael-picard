@@ -4,14 +4,11 @@ import { Environment, Lightformer } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
 import { Bloom, EffectComposer, Vignette } from '@react-three/postprocessing';
 import { useEffect, useMemo, useState } from 'react';
-import * as THREE from 'three';
-
-import { PORTAL_INDEX } from '@/lib/stations';
 
 import { Nebulae, SpeedLines, Starfield } from './Cosmos';
 import { Flight } from './Flight';
 import { Realm } from './Realm';
-import { createRoute, stationAnchor } from './route';
+import { createRoute } from './route';
 import { Sky } from './Sky';
 import { Stations } from './Stations';
 
@@ -57,8 +54,6 @@ export default function SpaceScene() {
 		return () => window.removeEventListener('resize', onResize);
 	}, []);
 
-	const portalAnchor = useMemo(() => stationAnchor(route, PORTAL_INDEX, quality?.wide ?? true, new THREE.Vector3()), [route, quality?.wide]);
-
 	if (!quality) return null;
 	const pr = Math.min(window.devicePixelRatio || 1, quality.dpr[1]);
 
@@ -86,7 +81,7 @@ export default function SpaceScene() {
 			<Starfield count={quality.stars} pixelRatio={pr} />
 			<Nebulae />
 			<SpeedLines count={quality.wide ? 220 : 120} />
-			<Realm route={route} wide={quality.wide} pixelRatio={pr} density={quality.density} portalAnchor={portalAnchor} />
+			<Realm route={route} wide={quality.wide} pixelRatio={pr} density={quality.density} />
 			<Stations route={route} wide={quality.wide} density={quality.density} pixelRatio={pr} />
 			<Flight route={route} wide={quality.wide} pixelRatio={pr} reducedMotion={quality.reducedMotion} />
 

@@ -58,7 +58,7 @@ function QuestBlock({ id }: { id: string }) {
 /** Raphy reacts to where the visitor stands in the story instead of repeating the same line. */
 const RAPHY_TIPS = [
 	'Astuce : les bugs du val ont chacun une fiche « problème / parade ». Retrouve-les toutes dans le Bestiaire du menu.',
-	'Neuf ans de développement web avant de mettre des agents IA en production : la Forge raconte ce chemin.',
+	'Huit ans de développement web avant de mettre des agents IA en production : la Forge raconte ce chemin.',
 	'La Tour du Savoir garde ses compétences : agents, RAG, MCP, évaluation, FinOps.',
 	'Le Cercle de pierres porte son manifeste : des agents utiles, mesurés et sûrs.',
 	'Tu préfères lire tranquillement ? La « Version classique » en haut à gauche ouvre le portfolio en une page.',
@@ -165,8 +165,8 @@ function Body({ id }: { id: string }) {
 		case 'leasys':
 			return <CareerChapter id={id} />;
 		case 'neochat':
-		case 'neodoc':
-		case 'neomail':
+		case 'neosupport':
+		case 'neoagent':
 			return <ProductionAgent id={id} />;
 		case 'beacon':
 			return (

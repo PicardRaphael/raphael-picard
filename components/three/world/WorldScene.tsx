@@ -17,6 +17,7 @@ import { Mobs } from './Mobs';
 import { Nature } from './Nature';
 import { Nexus } from './Nexus';
 import { HeadPrompt } from './HeadPrompt';
+import { QuestTrail } from './QuestTrail';
 import { Player } from './Player';
 import { SkyDome } from './SkyDome';
 import { Valley } from './Valley';
@@ -128,6 +129,7 @@ export default function WorldScene() {
 			<Nexus pixelRatio={q.pr} reflect={q.post} />
 			<Player />
 			<HeadPrompt />
+			<QuestTrail />
 			{q.post && (
 				<EffectComposer multisampling={4}>
 					<Bloom mipmapBlur intensity={0.75} luminanceThreshold={0.85} luminanceSmoothing={0.2} radius={0.65} />

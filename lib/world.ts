@@ -47,8 +47,8 @@ export const LANDMARKS: Landmark[] = [
 	{ id: 'beacon', name: 'Balise de contact', hint: 'Activer la balise', zone: 'nexus', x: 0, z: NEXUS_Z - 125, radius: 12, solid: 4 },
 	// production agents: holographic kiosks along the avenue
 	{ id: 'neochat', name: 'Borne NeoChat', hint: 'Interroger NeoChat', zone: 'nexus', x: -10, z: NEXUS_Z - 50, radius: 6, solid: 1.2 },
-	{ id: 'neodoc', name: 'Borne NeoDoc', hint: 'Interroger NeoDoc', zone: 'nexus', x: 10, z: NEXUS_Z - 76, radius: 6, solid: 1.2 },
-	{ id: 'neomail', name: 'Borne NeoMail', hint: 'Interroger NeoMail', zone: 'nexus', x: -10, z: NEXUS_Z - 104, radius: 6, solid: 1.2 },
+	{ id: 'neosupport', name: 'Borne NeoSupport', hint: 'Interroger NeoSupport', zone: 'nexus', x: 10, z: NEXUS_Z - 76, radius: 6, solid: 1.2 },
+	{ id: 'neoagent', name: 'Borne NeoAgent', hint: 'Interroger NeoAgent', zone: 'nexus', x: -10, z: NEXUS_Z - 104, radius: 6, solid: 1.2 },
 	{ id: 'race', name: 'Ligne de départ', hint: 'Lancer la course', zone: 'nexus', x: -30, z: NEXUS_Z - 1, radius: 7, solid: 0 },
 ];
 

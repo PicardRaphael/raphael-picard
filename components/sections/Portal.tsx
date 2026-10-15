@@ -17,7 +17,7 @@ export function Portal() {
 						Un pied dans le code, <span className="text-gradient">l’autre dans les agents</span>.
 					</h2>
 					<p className="text-mist mt-6 text-lg leading-relaxed">
-						Je n’ai pas quitté le développement pour l’IA : je l’ai emporté avec moi. Neuf ans d’architecture, de tests et de production, c’est exactement ce qui manque à la plupart
+						Je n’ai pas quitté le développement pour l’IA : je l’ai emporté avec moi. Huit ans d’architecture, de tests et de production, c’est exactement ce qui manque à la plupart
 						des projets d’IA générative.
 					</p>
 				</Reveal>

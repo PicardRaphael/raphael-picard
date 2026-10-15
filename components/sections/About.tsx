@@ -5,7 +5,7 @@ const sheet = [
 	{ k: 'Classe', v: 'Ingénieur IA' },
 	{ k: 'Spécialisation', v: 'Agents · RAG · MCP' },
 	{ k: 'Rôle', v: 'Senior AI Engineer & Responsable IA chez Neoteem' },
-	{ k: 'Expérience', v: "9+ ans d'XP" },
+	{ k: 'Expérience', v: "8 ans d'XP" },
 	{ k: 'Base', v: 'Lyon · remote' },
 	{ k: 'Langues', v: 'Python · TypeScript' },
 ];

@@ -280,9 +280,9 @@ export function Nexus({ pixelRatio }: { pixelRatio: number; reflect?: boolean })
 				<Hologram positions={shapes.core} a="#e879f9" b="#651fff" pixelRatio={pixelRatio} position={[0, 7, 0]} scale={1.8} />
 			</group>
 			<Gallery />
-			<Kiosk id="neochat" title="NeoChat" subtitle="6 agents · RAG · devis Map-Reduce" color="#5ef2ff" />
-			<Kiosk id="neodoc" title="NeoDoc" subtitle="Documents multi-tenant · Vertex AI" color="#e879f9" />
-			<Kiosk id="neomail" title="NeoMail" subtitle="Agent ReAct · Gmail · Pub/Sub" color="#ffb45c" />
+			<Kiosk id="neochat" title="NeoChat" subtitle="Assistant métier · agent ReAct" color="#5ef2ff" />
+			<Kiosk id="neosupport" title="NeoSupport" subtitle="RAG support · extraits verbatim" color="#e879f9" />
+			<Kiosk id="neoagent" title="NeoAgent" subtitle="Devis · annonces · trames" color="#ffb45c" />
 			<Beacon />
 			<HoloNpc />
 			<Suspense fallback={<Stargate x={back.x} z={back.z} rotation={Math.PI} />}>

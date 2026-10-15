@@ -1,11 +1,11 @@
 import type { NextConfig } from 'next';
 
 const legacyRoutes: Record<string, string> = {
-	'/a-propos': '/#a-propos',
-	'/competences': '/#expertise',
-	'/experiences': '/#parcours',
-	'/projets': '/#projets',
-	'/contact': '/#contact',
+	'/a-propos': '/portfolio#a-propos',
+	'/competences': '/portfolio#expertise',
+	'/experiences': '/portfolio#parcours',
+	'/projets': '/portfolio#projets',
+	'/contact': '/portfolio#contact',
 	'/studio/:path*': '/',
 };
 

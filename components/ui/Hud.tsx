@@ -47,7 +47,7 @@ export function Hud() {
 
 	// Keyboard: hold Space to boost, 1-8 to warp to a sector.
 	useEffect(() => {
-		const typing = (e: KeyboardEvent) => (e.target as HTMLElement | null)?.closest('input, textarea, select, [contenteditable]');
+		const typing = (e: KeyboardEvent) => e.target instanceof Element && e.target.closest('input, textarea, select, [contenteditable]');
 		const down = (e: KeyboardEvent) => {
 			if (typing(e) || game.get().mode !== 'journey') return;
 			if (e.code === 'Space') {

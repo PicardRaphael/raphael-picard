@@ -22,6 +22,22 @@
 	--animate-flow: flow 3s linear infinite;
 	--animate-blink: blink 1.1s steps(2) infinite;
 
+	@keyframes zone-in {
+		0% {
+			opacity: 0;
+			transform: translateY(8px);
+		}
+		12% {
+			opacity: 1;
+			transform: none;
+		}
+		80% {
+			opacity: 1;
+		}
+		100% {
+			opacity: 0;
+		}
+	}
 	@keyframes portal-flash {
 		0% {
 			opacity: 0;

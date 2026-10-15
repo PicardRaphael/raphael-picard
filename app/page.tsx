@@ -1,24 +1,21 @@
-import { About } from '@/components/sections/About';
-import { Architecture } from '@/components/sections/Architecture';
-import { Contact } from '@/components/sections/Contact';
-import { Expertise } from '@/components/sections/Expertise';
-import { Hero } from '@/components/sections/Hero';
-import { Journey } from '@/components/sections/Journey';
-import { Portal } from '@/components/sections/Portal';
-import { Projects } from '@/components/sections/Projects';
+import type { Metadata } from 'next';
 
-/** One long journey: each section is a station the ship flies to. Order = route order (see lib/stations.ts). */
+import { GameUI } from '@/components/game/GameUI';
+import { WorldLoader } from '@/components/three/world/WorldLoader';
+import { site } from '@/lib/site';
+
+export const metadata: Metadata = {
+	title: { absolute: 'Raphaël Picard — Ingénieur IA · un portfolio à explorer en 3D' },
+	description: `${site.description} Un monde 3D à explorer au clavier : quêtes, portail et Nexus des agents.`,
+	alternates: { canonical: '/' },
+};
+
+/** Landing: the explorable world. The full readable portfolio lives at /portfolio. */
 export default function Home() {
 	return (
-		<>
-			<Hero />
-			<About />
-			<Journey />
-			<Portal />
-			<Expertise />
-			<Architecture />
-			<Projects />
-			<Contact />
-		</>
+		<main className="fixed inset-0 overflow-hidden bg-[#1a0d2e]">
+			<WorldLoader />
+			<GameUI />
+		</main>
 	);
 }

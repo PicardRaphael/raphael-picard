@@ -1,17 +1,17 @@
 'use client';
 
 import { useFrame } from '@react-three/fiber';
-import { Suspense, useMemo, useRef } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 
 import { projects } from '@/content/work';
+import { useGame } from '@/lib/game-store';
 import { NEXUS_CENTER, landmark } from '@/lib/world';
 import { constellation, knot, mulberry32 } from '../shapes';
-import { Cyber } from './Cyber';
 import { Street } from './Street';
-import { NexusProps } from './NexusProps';
+import { NexusCity } from './NexusCity';
 import { SfModel } from './SfModel';
-import { Stargate } from './Stargate';
+import { EventHorizon, Stargate } from './Stargate';
 import { RaphyModel } from './Raphy';
 
 /**
@@ -121,8 +121,9 @@ function Gallery() {
 				}
 				const tex = new THREE.CanvasTexture(c);
 				tex.colorSpace = THREE.SRGBColorSpace;
-				const a = -0.9 + (i / (projects.length - 1)) * 1.8;
-				return { tex, x: Math.sin(a) * 14, z: -Math.cos(a) * 14 + 6, rot: -a };
+				// a tight arc that fits the side street
+				const a = -0.75 + (i / (projects.length - 1)) * 1.5;
+				return { tex, x: Math.sin(a) * 9, z: -Math.cos(a) * 9 + 4, rot: -a };
 			}),
 		[],
 	);
@@ -133,12 +134,13 @@ function Gallery() {
 		});
 	});
 	return (
-		<group position={[l.x, 0, l.z]}>
-			<Pad x={0} z={0} r={9} />
+		// the arc opens toward the avenue: visitors come in from the main street
+		<group position={[l.x, 0, l.z]} rotation={[0, -Math.PI / 2, 0]}>
+			<Pad x={0} z={0} r={6} />
 			<group ref={ref}>
 				{cards.map((c, i) => (
 					<mesh key={i} position={[c.x, 4.2, c.z]} rotation={[0, c.rot, 0]}>
-						<planeGeometry args={[6.4, 4]} />
+						<planeGeometry args={[4.8, 3]} />
 						<meshBasicMaterial map={c.tex} transparent opacity={0.92} side={THREE.DoubleSide} toneMapped={false} />
 					</mesh>
 				))}
@@ -189,22 +191,36 @@ function HoloNpc() {
 	);
 }
 
-export function Nexus({ pixelRatio, reflect }: { pixelRatio: number; reflect: boolean }) {
+export function Nexus({ pixelRatio }: { pixelRatio: number; reflect?: boolean }) {
 	const agents = landmark('agents');
 	const core = landmark('core');
 	const back = landmark('portal-back');
 	const race = landmark('race');
 	const shapes = useMemo(() => ({ agents: constellation(5000, mulberry32(3)), core: knot(4500, mulberry32(4)) }), []);
 	const uniforms = useMemo(() => ({ uTime: { value: 0 }, uCenter: { value: new THREE.Vector2(NEXUS_CENTER.x, NEXUS_CENTER.z) } }), []);
+	const started = useGame((s) => s.started);
+	const zone = useGame((s) => s.zone);
+	const [prefetch, setPrefetch] = useState(false);
+	useEffect(() => {
+		if (!started) return;
+		const t = setTimeout(() => setPrefetch(true), 6000);
+		return () => clearTimeout(t);
+	}, [started]);
+	const loadCity = prefetch || zone === 'nexus';
 	useFrame((_, dt) => {
 		uniforms.uTime.value += dt;
 	});
 	return (
 		<group>
 			<Suspense fallback={null}>
-				<Street reflect={reflect} />
+				<Street />
 			</Suspense>
-			<Cyber />
+			{/* the city is heavy: fetched once the game runs, never on the start screen */}
+			{loadCity && (
+				<Suspense fallback={null}>
+					<NexusCity />
+				</Suspense>
+			)}
 			<group position={[agents.x, 0, agents.z]}>
 				<Pad x={0} z={0} r={6} />
 				<Hologram positions={shapes.agents} a="#38bdf8" b="#c50eff" pixelRatio={pixelRatio} position={[0, 7, 0]} scale={1.7} />
@@ -217,9 +233,10 @@ export function Nexus({ pixelRatio, reflect }: { pixelRatio: number; reflect: bo
 			<Beacon />
 			<HoloNpc />
 			<Suspense fallback={<Stargate x={back.x} z={back.z} rotation={Math.PI} />}>
-				<SfModel file="scifi_gate" height={13} position={[back.x, 0, back.z]} rotation={[0, Math.PI, 0]} />
+				<SfModel file="scifi_gate" height={13} hide={['Object_6']} position={[back.x, 0, back.z]} rotation={[0, Math.PI, 0]} />
+				{/* the ring of the gate model (13 m tall, centred 6.4 m up, set 3 m in front of the base) gets a real event horizon */}
+				<EventHorizon radius={5.2} position={[back.x, 6.4, back.z + 3.06]} rotation={[0, Math.PI, 0]} />
 			</Suspense>
-			<NexusProps />
 			<group position={[race.x, 0, race.z]}>
 				<Pad x={0} z={0} r={5} />
 				{[-1, 1].map((s) => (

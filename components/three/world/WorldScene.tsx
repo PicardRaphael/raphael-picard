@@ -16,6 +16,7 @@ import { Lasers } from './Lasers';
 import { Mobs } from './Mobs';
 import { Nature } from './Nature';
 import { Nexus } from './Nexus';
+import { HeadPrompt } from './HeadPrompt';
 import { Player } from './Player';
 import { SkyDome } from './SkyDome';
 import { Valley } from './Valley';
@@ -25,14 +26,15 @@ type Quality = { dpr: [number, number]; post: boolean; shadows: boolean; pr: num
 function detect(): Quality {
 	const coarse = window.matchMedia('(pointer: coarse)').matches;
 	const small = window.innerWidth < 768;
-	const pr = Math.min(window.devicePixelRatio || 1, 1.5);
-	if (coarse || small) return { dpr: [1, 1.25], post: false, shadows: false, pr: Math.min(pr, 1.25) };
-	return { dpr: [1, 1.5], post: true, shadows: true, pr };
+	const pr = Math.min(window.devicePixelRatio || 1, 2);
+	if (coarse || small) return { dpr: [1, 1.5], post: false, shadows: false, pr: Math.min(pr, 1.5) };
+	// sharp desktop rendering: full device resolution up to 2x
+	return { dpr: [1, 2], post: true, shadows: true, pr };
 }
 
 const LIGHT = {
-	day: { hemi: ['#d6ebff', '#55752f', 1.25], sun: ['#fff1d6', 2.8], fog: '#c4dcf2', near: 90, far: 300 },
-	dusk: { hemi: ['#ffe2b8', '#4a6b2a', 1.1], sun: ['#ffc58a', 2.6], fog: '#f2c79a', near: 80, far: 260 },
+	day: { hemi: ['#d6ebff', '#55752f', 1.25], sun: ['#fff1d6', 2.8], fog: '#b9d2ea', near: 140, far: 420 },
+	dusk: { hemi: ['#ffe2b8', '#4a6b2a', 1.1], sun: ['#ffc58a', 2.6], fog: '#e8bf98', near: 120, far: 380 },
 	night: { hemi: ['#4b5aa8', '#0d1020', 0.55], sun: ['#9fb4ff', 0.75], fog: '#151b36', near: 45, far: 210 },
 } as const;
 
@@ -125,8 +127,9 @@ export default function WorldScene() {
 			<ValleyLandmarks />
 			<Nexus pixelRatio={q.pr} reflect={q.post} />
 			<Player />
+			<HeadPrompt />
 			{q.post && (
-				<EffectComposer multisampling={0}>
+				<EffectComposer multisampling={4}>
 					<Bloom mipmapBlur intensity={0.75} luminanceThreshold={0.85} luminanceSmoothing={0.2} radius={0.65} />
 					<Vignette eskil={false} offset={0.3} darkness={0.6} />
 				</EffectComposer>

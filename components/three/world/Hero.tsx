@@ -14,8 +14,9 @@ import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
 export type HeroKind = 'knight' | 'runner';
 
 // knight: "3DRT - Fantasy Warrior" by 3DRT.com (Sketchfab, CC BY 4.0): armour, sword and shield are part of the
-// rigged model; runner: KayKit rogue (CC0)
-const FILES: Record<HeroKind, string> = { knight: '/models/sf/warrior.glb', runner: '/models/rogue_hooded.glb' };
+// rigged model; runner: "Neo Noir - Punk Vigilante" by manoeldarochadeoliveira (Sketchfab, CC BY 4.0) holding
+// the same sci-fi gun family as the first-person view (Quaternius, CC0)
+const FILES: Record<HeroKind, string> = { knight: '/models/sf/warrior.glb', runner: '/models/sf/runner.glb' };
 
 /** The warrior ships one 33 s take: its moves are cut out by frame range (30 fps, ranges from 3DRT's sheet). */
 const WARRIOR_TAKES: [string, number, number][] = [
@@ -40,36 +41,26 @@ const CLIPS: Partial<Record<HeroKind, Record<string, string>>> = {
 		'1H_Melee_Attack_Slice_Diagonal:1': 'w_attack2',
 		'1H_Melee_Attack_Slice_Diagonal:2': 'w_attack1',
 	},
+	runner: {
+		Idle: 'rig|idle_gun',
+		Walking_A: 'rig|walking_in_place',
+		Running_A: 'rig|running_in_place',
+		Jump_Full_Short: 'rig|jump',
+		Hit_A: 'rig|idle',
+		Cheer: 'rig|idle',
+		Interact: 'rig|idle',
+		'1H_Ranged_Shoot': 'rig|pointing_gun_forward',
+	},
 };
 const ONCE = ['Cheer', 'Interact', 'Jump_Full_Short', '1H_Melee_Attack_Slice_Diagonal', '1H_Ranged_Shoot', 'Hit_A'];
-const HEIGHT: Partial<Record<HeroKind, number>> = { knight: 2.3 };
+const HEIGHT: Partial<Record<HeroKind, number>> = { knight: 2.3, runner: 1.85 };
 /** The warrior was exported facing -Z: turn it so it looks where it walks. */
 const FACING: Partial<Record<HeroKind, number>> = { knight: Math.PI };
 useGLTF.preload(FILES.knight);
-useGLTF.preload(FILES.runner);
 useGLTF.preload('/models/pistol.glb');
 
-const RUNNER_HIDDEN = ['Knife', 'Knife_Offhand', '1H_Crossbow', '2H_Crossbow', 'Throwable'];
-
-
-/** Hue-shifts the KayKit gradient atlas toward magenta/cyan neon. */
-function neonTexture(src: THREE.Texture) {
-	const img = src.image as HTMLImageElement | ImageBitmap | undefined;
-	if (!img) return src;
-	const c = document.createElement('canvas');
-	c.width = img.width;
-	c.height = img.height;
-	const ctx = c.getContext('2d');
-	if (!ctx) return src;
-	ctx.filter = 'hue-rotate(170deg) saturate(1.25) brightness(0.8) contrast(1.2)';
-	ctx.drawImage(img, 0, 0);
-	const t = new THREE.CanvasTexture(c);
-	t.flipY = src.flipY;
-	t.colorSpace = THREE.SRGBColorSpace;
-	t.magFilter = src.magFilter;
-	t.minFilter = src.minFilter;
-	return t;
-}
+/** Pistol in the runner's right hand bone (local space, tuned against the gun-pointing pose). */
+const GUN_GRIP = { pos: [0, 0.09, 0.03] as [number, number, number], rot: [0, Math.PI / 2, Math.PI / 2] as [number, number, number], length: 0.32 };
 
 export type HeroHandle = THREE.Group;
 
@@ -85,15 +76,7 @@ export const HeroModel = forwardRef<THREE.Group, Props>(function HeroModel({ kin
 			if (!m.isMesh) return;
 			m.castShadow = true;
 			m.frustumCulled = false;
-			const mat = (m.material as THREE.MeshStandardMaterial).clone();
-			if (kind === 'runner') {
-				if (mat.map) mat.map = neonTexture(mat.map);
-				mat.emissive = new THREE.Color('#0ea5e9');
-				mat.emissiveIntensity = 0.08;
-				mat.metalness = 0.35;
-				mat.roughness = 0.45;
-			}
-			m.material = mat;
+			m.material = (m.material as THREE.MeshStandardMaterial).clone();
 		});
 		const h = HEIGHT[kind];
 		if (h) {
@@ -105,22 +88,24 @@ export const HeroModel = forwardRef<THREE.Group, Props>(function HeroModel({ kin
 			clone.position.y -= b2.min.y;
 		}
 		if (kind === 'runner') {
-			// the runner trades the crossbow and knives for a sci-fi pistol (Quaternius, CC0)
-			RUNNER_HIDDEN.forEach((n) => {
-				const o = clone.getObjectByName(n);
-				if (o) o.visible = false;
-			});
-			const hand = clone.getObjectByName('handslot.r');
+			const hand = clone.getObjectByName('hand_R_074');
 			if (hand) {
-				const gun = pistol.clone(true);
-				gun.name = 'pistol';
-				gun.rotation.set(0, Math.PI / 2, 0);
-				gun.scale.setScalar(1.6);
-				gun.position.set(0, 0.05, 0.12);
-				gun.traverse((o) => {
+				const gun = new THREE.Group();
+				const g = pistol.clone(true);
+				g.traverse((o) => {
 					const gm = o as THREE.Mesh;
 					if (gm.isMesh) gm.castShadow = true;
 				});
+				const box = new THREE.Box3().setFromObject(g);
+				const size = box.getSize(new THREE.Vector3());
+				g.position.sub(box.getCenter(new THREE.Vector3()));
+				gun.add(g);
+				clone.updateMatrixWorld(true);
+				const ws = hand.getWorldScale(new THREE.Vector3()).x;
+				gun.scale.setScalar(GUN_GRIP.length / Math.max(size.x, size.y, size.z) / ws);
+				gun.rotation.set(...GUN_GRIP.rot);
+				gun.position.set(...GUN_GRIP.pos).multiplyScalar(1 / ws);
+				gun.name = 'gun';
 				hand.add(gun);
 			}
 		}
@@ -135,6 +120,12 @@ export const HeroModel = forwardRef<THREE.Group, Props>(function HeroModel({ kin
 	const { actions } = useAnimations(clips, group);
 	const current = useRef<string | null>(null);
 	const playing = useRef<string | null>(null);
+
+	// a new hero brings new actions: forget what the previous one was playing
+	useEffect(() => {
+		current.current = null;
+		playing.current = null;
+	}, [actions]);
 
 	// `animation` may carry a "#n" suffix so that a repeated one-shot (sword swing) restarts
 	useEffect(() => {

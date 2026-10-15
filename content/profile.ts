@@ -42,7 +42,7 @@ export const stack = [
 
 export const about = {
 	eyebrow: 'II — Manifeste',
-	title: "De développeur full-stack à architecte d'agents.",
+	title: 'De développeur full-stack à ingénieur IA.',
 	paragraphs: [
 		"Pendant neuf ans, j'ai livré des produits web à grande échelle : une plateforme e-commerce déployée dans plus de 100 pays, un MVP EdTech conçu de zéro, des outils métier pour la mobilité. J'y ai appris ce qui fait tenir un logiciel : l'architecture, les tests, la rigueur de livraison.",
 		"Depuis novembre 2025, je suis Responsable IA chez Neoteem, éditeur d'un ERP pour les professionnels de l'immobilier. Je porte la stratégie IA auprès de la direction, j'encadre le pôle IA et j'ai mis en production huit agents qui travaillent chaque jour avec les données métier.",

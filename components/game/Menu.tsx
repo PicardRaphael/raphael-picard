@@ -237,13 +237,29 @@ function Body({ tab }: { tab: Tab }) {
 			return <Bestiary />;
 		case 'credits':
 			return (
-				<ul className="space-y-2 text-sm text-white/85">
-					<li>Conception, code et textes : Raphaël Picard</li>
-					<li>Personnages, squelettes et bâtiments : KayKit par Kay Lousberg (CC0)</li>
-					<li>Végétation : Stylized Nature MegaKit par Quaternius (CC0)</li>
-					<li>Musique : générée en direct avec la Web Audio API</li>
-					<li>Moteur : Next.js, React Three Fiber, three.js, shaders GLSL maison</li>
-				</ul>
+				<div className="space-y-4 text-sm text-white/85">
+					<p>Conception, code et textes : Raphaël Picard. Musique générée en direct (Web Audio API). Moteur : Next.js, React Three Fiber, three.js, shaders GLSL maison.</p>
+					<div>
+						<p className="mb-1 font-semibold text-white">Modèles 3D Sketchfab — licence CC BY 4.0</p>
+						<ul className="space-y-1">
+							<li><a className="underline decoration-white/30 hover:text-white" href="https://sketchfab.com/3d-models/9b1959fdbc774d65b75e62069bd82b19" target="_blank" rel="noreferrer">Village_Personal Assets (maisons, tour)</a> — jakekieferwaddington</li>
+							<li><a className="underline decoration-white/30 hover:text-white" href="https://sketchfab.com/3d-models/d93444656b204ddd8270b9a9be0d99ec" target="_blank" rel="noreferrer">The Blacksmith’s (forge)</a> — Aartee</li>
+							<li><a className="underline decoration-white/30 hover:text-white" href="https://sketchfab.com/3d-models/d246b8b4439d44c6adc854ebc5ffc5ba" target="_blank" rel="noreferrer">Handpainted Tree Pack et Texture pack 2 (sol)</a> — rudolfs</li>
+							<li><a className="underline decoration-white/30 hover:text-white" href="https://sketchfab.com/3d-models/f3e0a67b9ca243b09119177649f21e17" target="_blank" rel="noreferrer">Stone Pack (rochers, falaises)</a> — ashkan.fancy</li>
+							<li><a className="underline decoration-white/30 hover:text-white" href="https://sketchfab.com/3d-models/0040f94c8efd43639d8010874e4fefb6" target="_blank" rel="noreferrer">Low Poly Hand Painted Dungeon Arch (portail)</a> — bitgem</li>
+							<li><a className="underline decoration-white/30 hover:text-white" href="https://sketchfab.com/3d-models/ea693b08bbff413ba634f3ae5efd8969" target="_blank" rel="noreferrer">Stylized Street Lamp</a> — lazarys</li>
+							<li><a className="underline decoration-white/30 hover:text-white" href="https://sketchfab.com/3d-models/d39a0dee0f054c21b6751f7821aa7a8e" target="_blank" rel="noreferrer">3DRT – Fantasy Warrior (chevalier)</a> — 3DRT.com</li>
+							<li><a className="underline decoration-white/30 hover:text-white" href="https://sketchfab.com/3d-models/1337edb8b567486aa22f15b519e60c4d" target="_blank" rel="noreferrer">Skelet warrior (bugs du val)</a> — uchaikineugene</li>
+							<li><a className="underline decoration-white/30 hover:text-white" href="https://sketchfab.com/3d-models/e08b178ecddb4e47890142b10c90b3a5" target="_blank" rel="noreferrer">Neo Noir – Punk Vigilante</a> — manoeldarochadeoliveira</li>
+							<li><a className="underline decoration-white/30 hover:text-white" href="https://sketchfab.com/3d-models/03a5255bb9624d4e82cb8e15e0070b70" target="_blank" rel="noreferrer">Full Gameready City Buildings III [HongKong] (Nexus)</a> — abhayexe</li>
+							<li><a className="underline decoration-white/30 hover:text-white" href="https://sketchfab.com/3d-models/5849c107ecb7472bb1eef028f5b97f0d" target="_blank" rel="noreferrer">Japanese Small Vertical Neon Sign</a> — alexbescg</li>
+							<li><a className="underline decoration-white/30 hover:text-white" href="https://sketchfab.com/3d-models/c91524e74c8c463ca3ddf71bc73911db" target="_blank" rel="noreferrer">Japanese Neon Street Sign</a> — mcmanusmedia</li>
+							<li><a className="underline decoration-white/30 hover:text-white" href="https://sketchfab.com/3d-models/58d2570e88c642bba8ef92f3175391cf" target="_blank" rel="noreferrer">Sci-Fi Portal Gateway (porte du Nexus)</a> — Sam54123</li>
+						</ul>
+						<p className="mt-1 text-white/60">Modèles adaptés : découpés, optimisés, enseignes de marques repeintes.</p>
+					</div>
+					<p>Robots, armes et skin de squelette : Quaternius et KayKit (CC0). Eau : normal map three.js (MIT).</p>
+				</div>
 			);
 		case 'help':
 			return (

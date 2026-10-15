@@ -4,6 +4,7 @@ import { useFrame } from '@react-three/fiber';
 import { Suspense, useMemo } from 'react';
 import * as THREE from 'three';
 
+import { mulberry32 } from '../shapes';
 import { SfModel } from './SfModel';
 
 /**
@@ -58,13 +59,30 @@ void main() {
 
 /** Sparks drawn into the vortex along a spiral, then reborn on the rim. */
 const SPARKS = 420;
-const sparkMat = new THREE.PointsMaterial({ size: 0.16, color: '#b9c8ff', transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false });
+/** Round soft spark: a radial gradient instead of the default square point. */
+function sparkTexture() {
+	const c = document.createElement('canvas');
+	c.width = c.height = 64;
+	const ctx = c.getContext('2d');
+	if (ctx) {
+		const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+		g.addColorStop(0, 'rgba(255,255,255,1)');
+		g.addColorStop(0.25, 'rgba(210,225,255,0.85)');
+		g.addColorStop(0.6, 'rgba(150,170,255,0.25)');
+		g.addColorStop(1, 'rgba(120,140,255,0)');
+		ctx.fillStyle = g;
+		ctx.fillRect(0, 0, 64, 64);
+	}
+	return new THREE.CanvasTexture(c);
+}
+const sparkMat = new THREE.PointsMaterial({ size: 0.28, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, vertexColors: true });
 
 function Sparks() {
 	const data = useMemo(() => {
 		const pos = new Float32Array(SPARKS * 3);
 		const col = new Float32Array(SPARKS * 3);
-		const s = Array.from({ length: SPARKS }, () => ({ a: Math.random() * Math.PI * 2, r: Math.random(), v: 0.25 + Math.random() * 0.35, z: Math.random() }));
+		const rng = mulberry32(17);
+		const s = Array.from({ length: SPARKS }, () => ({ a: rng() * Math.PI * 2, r: rng(), v: 0.25 + rng() * 0.35, z: rng() }));
 		const g = new THREE.BufferGeometry();
 		g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
 		g.setAttribute('color', new THREE.BufferAttribute(col, 3));
@@ -96,9 +114,9 @@ function Sparks() {
 		data.g.attributes.position.needsUpdate = true;
 		data.g.attributes.color.needsUpdate = true;
 	});
+	sparkMat.map ??= sparkTexture();
 	return <points geometry={data.g} material={sparkMat} frustumCulled={false} />;
 }
-sparkMat.vertexColors = true;
 
 export function DarkGate({ x, y, z }: { x: number; y: number; z: number }) {
 	const uniforms = useMemo(() => ({ uTime: { value: 0 } }), []);

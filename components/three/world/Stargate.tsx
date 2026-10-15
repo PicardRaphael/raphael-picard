@@ -19,27 +19,52 @@ void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(
 const fragment = /* glsl */ `
 uniform float uTime;
 varying vec2 vUv;
-float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-float noise(vec2 p) {
-	vec2 i = floor(p), f = fract(p);
-	f = f * f * (3.0 - 2.0 * f);
-	return mix(mix(hash(i), hash(i + vec2(1, 0)), f.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), f.x), f.y);
+// smooth interference of travelling waves: crisp water caustics, no blocky noise
+float waves(vec2 p, float t) {
+	float v = 0.0;
+	v += sin(p.x * 7.0 + t * 1.3) * 0.5;
+	v += sin(p.y * 8.0 - t * 1.1 + p.x * 2.0) * 0.5;
+	v += sin((p.x + p.y) * 11.0 + t * 1.7) * 0.35;
+	v += sin(length(p) * 18.0 - t * 2.4) * 0.6;
+	return v;
 }
 void main() {
 	vec2 p = vUv - 0.5;
 	float r = length(p) * 2.0;
 	if (r > 1.0) discard;
-	// concentric ripples travelling outward + caustic noise, like light on water
-	float ripple = sin(r * 26.0 - uTime * 3.0) * 0.5 + 0.5;
-	float caustic = noise(p * 9.0 + vec2(uTime * 0.4, -uTime * 0.3)) * noise(p * 14.0 - uTime * 0.25);
-	vec3 deep = vec3(0.04, 0.22, 0.55);
-	vec3 bright = vec3(0.45, 0.85, 1.0);
-	vec3 col = mix(deep, bright, ripple * 0.35 + caustic * 1.4);
-	col += vec3(0.8, 0.95, 1.0) * pow(1.0 - r, 3.0) * 0.6;
-	col *= smoothstep(1.0, 0.9, r) * 0.9 + 0.1;
-	gl_FragColor = vec4(col * 1.5, 0.92);
+	float t = uTime;
+	float w = waves(p * 3.0, t);
+	float caustic = pow(1.0 - abs(sin(w * 1.6)), 6.0);
+	// concentric ripples spreading from the centre, like a vertical pool of water
+	float ripple = pow(0.5 + 0.5 * sin(r * 34.0 - t * 3.2), 3.0) * (1.0 - r);
+	vec3 deep = vec3(0.03, 0.16, 0.42);
+	vec3 mid = vec3(0.12, 0.42, 0.85);
+	vec3 bright = vec3(0.62, 0.86, 1.0);
+	vec3 col = mix(deep, mid, smoothstep(1.0, 0.15, r));
+	col = mix(col, bright, caustic * 0.55 + ripple * 0.35);
+	col += vec3(0.5, 0.75, 1.0) * pow(max(0.0, 1.0 - r * 2.2), 2.0) * 0.35;
+	// darker rim where the water meets the ring
+	col *= 0.55 + 0.45 * smoothstep(1.0, 0.82, r);
+	gl_FragColor = vec4(col, 0.95);
 }
 `;
+
+/** The rippling "event horizon" alone, to fill any ring (the Sketchfab gate model). */
+export function EventHorizon({ radius, ...props }: { radius: number } & Record<string, unknown>) {
+	const uniforms = useMemo(() => ({ uTime: { value: 0 } }), []);
+	useFrame((_, dt) => {
+		uniforms.uTime.value += dt;
+	});
+	return (
+		<group {...props}>
+			<mesh>
+				<circleGeometry args={[radius, 96]} />
+				<shaderMaterial vertexShader={vertex} fragmentShader={fragment} uniforms={uniforms} transparent side={THREE.DoubleSide} depthWrite={false} toneMapped={false} />
+			</mesh>
+			<pointLight position={[0, 0, 3]} color="#4fb4ff" intensity={70} distance={28} />
+		</group>
+	);
+}
 
 export function Stargate({ x, z, y = 0, rotation = 0 }: { x: number; z: number; y?: number; rotation?: number }) {
 	const uniforms = useMemo(() => ({ uTime: { value: 0 } }), []);

@@ -9,12 +9,12 @@ import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { game } from '@/lib/game-store';
 import { type Mob, type MobState, mobs } from '@/lib/mobs';
 import { player } from '@/lib/player-state';
-import { HOUSES, LAKE } from '@/lib/world';
+import { HOUSES, LAKE, nexusWalkable } from '@/lib/world';
 import { groundAt } from './Player';
 
 /** Valley bugs are KayKit skeletons (CC0); Nexus bugs are Quaternius sci-fi robots (CC0, PBR textures). */
 type Kind = { url: string; height: number; hover: number; once: string[]; anim: Record<MobState, string> };
-const KINDS: Record<'skeleton' | 'bones' | 'drone' | 'quadshell' | 'trilobite', Kind> = {
+const KINDS: Record<'bones' | 'drone' | 'quadshell' | 'trilobite', Kind> = {
 	// hand-painted Sketchfab monster (CC BY 4.0): Skelet_warrior by uchaikineugene
 	bones: {
 		url: '/models/sf/skeleton_warrior.glb',
@@ -22,13 +22,6 @@ const KINDS: Record<'skeleton' | 'bones' | 'drone' | 'quadshell' | 'trilobite', 
 		hover: 0,
 		once: ['rig|Attack_1', 'rig|Dead'],
 		anim: { idle: 'rig|Idel', walk: 'rig|Walck', chase: 'rig|Run', attack: 'rig|Attack_1', hit: 'rig|Idel', dead: 'rig|Dead' },
-	},
-	skeleton: {
-		url: '/models/skeleton.glb',
-		height: 0,
-		hover: 0,
-		once: ['Death_A', 'Hit_A', '1H_Melee_Attack_Chop'],
-		anim: { idle: 'Idle', walk: 'Walking_A', chase: 'Walking_A', attack: '1H_Melee_Attack_Chop', hit: 'Hit_A', dead: 'Death_A' },
 	},
 	drone: {
 		url: '/models/drone.glb',
@@ -99,10 +92,9 @@ function MobUnit({ mob }: { mob: Mob }) {
 			m.castShadow = true;
 			m.frustumCulled = false;
 			const mat = (m.material as THREE.MeshStandardMaterial).clone();
-			// a cursed green glow on skeletons; robots keep their PBR look with a faint neon tint
-			mat.emissive = new THREE.Color(nexus ? '#db2777' : '#16a34a');
-			// painted monsters keep their colours; robots get a faint neon tint
-			mat.emissiveIntensity = nexus ? 0.08 : 0;
+			mat.emissive = new THREE.Color('#000000');
+			// every monster keeps its own colours (a red flash only marks a hit)
+			mat.emissiveIntensity = 0;
 			m.material = mat;
 		});
 		if (kind.height) {
@@ -110,7 +102,7 @@ function MobUnit({ mob }: { mob: Mob }) {
 			clone.scale.setScalar(kind.height / Math.max(box.max.y - box.min.y, 0.01));
 		}
 		return clone;
-	}, [scene, nexus, kind]);
+	}, [scene, kind]);
 	const group = useRef<THREE.Group>(null);
 	const mixer = useMemo(() => new THREE.AnimationMixer(model), [model]);
 	const actions = useMemo(() => Object.fromEntries(animations.map((a) => [a.name, mixer.clipAction(a)])), [animations, mixer]);
@@ -150,6 +142,16 @@ function MobUnit({ mob }: { mob: Mob }) {
 						mob.t = 0;
 					}
 				}
+			}
+		}
+
+		// Nexus bugs stay in the streets
+		if (mob.zone === 'nexus' && !nexusWalkable(mob.x, mob.z)) {
+			mob.x += (mob.homeX - mob.x) * 0.2;
+			mob.z += (mob.homeZ - mob.z) * 0.2;
+			if (mob.state === 'walk') {
+				mob.state = 'idle';
+				mob.t = 0;
 			}
 		}
 
@@ -256,8 +258,8 @@ function MobUnit({ mob }: { mob: Mob }) {
 			model.traverse((o) => {
 				const m = (o as THREE.Mesh).material as THREE.MeshStandardMaterial | undefined;
 				if (!m?.emissive) return;
-				m.emissive.set(flash > 0 ? '#ff2a2a' : nexus ? '#db2777' : '#16a34a');
-				m.emissiveIntensity = flash > 0 ? flash * 1.2 : nexus ? 0.08 : 0;
+				m.emissive.set(flash > 0 ? '#ff2a2a' : '#000000');
+				m.emissiveIntensity = flash > 0 ? flash * 1.2 : 0;
 			});
 		}
 		g.position.set(mob.x, groundAt(mob.x, mob.z) - sink + kind.hover + (kind.hover ? Math.sin(mob.t * 2.4) * 0.2 : 0), mob.z);

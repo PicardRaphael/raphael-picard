@@ -25,6 +25,7 @@ export const KINDS = {
 	bush: { names: ['Bush'], height: [1.1, 1.8], shadow: false },
 	grass: { names: ['GrassLong_1', 'GrassLong_2', 'GrassShort_1'], height: [0.5, 0.9], shadow: false },
 	flower: { names: ['GrassShort_1', 'GrassLong_2'], height: [0.5, 0.9], shadow: false },
+	cliff: { names: ['RockBig_1', 'RockBig_2', 'RockBig_3', 'RockTall'], height: [9, 20], shadow: false },
 } satisfies Record<string, Kind>;
 
 type KindName = keyof typeof KINDS;
@@ -42,7 +43,7 @@ function clearOf(x: number, z: number, margin: number) {
 
 function scatter(): Record<KindName, Placement[]> {
 	const rng = mulberry32(77);
-	const out = { oak: [], twisted: [], pine: [], rock: [], bush: [], grass: [], flower: [] } as Record<KindName, Placement[]>;
+	const out = { oak: [], twisted: [], pine: [], rock: [], bush: [], grass: [], flower: [], cliff: [] } as Record<KindName, Placement[]>;
 	const place = (kind: KindName, x: number, z: number) => {
 		const [a, b] = KINDS[kind].height;
 		out[kind].push({ x, z, y: valHeight(x, z), rot: rng() * Math.PI * 2, h: a + rng() * (b - a), variant: Math.floor(rng() * KINDS[kind].names.length) });
@@ -75,6 +76,15 @@ function scatter(): Record<KindName, Placement[]> {
 		if (!clearOf(x, z, 0)) continue;
 		if (valHeight(x, z) > 12) continue;
 		place(rng() < 0.75 ? 'grass' : 'flower', x, z);
+	}
+	// a belt of big painted rocks where the valley floor meets the mountains
+	for (let i = 0; i < 70; i++) {
+		const a = (i / 70) * Math.PI * 2 + rng() * 0.05;
+		const r = 95 + rng() * 9;
+		const x = Math.cos(a) * r;
+		const z = Math.sin(a) * r - 20;
+		if (Math.hypot(x, z + 96) < 22) continue; // keep the portal hill open
+		place('cliff', x, z);
 	}
 	return out;
 }

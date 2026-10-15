@@ -54,8 +54,27 @@ function QuestBlock({ id }: { id: string }) {
 	);
 }
 
+/** Raphy reacts to where the visitor stands in the story instead of repeating the same line. */
+const RAPHY_TIPS = [
+	'Astuce : les bugs du val ont chacun une fiche « problème / parade ». Retrouve-les toutes dans le Bestiaire du menu.',
+	'Raphaël a commencé par le développement web en 2014 ; aujourd’hui il met des agents IA en production. La Forge raconte ce chemin.',
+	'La Tour du Savoir garde ses compétences : agents, RAG, MCP, évaluation, FinOps.',
+	'Le Cercle de pierres porte son manifeste : des agents utiles, mesurés et sûrs.',
+	'Tu préfères lire tranquillement ? La « Version classique » en haut à gauche ouvre le portfolio en une page.',
+];
+function raphyLine(g: ReturnType<typeof game.get>) {
+	const intro = 'Je suis Raphy, la mascotte de Raphaël Picard, ingénieur IA à Lyon : il conçoit des agents qui tournent en production et forme les équipes à l’IA.';
+	if (g.quests.origines === 'available') return intro + ' Bienvenue dans le Val des Origines !';
+	if (g.quests.origines === 'active') {
+		const left = ['forge', 'tower', 'stones'].filter((id) => !g.visited.includes(id)).map((id) => landmark(id).name);
+		return left.length ? `Il te reste à voir : ${left.join(', ')}. Suis les « ? » dorés.` : 'Tu as tout vu ! Reviens me parler pour terminer la quête.';
+	}
+	if (g.flags.includes('nexus')) return `De retour du Nexus ! ${g.kills} bug${g.kills > 1 ? 's' : ''} corrigé${g.kills > 1 ? 's' : ''} jusqu’ici. Raphy·OS t’attend là-bas pour la suite.`;
+	if (g.quests.portail === 'active' || g.quests.portail === 'available') return 'Le Portail arcanique t’attend au bout du chemin, au nord : de l’autre côté, l’ère des agents.';
+	return RAPHY_TIPS[(g.kills + g.visited.length) % RAPHY_TIPS.length];
+}
+
 const NPC_TEXT: Record<string, string> = {
-	raphy: 'Je suis Raphy, la mascotte de Raphaël Picard : ingénieur IA à Lyon, il conçoit des agents qui tournent en production et forme les équipes à l’IA.',
 	holo: 'Raphy·OS en ligne. Depuis novembre 2025, Raphaël est Senior AI Engineer & Responsable IA chez Neoteem.',
 	portal: 'Une arche ancienne parcourue d’énergie arcanique. Marche dedans pour rejoindre le Nexus : l’ère des agents.',
 	'portal-back': 'Ce portail te ramène au Val des Origines.',
@@ -89,7 +108,7 @@ function Body({ id }: { id: string }) {
 		default:
 			return (
 				<div className="mx-auto max-w-3xl space-y-5 px-4 sm:px-6">
-					{NPC_TEXT[id] && <p className="text-xl leading-relaxed text-white/90">{NPC_TEXT[id]}</p>}
+					{(id === 'raphy' || NPC_TEXT[id]) && <p className="text-xl leading-relaxed text-white/90">{id === 'raphy' ? raphyLine(game.get()) : NPC_TEXT[id]}</p>}
 					<QuestBlock id={id} />
 				</div>
 			);

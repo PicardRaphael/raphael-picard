@@ -37,11 +37,11 @@ export const LANDMARKS: Landmark[] = [
 	// — Le Nexus (futuristic) —
 	{ id: 'portal-back', name: 'Portail de retour', hint: 'Retourner au val', zone: 'nexus', x: 0, z: NEXUS_Z + 14, radius: 6, solid: 0 },
 	{ id: 'holo', name: 'Raphy·OS', hint: 'Parler à Raphy·OS', zone: 'nexus', x: -10, z: NEXUS_Z - 22, radius: 7, solid: 1.4 },
-	{ id: 'agents', name: 'Constellation des Agents', hint: 'Analyser la constellation', zone: 'nexus', x: -46, z: NEXUS_Z - 50, radius: 12, solid: 3 },
-	{ id: 'core', name: "Noyau d'orchestration", hint: 'Inspecter le noyau', zone: 'nexus', x: 46, z: NEXUS_Z - 50, radius: 12, solid: 3 },
-	{ id: 'gallery', name: 'Galerie des Projets', hint: 'Parcourir la galerie', zone: 'nexus', x: 0, z: NEXUS_Z - 82, radius: 13, solid: 0 },
+	{ id: 'agents', name: 'Constellation des Agents', hint: 'Analyser la constellation', zone: 'nexus', x: -32, z: NEXUS_Z - 86, radius: 10, solid: 2.5 },
+	{ id: 'core', name: "Noyau d'orchestration", hint: 'Inspecter le noyau', zone: 'nexus', x: 32, z: NEXUS_Z - 34, radius: 10, solid: 2.5 },
+	{ id: 'gallery', name: 'Galerie des Projets', hint: 'Parcourir la galerie', zone: 'nexus', x: 34, z: NEXUS_Z - 118, radius: 10, solid: 0 },
 	{ id: 'beacon', name: 'Balise de contact', hint: 'Activer la balise', zone: 'nexus', x: 0, z: NEXUS_Z - 125, radius: 12, solid: 4 },
-	{ id: 'race', name: 'Ligne de départ', hint: 'Lancer la course', zone: 'nexus', x: -60, z: NEXUS_Z - 10, radius: 7, solid: 0 },
+	{ id: 'race', name: 'Ligne de départ', hint: 'Lancer la course', zone: 'nexus', x: -30, z: NEXUS_Z - 1, radius: 7, solid: 0 },
 ];
 
 export const LAKE = { x: -36, z: 22, r: 15, level: -1.4 };
@@ -141,7 +141,12 @@ export function valHeight(x: number, z: number) {
 	h += smooth(26, 6, Math.hypot(x - 0, z + 96)) * 2.2;
 	// mountains enclose the valley
 	const r = Math.hypot(x, z + 20);
-	if (r > 92) h += Math.pow((r - 92) * 0.35, 1.6) * (0.8 + fbm(x * 0.03, z * 0.03, 2) * 0.6);
+	// broad massifs rather than needles: a rising shoulder, ridges, and a few higher summits
+	if (r > 92) {
+		const t = r - 92;
+		const ridge = 1 - Math.abs(fbm(x * 0.018, z * 0.018, 3));
+		h += Math.pow(t * 0.3, 1.35) * (0.55 + ridge * 0.55) + Math.max(0, fbm(x * 0.008 + 7, z * 0.008, 2)) * t * 0.35;
+	}
 	return h;
 }
 
@@ -154,4 +159,20 @@ export function landmark(id: string) {
 /** Ground height anywhere: the valley relief, or the flat floor of the Nexus. */
 export function groundAt(x: number, z: number) {
 	return z < -300 ? 0 : valHeight(x, z);
+}
+
+/**
+ * The Nexus is a Hong Kong street canyon: the main avenue along the axis, and four side streets
+ * (two on each side, where the city blocks leave their crossroads). Everything else is building.
+ */
+const NEXUS_AVENUE = { x: 14, zMin: NEXUS_Z - 146, zMax: NEXUS_Z + 24 };
+const NEXUS_SIDE_STREETS = [
+	{ side: -1, z0: NEXUS_Z - 8, z1: NEXUS_Z + 5 },
+	{ side: -1, z0: NEXUS_Z - 92, z1: NEXUS_Z - 79 },
+	{ side: 1, z0: NEXUS_Z - 41, z1: NEXUS_Z - 28 },
+	{ side: 1, z0: NEXUS_Z - 125, z1: NEXUS_Z - 112 },
+];
+export function nexusWalkable(x: number, z: number) {
+	if (Math.abs(x) <= NEXUS_AVENUE.x && z >= NEXUS_AVENUE.zMin && z <= NEXUS_AVENUE.zMax) return true;
+	return NEXUS_SIDE_STREETS.some((s) => z >= s.z0 && z <= s.z1 && x * s.side >= 0 && Math.abs(x) <= 60);
 }

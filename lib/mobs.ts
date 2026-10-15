@@ -65,14 +65,14 @@ const SPECS: { name: string; lesson: string; zone: Zone; x: number; z: number }[
 	{ name: 'Code spaghetti', lesson: 'Démêlé : architecture hexagonale et frontières vérifiées par import-linter.', zone: 'val', x: 44, z: 30 },
 	{ name: 'Merge conflict', lesson: 'Résolu : petites tranches verticales, revues et CI qui juge.', zone: 'val', x: -58, z: 14 },
 	{ name: 'Null pointer', lesson: 'Écrasé : typage strict, Zod et Pydantic valident chaque frontière.', zone: 'val', x: 16, z: -76 },
-	{ name: 'Prompt injection', lesson: 'Bloquée : les sorties du modèle sont validées comme des saisies utilisateur.', zone: 'nexus', x: -20, z: NEXUS_Z - 30 },
-	{ name: 'Timeout', lesson: 'Évité par le routage hybride : un LLM n’est appelé qu’en repli.', zone: 'nexus', x: 22, z: NEXUS_Z - 34 },
-	{ name: 'Coût explosif', lesson: 'Maîtrisé grâce au suivi FinOps Langfuse et au bon modèle pour chaque tâche.', zone: 'nexus', x: 30, z: NEXUS_Z - 100 },
-	{ name: 'Dérive du modèle', lesson: 'Détectée : traces Langfuse et évaluations LLM-as-judge en continu.', zone: 'nexus', x: -52, z: NEXUS_Z - 70 },
-	{ name: 'Fuite de clé API', lesson: 'Colmatée : secrets hors du code, hooks de sécurité qui bloquent avant le commit.', zone: 'nexus', x: 54, z: NEXUS_Z - 72 },
-	{ name: 'Cold start', lesson: 'Réchauffé : instances Cloud Run minimales et chargement paresseux des modèles.', zone: 'nexus', x: 0, z: NEXUS_Z - 55 },
-	{ name: 'Token perdu', lesson: 'Retrouvé : contexte compacté, mémoire dans le dépôt et skills ciblées.', zone: 'nexus', x: -12, z: NEXUS_Z - 140 },
-	{ name: 'Agent perdu', lesson: 'Retrouvé : chaque agent a son graphe LangGraph, ses outils et ses garde-fous.', zone: 'nexus', x: -30, z: NEXUS_Z - 105 },
+	{ name: 'Prompt injection', lesson: 'Bloquée : les sorties du modèle sont validées comme des saisies utilisateur.', zone: 'nexus', x: -8, z: NEXUS_Z - 30 },
+	{ name: 'Timeout', lesson: 'Évité par le routage hybride : un LLM n’est appelé qu’en repli.', zone: 'nexus', x: 26, z: NEXUS_Z - 36 },
+	{ name: 'Coût explosif', lesson: 'Maîtrisé grâce au suivi FinOps Langfuse et au bon modèle pour chaque tâche.', zone: 'nexus', x: 9, z: NEXUS_Z - 100 },
+	{ name: 'Dérive du modèle', lesson: 'Détectée : traces Langfuse et évaluations LLM-as-judge en continu.', zone: 'nexus', x: -9, z: NEXUS_Z - 72 },
+	{ name: 'Fuite de clé API', lesson: 'Colmatée : secrets hors du code, hooks de sécurité qui bloquent avant le commit.', zone: 'nexus', x: 30, z: NEXUS_Z - 118 },
+	{ name: 'Cold start', lesson: 'Réchauffé : instances Cloud Run minimales et chargement paresseux des modèles.', zone: 'nexus', x: 6, z: NEXUS_Z - 50 },
+	{ name: 'Token perdu', lesson: 'Retrouvé : contexte compacté, mémoire dans le dépôt et skills ciblées.', zone: 'nexus', x: -6, z: NEXUS_Z - 135 },
+	{ name: 'Agent perdu', lesson: 'Retrouvé : chaque agent a son graphe LangGraph, ses outils et ses garde-fous.', zone: 'nexus', x: -40, z: NEXUS_Z - 85 },
 ];
 
 export const mobs: Mob[] = SPECS.map((s, i) => ({

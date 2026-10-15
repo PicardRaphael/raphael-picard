@@ -10,9 +10,8 @@ import { mobs, nearestMob } from '@/lib/mobs';
 import { music } from '@/lib/music';
 import { player } from '@/lib/player-state';
 import { canopies, vegetationObstacles } from '@/lib/vegetation';
-import { HOUSES, LANDMARKS, NEXUS_CENTER, NEXUS_RADIUS, NEXUS_SPAWN, SPAWN, VAL_RADIUS, groundAt, landmark } from '@/lib/world';
+import { HOUSES, LANDMARKS, NEXUS_CENTER, NEXUS_RADIUS, NEXUS_SPAWN, SPAWN, VAL_RADIUS, groundAt, landmark, nexusWalkable } from '@/lib/world';
 import { FpsWeapon } from './FpsWeapon';
-import { CARS, SHOPS } from './NexusProps';
 import { HeroModel } from './Hero';
 import { fireBolt } from './Lasers';
 
@@ -332,19 +331,9 @@ function usePointerControls() {
 			if (!game.get().started) return;
 			e.preventDefault();
 			if (game.get().hero === 'runner') {
-				// wheel out of first person = third-person view; wheel back in = first person again
-				if (player.camera.firstPerson && e.deltaY > 0) {
-					player.camera.firstPerson = false;
-					player.camera.distance = 7;
-					if (document.pointerLockElement) document.exitPointerLock();
-					window.dispatchEvent(new CustomEvent('fps:view', { detail: false }));
-					return;
-				}
-				if (!player.camera.firstPerson && e.deltaY < 0 && player.camera.distance <= 6.2) {
-					player.camera.firstPerson = true;
-					window.dispatchEvent(new CustomEvent('fps:view', { detail: true }));
-					return;
-				}
+				// the runner stays in first person: the wheel zooms the view in and out (the gun adapts its scale)
+				player.camera.fov = THREE.MathUtils.clamp(player.camera.fov + e.deltaY * 0.04, 30, 115);
+				return;
 			}
 			player.camera.distance = THREE.MathUtils.clamp(player.camera.distance + e.deltaY * 0.012, 6, 48);
 		};
@@ -369,6 +358,13 @@ function usePointerControls() {
 			player.camera.lookY = THREE.MathUtils.clamp(((e.clientY - r.top) / r.height) * 2 - 1, -1, 1);
 		};
 		const leave = () => {
+			// first person without pointer lock: a cursor that left the window by a side keeps turning the view
+			// that way (full 360°) until it comes back; otherwise the free look recentres
+			if (isFps() && !document.pointerLockElement && Math.abs(player.camera.lookX) > 0.5) {
+				player.camera.lookX = Math.sign(player.camera.lookX);
+				player.camera.lookY = 0;
+				return;
+			}
 			player.camera.lookX = 0;
 			player.camera.lookY = 0;
 		};
@@ -398,8 +394,6 @@ function usePointerControls() {
 const OBSTACLES: { x: number; z: number; r: number }[] = [
 	...LANDMARKS.filter((l) => l.solid > 0).map((l) => ({ x: l.x, z: l.z, r: l.solid })),
 	...HOUSES.map((h) => ({ x: h.x, z: h.z, r: h.c })),
-	...SHOPS.map((s) => ({ x: s.x, z: s.z, r: 6 })),
-	...CARS.map((c) => ({ x: c.x, z: c.z, r: 2.2 })),
 ];
 
 /** Ring that flashes where the player clicked. */
@@ -612,6 +606,16 @@ export function Player() {
 			nx = cx + ((nx - cx) / rd) * R;
 			nz = cz + ((nz - cz) / rd) * R;
 		}
+		// the Nexus streets are walled by buildings: slide along the facades
+		if (inNexus && !nexusWalkable(nx, nz)) {
+			if (nexusWalkable(nx, player.z)) nz = player.z;
+			else if (nexusWalkable(player.x, nz)) nx = player.x;
+			else {
+				nx = player.x;
+				nz = player.z;
+			}
+			player.moveTarget = null;
+		}
 		// too steep: slide back (cliffs and mountain flanks are not walkable)
 		if (!inNexus && groundAt(nx, nz) - groundAt(player.x, player.z) > Math.max(0.35, Math.hypot(nx - player.x, nz - player.z) * 1.1)) {
 			nx = player.x;
@@ -717,6 +721,16 @@ export function Player() {
 				}
 			}
 			v.tmp.y = Math.max(v.tmp.y, groundAt(v.tmp.x, v.tmp.z) + 1.2);
+		}
+		// first person zooms with the wheel; the third-person camera keeps the default lens
+		const cam = camera as THREE.PerspectiveCamera;
+		const wantFov = fps ? player.camera.fov : 55;
+		// a close near plane in first person, so a zoomed-in (scaled-down) gun is never clipped
+		const wantNear = fps ? 0.04 : 0.3;
+		if (Math.abs(cam.fov - wantFov) > 0.05 || cam.near !== wantNear) {
+			cam.fov += (wantFov - cam.fov) * Math.min(1, dt * 10);
+			cam.near = wantNear;
+			cam.updateProjectionMatrix();
 		}
 		if (fps) {
 			// first person: eyes at 1.65 m, a light head bob while running

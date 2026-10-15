@@ -91,7 +91,9 @@ function QuestTracker() {
 function Prompt() {
 	const id = useGame((s) => s.inRange);
 	const panel = useGame((s) => s.panel);
-	if (!id || panel) return null;
+	const hero = useGame((s) => s.hero);
+	// in third person the prompt floats above the hero's head (HeadPrompt); first person keeps it on screen
+	if (!id || panel || hero !== 'runner' || !player.camera.firstPerson) return null;
 	const l = landmark(id);
 	return (
 		<button
@@ -99,9 +101,9 @@ function Prompt() {
 				game.set({ panel: id });
 				game.visit(id);
 			}}
-			className="fixed bottom-28 left-1/2 z-20 -translate-x-1/2 rounded-xl border border-white/20 bg-black/70 px-5 py-2.5 text-white backdrop-blur-md transition-transform hover:scale-105"
+			className="fixed top-[58%] left-1/2 z-20 -translate-x-1/2 rounded-xl border border-[#f5c451]/50 bg-black/75 px-4 py-2 text-white shadow-[0_0_18px_rgba(245,196,81,0.25)] backdrop-blur-md transition-transform hover:scale-105"
 		>
-			<span className="mr-2 inline-grid h-7 w-7 place-items-center rounded-md border border-white/40 font-mono text-sm">E</span>
+			<span className="mr-2 inline-grid h-7 w-7 place-items-center rounded-md border border-[#f5c451]/70 font-mono text-sm text-[#f5c451]">E</span>
 			{l.hint}
 		</button>
 	);

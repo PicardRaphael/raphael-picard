@@ -408,6 +408,8 @@ const OBSTACLES: { x: number; z: number; r: number }[] = [
 	{ x: landmark('stones').x, z: landmark('stones').z, r: 1.9 },
 	// the lake: the hero walks round its shore, never into the water
 	{ x: LAKE.x, z: LAKE.z, r: LAKE.r + 1.8 },
+	// the pedestals under the wings of the Nexus return gate (Nexus.tsx)
+	...[-9.6, 9.6].map((dx) => ({ x: landmark('portal-back').x + dx, z: landmark('portal-back').z, r: 2.7 })),
 ];
 
 /** Ring that flashes where the player clicked. */

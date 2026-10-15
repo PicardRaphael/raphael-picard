@@ -64,6 +64,10 @@ function Hologram({ positions, a, b, pixelRatio, ...props }: { positions: Float3
 
 const padMat = new THREE.MeshStandardMaterial({ color: '#141026', metalness: 0.8, roughness: 0.3 });
 const neon = new THREE.MeshBasicMaterial({ color: '#38bdf8', toneMapped: false });
+const neonPink = new THREE.MeshBasicMaterial({ color: '#e879f9', toneMapped: false });
+const pedestalMat = new THREE.MeshStandardMaterial({ color: '#2c3247', metalness: 0.6, roughness: 0.45 });
+/** Under the side wings of the return gate (x offsets from its centre); Player.tsx makes them solid. */
+const GATE_PEDESTALS = [{ x: -9.6 }, { x: 9.6 }];
 
 function Pad({ x, z, r = 7 }: { x: number; z: number; r?: number }) {
 	return (
@@ -282,10 +286,27 @@ export function Nexus({ pixelRatio }: { pixelRatio: number; reflect?: boolean })
 			<Beacon />
 			<HoloNpc />
 			<Suspense fallback={<Stargate x={back.x} z={back.z} rotation={Math.PI} />}>
-				<SfModel file="scifi_gate" height={13} hide={['Object_6']} position={[back.x, 0, back.z]} rotation={[0, Math.PI, 0]} />
-				{/* the ring of the gate model (13 m tall, centred 6.4 m up, set 3 m in front of the base) gets a real event horizon */}
-				<EventHorizon radius={5.2} position={[back.x, 6.4, back.z + 3.06]} rotation={[0, Math.PI, 0]} />
+				{/* sunk 1 m so the ring rests on the street instead of hovering 1.2 m above it */}
+				<SfModel file="scifi_gate" height={13} hide={['Object_6']} position={[back.x, -1, back.z]} rotation={[0, Math.PI, 0]} />
+				{/* the ring of the gate model (13 m tall, centred 5.4 m up once sunk, set 3 m in front of the base) gets a real event horizon */}
+				<EventHorizon radius={5.2} position={[back.x, 5.4, back.z + 3.06]} rotation={[0, Math.PI, 0]} />
 			</Suspense>
+			{/* the gate model's two side wings hover 4 m up: steel pedestals carry them to the street */}
+			{GATE_PEDESTALS.map((p) => (
+				<group key={p.x} position={[back.x + p.x, 0, back.z]}>
+					<mesh position={[0, 2.1, 0]} material={pedestalMat} castShadow receiveShadow>
+						<boxGeometry args={[5.6, 4.2, 4.8]} />
+					</mesh>
+					{/* neon trims: one at mid-height, one along the street so the contact with the ground reads at night */}
+					{[-2.42, 2.42].flatMap((dz) =>
+						[0.12, 2.1].map((y) => (
+							<mesh key={`${dz}-${y}`} position={[0, y, dz]} material={dz > 0 ? neon : neonPink}>
+								<boxGeometry args={[5.62, 0.12, 0.04]} />
+							</mesh>
+						)),
+					)}
+				</group>
+			))}
 		</group>
 	);
 }

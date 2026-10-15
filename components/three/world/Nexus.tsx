@@ -9,7 +9,7 @@ import { NEXUS_CENTER, landmark } from '@/lib/world';
 import { constellation, knot, mulberry32 } from '../shapes';
 import { Cyber } from './Cyber';
 import { Street } from './Street';
-import { PortalGate } from './Landmarks';
+import { Stargate } from './Stargate';
 import { RaphyModel } from './Raphy';
 
 /**
@@ -214,7 +214,7 @@ export function Nexus({ pixelRatio, reflect }: { pixelRatio: number; reflect: bo
 			<Gallery />
 			<Beacon />
 			<HoloNpc />
-			<PortalGate x={back.x} z={back.z} y={0} back />
+			<Stargate x={back.x} z={back.z} rotation={Math.PI} />
 			<group position={[race.x, 0, race.z]}>
 				<Pad x={0} z={0} r={5} />
 				{[-1, 1].map((s) => (

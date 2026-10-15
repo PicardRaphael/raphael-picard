@@ -13,6 +13,7 @@ import { AchievementWatcher, Menu } from './Menu';
 import { drawMarker } from './mapMarkers';
 import { Panel } from './Panels';
 import { Soundtrack } from './Soundtrack';
+import { Crosshair } from './Crosshair';
 import { KeyHints } from './KeyHints';
 import { StartScreen } from './StartScreen';
 import { HurtFlash, TouchControls, ZoomButtons } from './TouchControls';
@@ -227,6 +228,7 @@ export function GameUI() {
 					<Minimap />
 					<Controls />
 					<Prompt />
+					<Crosshair />
 					<ZoomButtons />
 					<TouchControls />
 				</>

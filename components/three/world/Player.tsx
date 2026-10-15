@@ -11,6 +11,7 @@ import { music } from '@/lib/music';
 import { player } from '@/lib/player-state';
 import { canopies, vegetationObstacles } from '@/lib/vegetation';
 import { HOUSES, LANDMARKS, NEXUS_CENTER, NEXUS_RADIUS, NEXUS_SPAWN, SPAWN, VAL_RADIUS, groundAt, landmark } from '@/lib/world';
+import { FpsWeapon } from './FpsWeapon';
 import { HeroModel } from './Hero';
 import { fireBolt } from './Lasers';
 
@@ -49,9 +50,42 @@ function damage(target: (typeof mobs)[number]) {
 /** Melee for the knight (sword), ranged laser shots for the cyberpunk runner. */
 export const attackRange = () => (game.get().hero === 'runner' ? 22 : 3.4);
 
+/** FPS shot: the bug closest to the aiming ray (within 45 m) is hit; otherwise the bolt flies straight ahead. */
+function fpsShot() {
+	const yaw = player.camera.yaw;
+	const pitch = player.camera.fpsPitch;
+	const dir = new THREE.Vector3(-Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch));
+	const eye = new THREE.Vector3(player.x, player.y + 1.65, player.z);
+	let best: (typeof mobs)[number] | null = null;
+	let bestD = 1.8;
+	const to = new THREE.Vector3();
+	for (const m of mobs) {
+		if (m.state === 'dead' || m.zone !== game.get().zone) continue;
+		to.set(m.x - eye.x, groundAt(m.x, m.z) + 1.1 - eye.y, m.z - eye.z);
+		const along = to.dot(dir);
+		if (along < 0 || along > 45) continue;
+		const off = to.clone().addScaledVector(dir, -along).length();
+		if (off < bestD) {
+			bestD = off;
+			best = m;
+		}
+	}
+	const muzzle = eye.clone().addScaledVector(dir, 0.9).add(new THREE.Vector3(Math.cos(yaw) * 0.25, -0.2, -Math.sin(yaw) * 0.25));
+	const target = best;
+	if (target) fireBolt(muzzle, target, () => damage(target));
+	else fireBolt(muzzle, eye.clone().addScaledVector(dir, 40), () => undefined);
+	window.dispatchEvent(new CustomEvent('fps:recoil'));
+}
+
 export function attack() {
 	if (player.attack > 0 || !game.get().started || game.get().panel) return;
 	const ranged = game.get().hero === 'runner';
+	if (ranged) {
+		player.attack = 0.18;
+		music.sfx('swing');
+		fpsShot();
+		return;
+	}
 	player.attack = ranged ? 0.45 : 0.65;
 	music.sfx('swing');
 	const target = nearestMob(player.x, player.z, attackRange());
@@ -83,7 +117,15 @@ function useKeyboard() {
 		const has = (a: Parameters<typeof keymap.is>[0]) => [...keys].some((k) => keymap.is(a, k));
 		const sync = () => {
 			player.input.forward = (has('forward') ? 1 : 0) - (has('back') ? 1 : 0);
-			player.input.turn = (has('left') ? 1 : 0) - (has('right') ? 1 : 0);
+			const side = (has('left') ? 1 : 0) - (has('right') ? 1 : 0);
+			// first person: left/right strafe; third person: they turn the camera like WoW
+			if (game.get().hero === 'runner') {
+				player.input.turn = 0;
+				player.input.strafe = -side;
+			} else {
+				player.input.turn = side;
+				player.input.strafe = 0;
+			}
 			player.input.boost = has('sprint');
 			if (player.input.forward || player.input.turn) player.moveTarget = null;
 		};
@@ -178,6 +220,12 @@ function usePointerControls() {
 
 		const down = (e: PointerEvent) => {
 			if (!game.get().started || game.get().panel || game.get().overlay) return;
+			if (game.get().hero === 'runner' && e.pointerType === 'mouse') {
+				// first person: the first click captures the mouse, the next ones shoot
+				if (document.pointerLockElement !== el) void el.requestPointerLock();
+				else attack();
+				return;
+			}
 			el.setPointerCapture(e.pointerId);
 			pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY });
 			if (pointers.size === 2) {
@@ -202,7 +250,8 @@ function usePointerControls() {
 			if (Math.hypot(e.clientX - p.sx, e.clientY - p.sy) > 6) {
 				player.camera.dragging = true;
 				player.camera.yaw -= dx * 0.006;
-				player.camera.pitch = THREE.MathUtils.clamp(player.camera.pitch + dy * 0.004, 0.08, 1.25);
+				if (game.get().hero === 'runner') player.camera.fpsPitch = THREE.MathUtils.clamp(player.camera.fpsPitch - dy * 0.004, -1.2, 1.2);
+				else player.camera.pitch = THREE.MathUtils.clamp(player.camera.pitch + dy * 0.004, 0.08, 1.25);
 			}
 		};
 		const up = (e: PointerEvent) => {
@@ -263,7 +312,12 @@ function usePointerControls() {
 		};
 		// free look: the camera follows the mouse without clicking (mouse only, not touch)
 		const look = (e: PointerEvent) => {
-			if (e.pointerType !== 'mouse' || pointers.size > 0) return;
+			if (document.pointerLockElement === el) {
+				player.camera.yaw -= e.movementX * 0.0022;
+				player.camera.fpsPitch = THREE.MathUtils.clamp(player.camera.fpsPitch - e.movementY * 0.0022, -1.2, 1.2);
+				return;
+			}
+			if (e.pointerType !== 'mouse' || pointers.size > 0 || game.get().hero === 'runner') return;
 			const r = el.getBoundingClientRect();
 			player.camera.lookX = THREE.MathUtils.clamp(((e.clientX - r.left) / r.width) * 2 - 1, -1, 1);
 			player.camera.lookY = THREE.MathUtils.clamp(((e.clientY - r.top) / r.height) * 2 - 1, -1, 1);
@@ -407,8 +461,10 @@ export function Player() {
 		const inp = player.input;
 		if (canMove) player.camera.yaw += inp.turn * 2.2 * dt;
 		// free look: the view leans toward the mouse, and keeps turning near the screen edges
-		const lx = g.started && !g.panel && !g.overlay && !player.camera.dragging ? player.camera.lookX : 0;
-		const ly = g.started && !g.panel && !g.overlay && !player.camera.dragging ? player.camera.lookY : 0;
+		const fps = g.hero === 'runner' && g.started;
+		if (fps && (g.panel || g.overlay) && document.pointerLockElement) document.exitPointerLock();
+		const lx = !fps && g.started && !g.panel && !g.overlay && !player.camera.dragging ? player.camera.lookX : 0;
+		const ly = !fps && g.started && !g.panel && !g.overlay && !player.camera.dragging ? player.camera.lookY : 0;
 		const edge = Math.max(0, Math.abs(lx) - 0.72) / 0.28;
 		player.camera.yaw -= Math.sign(lx) * edge * edge * 1.9 * dt;
 		v.lookYaw += (-lx * 0.55 - v.lookYaw) * Math.min(1, dt * 4);
@@ -521,6 +577,7 @@ export function Player() {
 				player.camera.yaw += cd * Math.min(1, dt * 0.9);
 			}
 		}
+		if (fps) v.facing = player.camera.yaw;
 		if (b) {
 			b.position.set(player.x, player.y, player.z);
 			// KayKit models face +Z
@@ -570,11 +627,21 @@ export function Player() {
 			);
 			v.tmp.y = Math.max(v.tmp.y, groundAt(v.tmp.x, v.tmp.z) + 1.2);
 		}
-		v.camPos.lerp(v.tmp, 1 - Math.exp(-dt * (g.started ? 10 : 1.5)));
-		camera.position.copy(v.camPos);
-		v.tmp.set(player.x, player.y + 1.8, player.z);
-		v.look.lerp(v.tmp, 1 - Math.exp(-dt * 12));
-		camera.lookAt(v.look);
+		if (fps) {
+			// first person: eyes at 1.65 m, a light head bob while running
+			const bob = Math.sin(v.time * 11) * 0.05 * Math.min(player.speed / RUN, 1);
+			camera.position.set(player.x, player.y + 1.65 + bob, player.z);
+			v.camPos.copy(camera.position);
+			const pt = player.camera.fpsPitch;
+			camera.lookAt(player.x - Math.sin(player.camera.yaw) * Math.cos(pt) * 10, player.y + 1.65 + Math.sin(pt) * 10, player.z - Math.cos(player.camera.yaw) * Math.cos(pt) * 10);
+			v.look.set(player.x, player.y + 1.8, player.z);
+		} else {
+			v.camPos.lerp(v.tmp, 1 - Math.exp(-dt * (g.started ? 10 : 1.5)));
+			camera.position.copy(v.camPos);
+			v.tmp.set(player.x, player.y + 1.8, player.z);
+			v.look.lerp(v.tmp, 1 - Math.exp(-dt * 12));
+			camera.lookAt(v.look);
+		}
 
 		// interactions: nearest landmark in range
 		let range: string | null = null;
@@ -613,7 +680,7 @@ export function Player() {
 	return (
 		<>
 			<Suspense fallback={null}>
-				<HeroModel key={hero} ref={body} kind={hero} animation={anim} speed={animSpeed} />
+				{hero === 'runner' ? <FpsWeapon /> : <HeroModel key={hero} ref={body} kind={hero} animation={anim} speed={animSpeed} />}
 			</Suspense>
 			<ClickMarker />
 		</>

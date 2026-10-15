@@ -8,11 +8,15 @@ import type { Mob } from '@/lib/mobs';
 import { groundAt } from '@/lib/world';
 
 /** Laser bolts fired by the runner's pistol: they fly to the target and hit on arrival. */
-type Bolt = { x: number; y: number; z: number; target: Mob; onHit: () => void; life: number };
+type Target = Mob | THREE.Vector3;
+type Bolt = { x: number; y: number; z: number; target: Target; onHit: () => void; life: number };
+
+const isPoint = (t: Target): t is THREE.Vector3 => t instanceof THREE.Vector3;
+const aim = (t: Target) => (isPoint(t) ? t : new THREE.Vector3(t.x, groundAt(t.x, t.z) + 1.2, t.z));
 
 export const bolts: Bolt[] = [];
 
-export function fireBolt(from: { x: number; y: number; z: number }, target: Mob, onHit: () => void) {
+export function fireBolt(from: { x: number; y: number; z: number }, target: Target, onHit: () => void) {
 	bolts.push({ ...from, target, onHit, life: 0 });
 }
 
@@ -32,12 +36,10 @@ export function Lasers() {
 		for (let i = bolts.length - 1; i >= 0; i--) {
 			const b = bolts[i];
 			b.life += dt;
-			const tx = b.target.x;
-			const ty = groundAt(b.target.x, b.target.z) + 1.2;
-			const tz = b.target.z;
-			dir.set(tx - b.x, ty - b.y, tz - b.z);
+			const t = aim(b.target);
+			dir.set(t.x - b.x, t.y - b.y, t.z - b.z);
 			const d = dir.length();
-			const step = 55 * dt;
+			const step = 90 * dt;
 			if (d <= step || b.life > 1.5) {
 				b.onHit();
 				bolts.splice(i, 1);
@@ -53,7 +55,8 @@ export function Lasers() {
 			if (!b) {
 				m.makeScale(0, 0, 0);
 			} else {
-				dir.set(b.target.x - b.x, 0, b.target.z - b.z).normalize();
+				const t = aim(b.target);
+				dir.set(t.x - b.x, t.y - b.y, t.z - b.z).normalize();
 				q.setFromUnitVectors(fwd, dir.lengthSq() > 0 ? dir : fwd);
 				m.compose(new THREE.Vector3(b.x, b.y, b.z), q, new THREE.Vector3(0.12, 0.12, 1.6));
 			}

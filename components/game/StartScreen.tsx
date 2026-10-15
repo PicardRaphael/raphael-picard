@@ -85,7 +85,7 @@ function KeyConfig({ onClose }: { onClose: () => void }) {
 
 const HEROES = [
 	{ id: 'knight' as const, name: 'Chevalier du Val', tag: 'Fantasy', text: 'Armure, épée et bouclier : le héros des Terres anciennes.', ring: '#ffd100' },
-	{ id: 'runner' as const, name: 'Runner du Nexus', tag: 'Cyberpunk', text: 'Capuche néon et lames lumineuses : taillé pour la ville.', ring: '#e879f9' },
+	{ id: 'runner' as const, name: 'Runner du Nexus', tag: 'Cyberpunk', text: 'Vue à la première personne, fusil sci-fi : la ville à hauteur d’yeux.', ring: '#e879f9' },
 ];
 
 export function StartScreen() {

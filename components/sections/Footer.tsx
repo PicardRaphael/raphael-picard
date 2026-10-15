@@ -7,7 +7,7 @@ export function Footer() {
 				<p>
 					© {new Date().getFullYear()} {site.name} — Ingénieur IA à Lyon.
 				</p>
-				<p className="font-mono text-xs">Next.js · React Three Fiber · shaders GLSL maison · zéro modèle 3D téléchargé</p>
+				<p className="font-mono text-xs">Next.js · React Three Fiber · shaders GLSL · modèles 3D KayKit & Quaternius (CC0)</p>
 				<ul className="flex gap-4">
 					<li>
 						<a className="hover:text-ink transition-colors" href={site.social.linkedin} rel="me noopener" target="_blank">

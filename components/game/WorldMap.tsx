@@ -10,19 +10,22 @@ import { QUESTS } from '@/lib/quests';
 import { HOUSES, LAKE, LANDMARKS, NEXUS_CENTER, NEXUS_RADIUS, VAL_RADIUS, pathDistance, valHeight } from '@/lib/world';
 
 const SIZE = 640;
+const BAKE = 400;
+let baked: HTMLCanvasElement | null = null;
 
 /** Painted top-down map of the valley, baked once from the same height and colour rules as the 3D terrain. */
 function bakeValley() {
+	if (baked) return baked;
 	const c = document.createElement('canvas');
-	c.width = c.height = SIZE;
+	c.width = c.height = BAKE;
 	const ctx = c.getContext('2d');
 	if (!ctx) return c;
-	const img = ctx.createImageData(SIZE, SIZE);
+	const img = ctx.createImageData(BAKE, BAKE);
 	const R = VAL_RADIUS + 18;
-	for (let py = 0; py < SIZE; py++) {
-		for (let px = 0; px < SIZE; px++) {
-			const x = (px / SIZE - 0.5) * 2 * R;
-			const z = (py / SIZE - 0.5) * 2 * R - 20;
+	for (let py = 0; py < BAKE; py++) {
+		for (let px = 0; px < BAKE; px++) {
+			const x = (px / BAKE - 0.5) * 2 * R;
+			const z = (py / BAKE - 0.5) * 2 * R - 20;
 			const h = valHeight(x, z);
 			let r = 98;
 			let g = 161;
@@ -40,7 +43,7 @@ function bakeValley() {
 			if (h > 28) [r, g, b] = [236, 232, 226];
 			// soft relief shading
 			const sh = (valHeight(x + 1.5, z + 1.5) - h) * 6;
-			const i = (py * SIZE + px) * 4;
+			const i = (py * BAKE + px) * 4;
 			img.data[i] = Math.max(0, Math.min(255, r - sh));
 			img.data[i + 1] = Math.max(0, Math.min(255, g - sh));
 			img.data[i + 2] = Math.max(0, Math.min(255, b - sh));
@@ -48,6 +51,7 @@ function bakeValley() {
 		}
 	}
 	ctx.putImageData(img, 0, 0);
+	baked = c;
 	return c;
 }
 
@@ -91,7 +95,7 @@ export function WorldMap() {
 					ctx.stroke();
 				}
 			} else if (valley) {
-				ctx.drawImage(valley, 0, 0);
+				ctx.drawImage(valley, 0, 0, SIZE, SIZE);
 				ctx.fillStyle = '#3b5aa8';
 				for (const h of HOUSES) {
 					const [x, y] = toPx(h.x, h.z);

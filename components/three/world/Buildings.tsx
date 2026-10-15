@@ -5,6 +5,7 @@ import { useMemo } from 'react';
 import * as THREE from 'three';
 
 import { HOUSES, landmark, valHeight } from '@/lib/world';
+import { TowerMagic } from './TowerMagic';
 
 /** Medieval buildings from KayKit Medieval Hexagon (CC0): one hex tile = 2 units, scaled to the world. */
 const URL = '/models/village.glb';
@@ -47,6 +48,7 @@ export function Village() {
 			))}
 			<Building type="building_blacksmith_blue" x={forge.x} z={forge.z} r={0.6} s={1.25} />
 			<Building type="building_tower_A_blue" x={tower.x} z={tower.z} r={0.3} s={1.5} />
+			<TowerMagic scale={UNIT * 1.5} />
 		</group>
 	);
 }

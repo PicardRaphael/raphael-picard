@@ -5,6 +5,7 @@ import { useEffect, useState, useSyncExternalStore } from 'react';
 
 import { game, useGame } from '@/lib/game-store';
 import { ACTIONS, type Action, keyLabel, keymap } from '@/lib/keymap';
+import { music } from '@/lib/music';
 
 type LayoutMap = Map<string, string>;
 
@@ -102,7 +103,10 @@ export function StartScreen() {
 	useEffect(() => {
 		if (started) return;
 		const on = (e: KeyboardEvent) => {
-			if (e.code === 'Enter' && !keys) game.set({ started: true, sound: true });
+			if (e.code === 'Enter' && !keys) {
+				void music.start();
+				game.set({ started: true, sound: true });
+			}
 		};
 		window.addEventListener('keydown', on);
 		return () => window.removeEventListener('keydown', on);
@@ -141,7 +145,11 @@ export function StartScreen() {
 
 				<div className="mt-6 flex flex-wrap items-center justify-center gap-3">
 					<button
-						onClick={() => game.set({ started: true, sound: true })}
+						onClick={() => {
+							// unlock audio inside the gesture itself (required by Safari / iOS)
+							void music.start();
+							game.set({ started: true, sound: true });
+						}}
 						className="font-display rounded-full bg-gradient-to-r from-[#651fff] to-[#c50eff] px-9 py-3.5 text-lg font-bold text-white shadow-[0_0_40px_-6px_#c50eff] transition-transform hover:scale-105"
 					>
 						Jouer

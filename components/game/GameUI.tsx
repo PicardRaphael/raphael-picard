@@ -6,6 +6,7 @@ import { useEffect, useRef } from 'react';
 import { game, useGame } from '@/lib/game-store';
 import { player } from '@/lib/player-state';
 import { mobs } from '@/lib/mobs';
+import { music } from '@/lib/music';
 import { QUESTS } from '@/lib/quests';
 import { LANDMARKS, NEXUS_CENTER, NEXUS_RADIUS, VAL_RADIUS, landmark } from '@/lib/world';
 import { AchievementWatcher, Menu } from './Menu';
@@ -56,7 +57,7 @@ function QuestTracker() {
 	const available = QUESTS.find((q) => quests[q.id] === 'available');
 	const kills = useGame((s) => s.kills);
 	return (
-		<aside className="pointer-events-none fixed top-4 right-20 z-20 w-72 max-w-[calc(100vw-2rem)] text-right" aria-label="Suivi des quêtes">
+		<aside className="pointer-events-none fixed top-4 right-20 z-20 w-72 max-w-[calc(100vw-2rem)] text-right max-sm:top-auto max-sm:right-3 max-sm:bottom-48 max-sm:w-52 max-sm:text-xs" aria-label="Suivi des quêtes">
 			<p className="mb-3 font-mono text-xs text-[#ff8a80] drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">☠ Bugs corrigés : {kills} / {mobs.length}</p>
 			{active.length === 0 && available && (
 				<p className="text-sm text-[#ffd100] drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">
@@ -188,7 +189,10 @@ function Corner() {
 				Version classique
 			</Link>
 			<button
-				onClick={() => game.set({ sound: !sound })}
+				onClick={() => {
+					if (!sound) void music.start();
+					game.set({ sound: !sound });
+				}}
 				aria-pressed={sound}
 				className="rounded-full border border-white/20 bg-black/50 px-3 py-2 text-sm text-white backdrop-blur-md hover:bg-black/70"
 			>

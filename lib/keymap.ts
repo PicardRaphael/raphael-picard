@@ -1,7 +1,7 @@
 'use client';
 
 /** Rebindable controls, stored per visitor in localStorage (falls back to defaults when storage is unavailable). */
-export type Action = 'forward' | 'back' | 'left' | 'right' | 'jump' | 'attack' | 'interact' | 'sprint' | 'map' | 'menu';
+export type Action = 'forward' | 'back' | 'left' | 'right' | 'jump' | 'attack' | 'interact' | 'sprint' | 'map' | 'menu' | 'cursor';
 
 export const ACTIONS: { id: Action; label: string }[] = [
 	{ id: 'forward', label: 'Avancer' },
@@ -14,6 +14,7 @@ export const ACTIONS: { id: Action; label: string }[] = [
 	{ id: 'sprint', label: 'Sprinter' },
 	{ id: 'map', label: 'Carte' },
 	{ id: 'menu', label: 'Menu / options' },
+	{ id: 'cursor', label: 'Libérer / reprendre la souris (FPS)' },
 ];
 
 /** Two keys per action: a primary (editable) and a fixed secondary so arrows always work. */
@@ -29,6 +30,7 @@ const DEFAULTS: Record<Action, [string, string]> = {
 	// M sits on the Semicolon key of an AZERTY keyboard
 	map: ['KeyM', 'Semicolon'],
 	menu: ['KeyO', 'Escape'],
+	cursor: ['AltLeft', 'KeyX'],
 };
 
 const STORAGE = 'rp-keymap-v1';
@@ -74,6 +76,7 @@ export function keyLabel(code: string) {
 		Space: 'Espace',
 		ShiftLeft: 'Maj',
 		ShiftRight: 'Maj D',
+		AltLeft: 'Alt',
 		Enter: 'Entrée',
 		Escape: 'Échap',
 		ControlLeft: 'Ctrl',

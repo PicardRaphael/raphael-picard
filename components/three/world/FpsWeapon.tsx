@@ -16,6 +16,7 @@ export function FpsWeapon() {
 	const root = useRef<THREE.Group>(null);
 	const flash = useRef<THREE.Mesh>(null);
 	const kick = useRef(0);
+	const sway = useRef({ x: 0, y: 0 });
 	const gun = useMemo(() => {
 		const g = scene.clone(true);
 		g.traverse((o) => {
@@ -53,6 +54,13 @@ export function FpsWeapon() {
 		g.translateY(-0.26 + Math.abs(Math.cos(t * 5.5)) * 0.02 * run + Math.sin(t * 1.4) * 0.004);
 		g.translateZ(-0.55 + kick.current * 0.09);
 		g.rotateX(kick.current * 0.12);
+		// the weapon lags a little behind fast mouse movements
+		sway.current.x += (THREE.MathUtils.clamp(player.camera.swayX * 0.004, -0.12, 0.12) - sway.current.x) * Math.min(1, dt * 10);
+		sway.current.y += (THREE.MathUtils.clamp(player.camera.swayY * 0.004, -0.1, 0.1) - sway.current.y) * Math.min(1, dt * 10);
+		player.camera.swayX *= Math.exp(-dt * 18);
+		player.camera.swayY *= Math.exp(-dt * 18);
+		g.rotateY(sway.current.x);
+		g.rotateX(sway.current.y);
 		if (flash.current) {
 			flash.current.visible = kick.current > 0.75;
 			flash.current.rotation.z = t * 40;

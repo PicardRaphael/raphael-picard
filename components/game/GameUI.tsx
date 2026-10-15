@@ -25,7 +25,9 @@ function ZoneBanner() {
 	// the CSS animation fades the banner out by itself; a new id restarts it
 	const visible = banner;
 	useEffect(() => {
-		if (started) game.banner('Val des Origines', "L'ère du code");
+		if (!started) return;
+		if (game.get().zone === 'nexus') game.banner('Le Nexus', "L'ère des agents");
+		else game.banner('Val des Origines', "L'ère du code");
 	}, [started]);
 	if (!visible) return null;
 	return (

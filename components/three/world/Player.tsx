@@ -142,6 +142,14 @@ function useKeyboard() {
 				return;
 			}
 			if (s.overlay) return;
+			if (keymap.is('cursor', e.code)) {
+				// FPS: free the cursor (to click the interface) or take the aim back
+				e.preventDefault();
+				player.camera.free = !player.camera.free;
+				if (player.camera.free && document.pointerLockElement) document.exitPointerLock();
+				window.dispatchEvent(new CustomEvent('fps:cursor', { detail: player.camera.free }));
+				return;
+			}
 			if (keymap.is('jump', e.code)) {
 				jump();
 				return;
@@ -219,8 +227,9 @@ function usePointerControls() {
 
 		const down = (e: PointerEvent) => {
 			if (!game.get().started || game.get().panel || game.get().overlay) return;
-			if (game.get().hero === 'runner' && e.pointerType === 'mouse') {
-				// first person: the reticle follows the mouse, a click shoots where it points
+			if (game.get().hero === 'runner' && e.pointerType === 'mouse' && !player.camera.free) {
+				// first person: capture the mouse (unlimited turning) and shoot at the centre of the screen
+				if (document.pointerLockElement !== el) el.requestPointerLock?.()?.catch?.(() => undefined);
 				attack();
 				return;
 			}
@@ -310,9 +319,13 @@ function usePointerControls() {
 		};
 		// free look: the camera follows the mouse without clicking (mouse only, not touch)
 		const look = (e: PointerEvent) => {
-			if (document.pointerLockElement === el) {
-				player.camera.yaw -= e.movementX * 0.0022;
-				player.camera.fpsPitch = THREE.MathUtils.clamp(player.camera.fpsPitch - e.movementY * 0.0022, -1.2, 1.2);
+			const g = game.get();
+			if (g.hero === 'runner' && g.started && !g.panel && !g.overlay && !player.camera.free && e.pointerType === 'mouse') {
+				// true first person: every mouse movement turns the view (mouse captured after the first click)
+				player.camera.yaw -= e.movementX * 0.002;
+				player.camera.fpsPitch = THREE.MathUtils.clamp(player.camera.fpsPitch - e.movementY * 0.002, -1.25, 1.25);
+				player.camera.swayX += e.movementX;
+				player.camera.swayY += e.movementY;
 				return;
 			}
 			if (e.pointerType !== 'mouse' || pointers.size > 0) return;
@@ -463,15 +476,6 @@ export function Player() {
 		// free look: the view leans toward the mouse, and keeps turning near the screen edges
 		const fps = g.hero === 'runner' && g.started;
 		if (fps && (g.panel || g.overlay) && document.pointerLockElement) document.exitPointerLock();
-		if (fps && !g.panel && !g.overlay) {
-			// turn when the reticle nears the left / right edge, tilt the view toward the top / bottom
-			const ax = player.camera.lookX;
-			const ay = player.camera.lookY;
-			const ex = Math.max(0, Math.abs(ax) - 0.45) / 0.55;
-			player.camera.yaw -= Math.sign(ax) * ex * ex * 2.6 * dt;
-			const ey = Math.max(0, Math.abs(ay) - 0.55) / 0.45;
-			player.camera.fpsPitch = THREE.MathUtils.clamp(player.camera.fpsPitch - Math.sign(ay) * ey * ey * 1.4 * dt, -0.9, 0.9);
-		}
 		const lx = !fps && g.started && !g.panel && !g.overlay && !player.camera.dragging ? player.camera.lookX : 0;
 		const ly = !fps && g.started && !g.panel && !g.overlay && !player.camera.dragging ? player.camera.lookY : 0;
 		const edge = Math.max(0, Math.abs(lx) - 0.72) / 0.28;
@@ -645,7 +649,7 @@ export function Player() {
 			camera.lookAt(player.x - Math.sin(player.camera.yaw) * Math.cos(pt) * 10, player.y + 1.65 + Math.sin(pt) * 10, player.z - Math.cos(player.camera.yaw) * Math.cos(pt) * 10);
 			v.look.set(player.x, player.y + 1.8, player.z);
 			camera.updateMatrixWorld();
-			v.ray.setFromCamera(v.ndc.set(player.camera.lookX, -player.camera.lookY), camera);
+			v.ray.setFromCamera(v.ndc.set(0, 0), camera);
 			player.aim.copy(v.ray.ray.direction);
 		} else {
 			v.camPos.lerp(v.tmp, 1 - Math.exp(-dt * (g.started ? 10 : 1.5)));

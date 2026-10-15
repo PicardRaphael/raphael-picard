@@ -46,9 +46,9 @@ export const projects: Project[] = [
 	{
 		name: 'NeoAgent',
 		kind: 'Agents métier · Neoteem',
-		pitch: 'Une API REST d’agents spécialisés, chacun un graphe LangGraph dédié, appelé directement depuis le logiciel.',
+		pitch: 'Des assistants intégrés aux écrans du logiciel pour les tâches qui prennent du temps aux gestionnaires : comparer des devis, reformuler un texte, rédiger une annonce immobilière, préparer un modèle de document. Chacun est un graphe LangGraph dédié, servi par une API REST.',
 		highlights: [
-			'Comparateur de devis : extraction multimodale des PDF, Map-Reduce, référentiels publics, score et contrôle de cohérence',
+			'Comparateur de devis : lit les PDF, les confronte à des référentiels publics, attribue un score et signale les incohérences (extraction multimodale, Map-Reduce)',
 			'Reformulation en quatre modes, annonces immobilières en huit styles',
 			'Modèles de documents avec un garde-fou contre les variables de fusion inconnues',
 		],
@@ -59,7 +59,7 @@ export const projects: Project[] = [
 	{
 		name: 'wow-forever',
 		kind: 'App MCP · système expert',
-		pitch: 'Un assistant expert où l’IA ne calcule jamais : chaque chiffre est lu dans les données du jeu, calculé par un moteur testé et livré avec sa provenance et son niveau de certitude.',
+		pitch: 'Un assistant expert pour World of Warcraft: Forever, où l’IA ne calcule jamais : chaque chiffre est lu dans les données du jeu, calculé par un moteur testé et livré avec sa provenance et son niveau de certitude.',
 		highlights: [
 			'Serveur MCP de 8 outils + plugin Claude Code (8 skills, 2 agents)',
 			'Garde-fou automatique : tout chiffre qui ne vient pas d’un outil est signalé',
@@ -87,11 +87,11 @@ export const projects: Project[] = [
 	{
 		name: 'agentsdir',
 		kind: 'CLI open source · MIT',
-		pitch: 'Installe dans n’importe quel dépôt l’architecture AGENTS.md + .agents/ lue par Codex, Cursor et opencode, et la projette vers Claude Code — sans aucune dérive.',
+		pitch: 'Installe dans n’importe quel dépôt l’architecture AGENTS.md + .agents/ lue par Codex, Cursor et opencode, et la projette vers Claude Code ; `check` échoue en CI dès qu’une projection diverge.',
 		highlights: ['init, add, sync, check, doctor : tout est vérifiable en CI', 'Tests unitaires + end-to-end Ubuntu et Windows', 'Durcissement sécurité : path traversal, symlinks, injections'],
 		stack: ['TypeScript', 'Node 22', 'Vitest'],
 		url: 'https://github.com/PicardRaphael/agentsdir',
-		badge: 'v1.0.0',
+		badge: 'v1.0.0 · pas encore sur npm',
 	},
 	{
 		name: 'mcp-server-documentation',

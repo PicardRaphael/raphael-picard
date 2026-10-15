@@ -6,6 +6,7 @@ import { About } from '@/components/sections/About';
 import { Architecture } from '@/components/sections/Architecture';
 import { Contact } from '@/components/sections/Contact';
 import { Expertise } from '@/components/sections/Expertise';
+import { FailureModes } from '@/components/sections/FailureModes';
 import { Journey } from '@/components/sections/Journey';
 import { Projects } from '@/components/sections/Projects';
 import { MotionProvider } from '@/components/ui/MotionProvider';
@@ -208,7 +209,13 @@ function Body({ id }: { id: string }) {
 		case 'agents':
 			return <Expertise />;
 		case 'core':
-			return <Architecture />;
+			// the orchestration core: how NeoChat is built, then every way an agent breaks and its fix
+			return (
+				<>
+					<Architecture />
+					<FailureModes />
+				</>
+			);
 		case 'gallery':
 			return <Projects />;
 		case 'royal':

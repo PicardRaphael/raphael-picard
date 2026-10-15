@@ -124,7 +124,7 @@ export function Journey() {
 					</Reveal>
 					<Reveal delay={0.1}>
 						<h3 className="font-display text-2xl font-bold">Ce qu’en disent mes coéquipiers</h3>
-						<p className="text-mist mt-1 text-sm">Extraits de recommandations LinkedIn.</p>
+						<p className="text-mist mt-1 text-sm">Extraits de recommandations LinkedIn (mission Royal Canin).</p>
 						<div className="mt-5 space-y-4">
 							{testimonials.map((t) => (
 								<figure key={t.author} className="glass spotlight rounded-2xl p-6">

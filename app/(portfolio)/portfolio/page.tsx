@@ -4,6 +4,7 @@ import { About } from '@/components/sections/About';
 import { Architecture } from '@/components/sections/Architecture';
 import { Contact } from '@/components/sections/Contact';
 import { Expertise } from '@/components/sections/Expertise';
+import { FailureModes } from '@/components/sections/FailureModes';
 import { Hero } from '@/components/sections/Hero';
 import { Journey } from '@/components/sections/Journey';
 import { Portal } from '@/components/sections/Portal';
@@ -31,6 +32,7 @@ export default function PortfolioPage() {
 			<Portal />
 			<Expertise />
 			<Architecture />
+			<FailureModes />
 			<Projects />
 			<Contact />
 		</>

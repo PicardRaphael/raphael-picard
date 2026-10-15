@@ -1,5 +1,5 @@
 import { Reveal } from '@/components/ui/Reveal';
-import { about } from '@/content/profile';
+import { about, leadership } from '@/content/profile';
 
 const sheet = [
 	{ k: 'Classe', v: 'Ingénieur IA' },
@@ -41,6 +41,20 @@ export function About({ principles = true }: { principles?: boolean }) {
 							</Reveal>
 						))}
 					</div>
+					{/* the lead's side, right after the presentation: strategy, team, training */}
+					<Reveal className="border-orchid/40 mt-8 rounded-2xl border bg-black/20 p-5">
+						<h3 className="font-display text-lg font-semibold">{leadership.title}</h3>
+						<ul className="text-mist mt-3 space-y-2 text-sm leading-relaxed">
+							{leadership.points.map((p) => (
+								<li key={p} className="flex gap-2">
+									<span className="text-orchid" aria-hidden>
+										◆
+									</span>
+									{p}
+								</li>
+							))}
+						</ul>
+					</Reveal>
 					{principles && (
 						<ul className="mt-10 grid gap-3 sm:grid-cols-2">
 							{about.principles.map((p, i) => (

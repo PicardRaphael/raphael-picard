@@ -8,14 +8,14 @@ export const hero = {
 	eyebrow: 'Senior AI Engineer & Responsable IA · Neoteem · Lyon',
 	status: 'NeoChat · NeoSupport · NeoAgent en production',
 	headline: 'J’industrialise l’IA agentique.',
-	lead: 'Je conçois et mets en production des assistants IA utiles au quotidien. Chez Neoteem, éditeur d’un ERP immobilier, 7 agents spécialisés répondent aux gestionnaires sur leurs données et sur la documentation du logiciel, en lecture seule et sous contrôle humain. Qualité mesurée (plus de 7 000 tests, évaluations DeepEval, traces Langfuse), −33 % de coûts d’inférence grâce au context caching, et une équipe formée pour les faire vivre.',
+	lead: 'Je conçois et mets en production des assistants IA utiles au quotidien. Chez Neoteem, éditeur d’un ERP immobilier, 7 agents spécialisés assistent les gestionnaires : questions sur leurs données et sur l’aide du logiciel, comparaison de devis, rédaction. Ils lisent les données de l’ERP sans pouvoir les modifier, et aucun mail ne part, aucun document n’est supprimé sans validation humaine. Chaque version est testée avant sa mise en ligne, chaque coût est suivi : −33 % sur la facture des modèles. Et l’équipe est formée pour les faire vivre.',
 	primaryCta: { label: 'Voir les agents en production', href: '#projets' },
 	secondaryCta: { label: 'Télécharger le CV', href: '/cv-RaphaelPICARD-IA.pdf' },
 };
 
 export const stats = [
 	{ value: 7, suffix: '', label: 'agents IA en production' },
-	{ value: 7000, suffix: '+', label: 'tests sur la plateforme IA' },
+	{ value: 5, suffix: '', label: 'contrôles humains avant toute action engageante' },
 	{ value: 33, suffix: ' %', label: 'de coûts d’inférence (context caching)' },
 	{ value: 8, suffix: '+', label: 'ans d’ingénierie logicielle' },
 ];
@@ -47,16 +47,16 @@ export const about = {
 	paragraphs: [
 		'En plus de huit ans d’ingénierie logicielle, j’ai livré des produits web à grande échelle : une plateforme e-commerce déployée dans plus de 100 pays, un MVP EdTech conçu de zéro, des outils métier pour la mobilité, où j’ai intégré mon premier service d’IA en production dès 2018. J’y ai appris ce qui fait tenir un logiciel : l’architecture, les tests, la rigueur de livraison.',
 		'Depuis novembre 2025, je suis Senior AI Engineer & Responsable IA chez Neoteem, éditeur d’un ERP pour les professionnels de l’immobilier. J’y ai mis en production sept agents LangGraph répartis dans NeoChat, NeoSupport et NeoAgent, réécrit de zéro en TypeScript la couche de données qui les alimente et fait adopter par la direction une architecture multi-chatbots spécialisés. J’encadre le pôle IA (2 à 3 personnes) et je forme les équipes, tech et non-tech.',
-		'Mon avantage : un profil hybride. Je parle architecture aux développeurs, ROI aux dirigeants, et prompts aux modèles.',
+		'Mon avantage : un profil hybride. Je parle architecture aux développeurs, coûts et usages aux dirigeants (chaque agent a son coût suivi), et prompts aux modèles.',
 	],
 	principles: [
 		{
-			title: 'Le LLM ne calcule jamais',
-			text: 'Les chiffres viennent de vues et de rapports SQL, via des outils déterministes et testés ; le modèle raisonne, et dit « je ne sais pas » quand il le faut.',
+			title: 'L’IA ne calcule jamais un chiffre',
+			text: 'Montants et soldes sont lus dans le logiciel par des outils testés ; le modèle explique, et dit « je ne sais pas » quand il ne sait pas.',
 		},
 		{
 			title: 'Pas d’agent sans évaluation',
-			text: 'Golden set rejoué en plusieurs tirages avant chaque release, LLM-as-judge, traces Langfuse en production : un agent se mesure avant et après son déploiement.',
+			text: 'Chaque nouvelle version est rejouée sur un jeu de cas réels avant sa mise en ligne, puis suivie en production : un agent se mesure avant et après son déploiement.',
 		},
 		{
 			title: 'L’architecture d’abord',
@@ -64,7 +64,7 @@ export const about = {
 		},
 		{
 			title: 'L’humain garde la main',
-			text: 'Lecture seule par construction, validation humaine avant tout envoi ou toute suppression : l’agent propose, l’humain décide.',
+			text: 'Les données de l’ERP en lecture seule, une validation humaine avant tout envoi ou toute suppression : l’agent propose, l’humain décide.',
 		},
 	],
 };
@@ -96,21 +96,22 @@ export const expertise: Expertise[] = [
 			'Demande de précision quand plusieurs sujets correspondent, signalement des manques de la documentation',
 			'Honnêteté des échecs : une panne de recherche n’est jamais présentée comme « rien trouvé »',
 		],
-		tags: ['pgvector', 'RRF', 'LangGraph', 'SSE'],
-		metric: 'RRF hybride',
+		tags: ['pgvector', 'RRF', 'LangGraph', 'Gemini'],
+		metric: 'Recherche hybride RRF',
 	},
 	{
 		id: 'securite',
 		title: 'Sécurité & gouvernance',
 		pitch: 'Un agent ne doit jamais pouvoir faire plus que l’utilisateur qui lui parle — même manipulé.',
 		points: [
-			'Moindre privilège par construction : passerelle en lecture seule, SELECT uniquement, opérateurs en liste fermée, paramètres liés, rapports en liste blanche',
-			'Identité tirée du jeton vérifié, jamais du modèle ; isolation des données : une base par client, choisie par le déploiement',
-			'5 points de contrôle humain avant toute action engageante ; chaque étape tracée dans Langfuse',
-			'CI de sécurité sur chaque PR : analyse statique, détection de secrets, audit des dépendances ; erreurs RFC 9457 sans SQL',
+			'Accès en lecture seule : l’IA consulte les données métier, elle ne peut ni les modifier ni les effacer',
+			'Les données de chaque client restent dans sa propre base, choisie par le déploiement',
+			'Rien ne part sans un humain : choix du destinataire, relecture, aperçu avant envoi, confirmation avant suppression',
+			'Tout est tracé : chaque étape d’une conversation est consultable dans Langfuse, avec son coût',
+			'Côté technique : SELECT uniquement, opérateurs en liste fermée, paramètres liés, identité tirée du jeton vérifié ; analyse statique, détection de secrets et audit des dépendances sur chaque PR',
 		],
 		tags: ['Moindre privilège', 'Human-in-the-loop', 'SAST', 'Langfuse'],
-		metric: 'Lecture seule',
+		metric: '5 contrôles humains',
 	},
 	{
 		id: 'claude-code',
@@ -154,7 +155,7 @@ export const expertise: Expertise[] = [
 ];
 
 export const leadership = {
-	title: 'Stratégie, management & formation',
+	title: 'Responsable IA : stratégie, équipe, adoption',
 	points: [
 		'Architecture multi-chatbots spécialisés proposée à la direction, puis adoptée en production',
 		'Plus de 6 notes de décision stratégiques : choix de langage, RAG ou base de connaissances, organisation du pôle IA',

@@ -5,7 +5,7 @@ import { useState } from 'react';
 
 import { Icon } from '@/components/ui/Icon';
 import { Reveal } from '@/components/ui/Reveal';
-import { expertise, leadership } from '@/content/profile';
+import { expertise } from '@/content/profile';
 
 /** WoW-style talent tree: pick a talent, read its tooltip. All tooltips are in the DOM for crawlers. */
 export function Expertise() {
@@ -20,7 +20,7 @@ export function Expertise() {
 					<h2 id="expertise-title" className="font-display mt-4 max-w-3xl text-4xl leading-tight font-bold text-balance sm:text-5xl">
 						Expertise IA : agents, RAG, sécurité et <span className="text-gradient">LLMOps</span>.
 					</h2>
-					<p className="text-mist mt-4 max-w-2xl">Six domaines pratiqués en production, chacun prouvé par un chiffre. Sélectionnez-en un pour le détail.</p>
+					<p className="text-mist mt-4 max-w-2xl">Six domaines pratiqués au quotidien, chacun avec sa preuve. Sélectionnez-en un pour le détail.</p>
 				</Reveal>
 
 				<div className="mt-12 grid gap-6 lg:grid-cols-[1fr_1.1fr]">
@@ -69,7 +69,7 @@ export function Expertise() {
 								<div className="flex items-start justify-between gap-4">
 									<div>
 										<p className="font-display text-2xl font-bold text-[#c77dff]">{current.title}</p>
-										<p className="text-dim mt-1 font-mono text-xs">Pratiqué en production</p>
+										<p className="text-dim mt-1 font-mono text-xs">{current.id === 'claude-code' ? 'Pratiqué au quotidien' : 'Pratiqué en production'}</p>
 									</div>
 									{current.metric && <span className="bg-ok/10 text-ok rounded-full px-3 py-1 font-mono text-xs whitespace-nowrap">{current.metric}</span>}
 								</div>
@@ -110,19 +110,6 @@ export function Expertise() {
 					</div>
 				</div>
 
-				<Reveal className="glass spotlight mt-6 flex flex-col gap-5 rounded-3xl p-6 sm:flex-row sm:items-center sm:p-8">
-					<span className="border-orchid/40 text-orchid grid h-14 w-14 shrink-0 place-items-center rounded-xl border bg-black/30">
-						<Icon name="lead" className="h-7 w-7" />
-					</span>
-					<div>
-						<h3 className="font-display text-xl font-semibold">{leadership.title}</h3>
-						<ul className="text-mist mt-2 grid gap-1.5 text-sm md:grid-cols-3 md:gap-6">
-							{leadership.points.map((p) => (
-								<li key={p}>{p}</li>
-							))}
-						</ul>
-					</div>
-				</Reveal>
 			</div>
 		</section>
 	);

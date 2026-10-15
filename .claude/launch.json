@@ -1,0 +1,11 @@
+{
+	"version": "0.0.1",
+	"configurations": [
+		{
+			"name": "site",
+			"runtimeExecutable": "C:/Users/rapha/AppData/Roaming/fnm/node-versions/v24.21.0/installation/node.exe",
+			"runtimeArgs": ["node_modules/next/dist/bin/next", "dev"],
+			"port": 3000
+		}
+	]
+}

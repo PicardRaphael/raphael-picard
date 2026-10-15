@@ -1,0 +1,162 @@
+'use client';
+
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+
+import { game, useGame } from '@/lib/game-store';
+import { ACTIONS, type Action, keyLabel, keymap } from '@/lib/keymap';
+
+type LayoutMap = Map<string, string>;
+
+/** Real key labels for the visitor's layout (AZERTY shows Z, not W) when the browser exposes it. */
+function useLayoutLabels() {
+	const [layout, setLayout] = useState<LayoutMap | null>(null);
+	useEffect(() => {
+		const kb = (navigator as Navigator & { keyboard?: { getLayoutMap?: () => Promise<LayoutMap> } }).keyboard;
+		kb?.getLayoutMap?.()
+			.then(setLayout)
+			.catch(() => undefined);
+	}, []);
+	return (code: string) => {
+		const l = layout?.get(code);
+		return l && l.length === 1 ? l.toUpperCase() : keyLabel(code);
+	};
+}
+
+function KeyConfig({ onClose }: { onClose: () => void }) {
+	const label = useLayoutLabels();
+	const [map, setMap] = useState(keymap.get());
+	const [listening, setListening] = useState<Action | null>(null);
+
+	useEffect(() => {
+		if (!listening) return;
+		const on = (e: KeyboardEvent) => {
+			e.preventDefault();
+			e.stopPropagation();
+			if (e.code !== 'Escape') keymap.bind(listening, e.code);
+			setMap(keymap.get());
+			setListening(null);
+		};
+		window.addEventListener('keydown', on, { capture: true });
+		return () => window.removeEventListener('keydown', on, { capture: true });
+	}, [listening]);
+
+	return (
+		<div className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-4" role="dialog" aria-modal="true" aria-label="Configuration des touches">
+			<div className="w-full max-w-md rounded-2xl border-2 border-[#c8a35a]/70 bg-[#140d07]/95 p-6 text-[#efe4c8]">
+				<p className="font-display text-xl font-bold text-[#ffd100]">Touches</p>
+				<p className="mt-1 text-sm text-[#bfae8a]">Clique sur une touche puis appuie sur la nouvelle. Les flèches restent toujours actives.</p>
+				<ul className="mt-5 space-y-2">
+					{ACTIONS.map((a) => (
+						<li key={a.id} className="flex items-center justify-between gap-3">
+							<span>{a.label}</span>
+							<span className="flex items-center gap-2">
+								<button
+									onClick={() => setListening(a.id)}
+									className={`min-w-20 rounded-lg border px-3 py-1.5 font-mono text-sm ${listening === a.id ? 'animate-pulse border-[#ffd100] text-[#ffd100]' : 'border-white/25 hover:bg-white/10'}`}
+								>
+									{listening === a.id ? '…' : label(map[a.id][0])}
+								</button>
+								{map[a.id][1] !== map[a.id][0] && <span className="w-14 font-mono text-xs text-white/40">{label(map[a.id][1])}</span>}
+							</span>
+						</li>
+					))}
+				</ul>
+				<div className="mt-6 flex justify-between">
+					<button
+						onClick={() => {
+							keymap.reset();
+							setMap(keymap.get());
+						}}
+						className="text-sm text-[#bfae8a] underline-offset-4 hover:underline"
+					>
+						Réinitialiser
+					</button>
+					<button onClick={onClose} className="rounded-lg bg-[#ffd100] px-5 py-2 font-semibold text-black">
+						OK
+					</button>
+				</div>
+			</div>
+		</div>
+	);
+}
+
+const HEROES = [
+	{ id: 'knight' as const, name: 'Chevalier du Val', tag: 'Fantasy', text: 'Armure, épée et bouclier : le héros des Terres anciennes.', ring: '#ffd100' },
+	{ id: 'runner' as const, name: 'Runner du Nexus', tag: 'Cyberpunk', text: 'Capuche néon et lames lumineuses : taillé pour la ville.', ring: '#e879f9' },
+];
+
+export function StartScreen() {
+	const started = useGame((s) => s.started);
+	const hero = useGame((s) => s.hero);
+	const [keys, setKeys] = useState(false);
+	const label = useLayoutLabels();
+	const k = keymap.get();
+
+	useEffect(() => {
+		if (started) return;
+		const on = (e: KeyboardEvent) => {
+			if (e.code === 'Enter' && !keys) game.set({ started: true });
+		};
+		window.addEventListener('keydown', on);
+		return () => window.removeEventListener('keydown', on);
+	}, [started, keys]);
+
+	return (
+		<>
+			<div
+				className={`fixed inset-0 z-30 flex flex-col items-center justify-end overflow-y-auto bg-gradient-to-t from-black/85 via-black/35 to-transparent px-4 pb-[6vh] text-center transition-opacity duration-700 ${
+					started ? 'pointer-events-none opacity-0' : 'opacity-100'
+				}`}
+				aria-hidden={started}
+			>
+				<p className="font-mono text-xs tracking-[0.35em] text-[#ffd9a0] uppercase">Ingénieur IA · Lyon</p>
+				<h1 className="font-display mt-3 text-5xl font-extrabold tracking-tight text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.6)] sm:text-7xl">Raphaël Picard</h1>
+				<p className="mt-3 max-w-xl text-lg text-white/85">Agents IA, RAG, MCP, Claude Code. Choisis ton héros et explore mon monde pour découvrir mon parcours.</p>
+
+				<div className="mt-7 grid w-full max-w-xl grid-cols-2 gap-3" role="radiogroup" aria-label="Choix du personnage">
+					{HEROES.map((h) => (
+						<button
+							key={h.id}
+							role="radio"
+							aria-checked={hero === h.id}
+							onClick={() => game.set({ hero: h.id })}
+							className="rounded-2xl border-2 bg-black/55 p-4 text-left backdrop-blur-md transition-all hover:-translate-y-0.5"
+							style={{ borderColor: hero === h.id ? h.ring : 'rgba(255,255,255,0.15)', boxShadow: hero === h.id ? `0 0 30px -8px ${h.ring}` : undefined }}
+						>
+							<p className="font-mono text-[0.65rem] tracking-widest uppercase" style={{ color: h.ring }}>
+								{h.tag}
+							</p>
+							<p className="font-display mt-1 text-lg font-bold text-white">{h.name}</p>
+							<p className="mt-1 text-xs leading-snug text-white/70">{h.text}</p>
+						</button>
+					))}
+				</div>
+
+				<div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+					<button
+						onClick={() => game.set({ started: true })}
+						className="font-display rounded-full bg-gradient-to-r from-[#651fff] to-[#c50eff] px-9 py-3.5 text-lg font-bold text-white shadow-[0_0_40px_-6px_#c50eff] transition-transform hover:scale-105"
+					>
+						Jouer
+					</button>
+					<button onClick={() => setKeys(true)} className="rounded-full border border-white/30 bg-black/40 px-5 py-3 text-sm text-white hover:bg-black/60">
+						⌨ Touches
+					</button>
+				</div>
+				<p className="mt-4 max-w-xl font-mono text-[11px] leading-5 text-white/65">
+					Clic / toucher : se déplacer, parler, attaquer · glisser : tourner la caméra · molette / pincer : zoom
+					<br />
+					{label(k.forward[0])}
+					{label(k.left[0])}
+					{label(k.back[0])}
+					{label(k.right[0])} ou flèches · {label(k.jump[0])} sauter · {label(k.attack[0])} attaquer · {label(k.interact[0])} interagir
+				</p>
+				<Link href="/portfolio" className="mt-4 text-sm text-white/70 underline-offset-4 hover:text-white hover:underline">
+					Version classique du portfolio →
+				</Link>
+			</div>
+			{keys && <KeyConfig onClose={() => setKeys(false)} />}
+		</>
+	);
+}

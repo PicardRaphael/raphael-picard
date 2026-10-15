@@ -5,35 +5,12 @@ import { useEffect, useRef } from 'react';
 
 import { game, useGame } from '@/lib/game-store';
 import { player } from '@/lib/player-state';
+import { mobs } from '@/lib/mobs';
 import { QUESTS } from '@/lib/quests';
 import { LANDMARKS, NEXUS_CENTER, NEXUS_RADIUS, VAL_RADIUS, landmark } from '@/lib/world';
 import { Panel } from './Panels';
-
-function StartScreen() {
-	const started = useGame((s) => s.started);
-	return (
-		<div
-			className={`fixed inset-0 z-30 flex flex-col items-center justify-end bg-gradient-to-t from-black/75 via-black/20 to-transparent pb-[12vh] text-center transition-opacity duration-700 ${
-				started ? 'pointer-events-none opacity-0' : 'opacity-100'
-			}`}
-			aria-hidden={started}
-		>
-			<p className="font-mono text-xs tracking-[0.35em] text-[#ffd9a0] uppercase">Ingénieur IA · Lyon</p>
-			<h1 className="font-display mt-3 text-5xl font-extrabold tracking-tight text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.6)] sm:text-7xl">Raphaël Picard</h1>
-			<p className="mt-3 max-w-xl px-4 text-lg text-white/85">Agents IA, RAG, MCP, Claude Code. Explore mon monde pour découvrir mon parcours.</p>
-			<button
-				onClick={() => game.set({ started: true })}
-				className="font-display mt-8 rounded-full bg-gradient-to-r from-[#651fff] to-[#c50eff] px-8 py-3.5 text-lg font-bold text-white shadow-[0_0_40px_-6px_#c50eff] transition-transform hover:scale-105"
-			>
-				Jouer
-			</button>
-			<p className="mt-4 font-mono text-xs text-white/60">ou appuie sur ↑ · flèches pour piloter · E pour interagir</p>
-			<Link href="/portfolio" className="mt-6 text-sm text-white/70 underline-offset-4 hover:text-white hover:underline">
-				Version classique du portfolio →
-			</Link>
-		</div>
-	);
-}
+import { StartScreen } from './StartScreen';
+import { HurtFlash, TouchControls, ZoomButtons } from './TouchControls';
 
 function ZoneBanner() {
 	const banner = useGame((s) => s.banner);
@@ -74,8 +51,10 @@ function QuestTracker() {
 	const visited = useGame((s) => s.visited);
 	const active = QUESTS.filter((q) => quests[q.id] === 'active' || quests[q.id] === 'ready');
 	const available = QUESTS.find((q) => quests[q.id] === 'available');
+	const kills = useGame((s) => s.kills);
 	return (
 		<aside className="pointer-events-none fixed top-4 right-4 z-20 w-72 max-w-[calc(100vw-2rem)] text-right" aria-label="Suivi des quêtes">
+			<p className="mb-3 font-mono text-xs text-[#ff8a80] drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">☠ Bugs corrigés : {kills} / {mobs.length}</p>
 			{active.length === 0 && available && (
 				<p className="text-sm text-[#ffd100] drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">
 					<span className="font-bold">!</span> Parle à {landmark(available.giver).name.split(',')[0]}
@@ -182,7 +161,7 @@ function Minimap() {
 		draw();
 		return () => cancelAnimationFrame(raf);
 	}, [zone, quests]);
-	return <canvas ref={ref} width={150} height={150} className="fixed bottom-4 left-4 z-20 h-[120px] w-[120px] sm:h-[150px] sm:w-[150px]" aria-hidden />;
+	return <canvas ref={ref} width={150} height={150} className="fixed bottom-4 left-4 z-20 h-[120px] w-[120px] pointer-coarse:top-16 pointer-coarse:bottom-auto sm:h-[150px] sm:w-[150px]" aria-hidden />;
 }
 
 function Corner() {
@@ -206,9 +185,9 @@ function Corner() {
 function Controls() {
 	return (
 		<p className="pointer-events-none fixed right-4 bottom-4 z-20 hidden text-right font-mono text-[11px] leading-5 text-white/70 drop-shadow sm:block">
-			↑ ↓ avancer · ← → tourner
+			clic : aller · glisser : caméra · molette : zoom
 			<br />
-			Espace boost · E interagir · Échap fermer
+			flèches : bouger · Espace sauter · F attaquer · E interagir
 		</p>
 	);
 }
@@ -225,10 +204,13 @@ export function GameUI() {
 					<Minimap />
 					<Controls />
 					<Prompt />
+					<ZoomButtons />
+					<TouchControls />
 				</>
 			)}
 			<ZoneBanner />
 			<Toast />
+			<HurtFlash />
 			<Panel />
 		</>
 	);

@@ -125,7 +125,7 @@ const flowerMat = new THREE.MeshStandardMaterial({ roughness: 0.8, flatShading: 
 
 const LEAVES = ['#4d8f2c', '#6aa83a', '#3c7a2a', '#86b443', '#d08a2c', '#b8572b', '#8e5bc4'].map((c) => new THREE.Color(c));
 
-function Forest() {
+export function LowPolyForest() {
 	const data = useMemo(() => {
 		const rng = mulberry32(31);
 		const oaks: { x: number; z: number; y: number; s: number; r: number }[] = [];
@@ -259,7 +259,6 @@ export function Valley() {
 				<meshStandardMaterial vertexColors roughness={0.95} flatShading />
 			</mesh>
 			<Water />
-			<Forest />
 		</group>
 	);
 }

@@ -1,47 +1,97 @@
 'use client';
 
 import { useFrame, useThree } from '@react-three/fiber';
-import { useEffect, useMemo, useRef } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 
-import { game } from '@/lib/game-store';
+import { game, useGame } from '@/lib/game-store';
+import { keymap } from '@/lib/keymap';
+import { mobs, nearestMob } from '@/lib/mobs';
 import { player } from '@/lib/player-state';
 import { HOUSES, LANDMARKS, NEXUS_CENTER, NEXUS_RADIUS, NEXUS_SPAWN, SPAWN, VAL_RADIUS, landmark, valHeight } from '@/lib/world';
-import { EngineTrail } from '../Cosmos';
-import { Ship } from '../Ship';
+import { HeroModel } from './Hero';
 
-const MAX_SPEED = 26;
-const BOOST_SPEED = 40;
-const HOVER = 1.5;
+const RUN = 10;
+const SPRINT = 15;
 
 export function groundAt(x: number, z: number) {
 	return z < -300 ? 0 : valHeight(x, z);
 }
 
-/** Keyboard: arrows first (also WASD / ZQSD through physical key codes), Space/Shift boost, E/Enter interact. */
+function resetInput() {
+	player.input.forward = 0;
+	player.input.turn = 0;
+	player.input.strafe = 0;
+	player.input.boost = false;
+}
+
+/** Opens a landmark panel (and progresses quests). */
+export function interact(id: string) {
+	player.moveTarget = null;
+	game.set({ panel: id });
+	game.visit(id);
+}
+
+/** Sword swing: hits the nearest bug in front of the player. */
+export function attack() {
+	if (player.attack > 0 || !game.get().started || game.get().panel) return;
+	player.attack = 0.65;
+	const target = nearestMob(player.x, player.z, 3.4);
+	if (!target) return;
+	player.yaw = Math.atan2(-(target.x - player.x), -(target.z - player.z));
+	window.dispatchEvent(new CustomEvent('player:face', { detail: player.yaw }));
+	setTimeout(() => {
+		if (target.state === 'dead') return;
+		target.hp -= 1;
+		target.state = 'hit';
+		target.t = 0;
+		if (target.hp <= 0) {
+			game.set((s) => ({ kills: s.kills + 1 }));
+			game.toast(`${target.name} vaincu !`, target.lesson);
+		}
+	}, 260);
+}
+
+export function jump() {
+	if (player.jump.h > 0.01 || !game.get().started || game.get().panel) return;
+	player.jump.vy = 9.5;
+}
+
+/**
+ * Keyboard: arrows (and WASD / ZQSD by physical key) — up/down move along the camera,
+ * left/right turn the camera like WoW. Space/Shift sprint. E/Enter interact. Escape closes panels.
+ */
 function useKeyboard() {
 	useEffect(() => {
+		resetInput();
 		const keys = new Set<string>();
+		const has = (a: Parameters<typeof keymap.is>[0]) => [...keys].some((k) => keymap.is(a, k));
 		const sync = () => {
-			const f = (keys.has('ArrowUp') || keys.has('KeyW') ? 1 : 0) - (keys.has('ArrowDown') || keys.has('KeyS') ? 1 : 0);
-			const t = (keys.has('ArrowLeft') || keys.has('KeyA') ? 1 : 0) - (keys.has('ArrowRight') || keys.has('KeyD') ? 1 : 0);
-			player.input.forward = f;
-			player.input.turn = t;
-			player.input.boost = keys.has('Space') || keys.has('ShiftLeft') || keys.has('ShiftRight');
+			player.input.forward = (has('forward') ? 1 : 0) - (has('back') ? 1 : 0);
+			player.input.turn = (has('left') ? 1 : 0) - (has('right') ? 1 : 0);
+			player.input.boost = has('sprint');
+			if (player.input.forward || player.input.turn) player.moveTarget = null;
 		};
 		const typing = (e: KeyboardEvent) => e.target instanceof Element && e.target.closest('input, textarea, select');
 		const down = (e: KeyboardEvent) => {
 			if (typing(e)) return;
 			const s = game.get();
 			if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) e.preventDefault();
-			if (!s.started && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyW', 'KeyS', 'KeyA', 'KeyD', 'Enter', 'Space'].includes(e.code)) game.set({ started: true });
+			if (!s.started) return;
 			if (s.panel) {
 				if (e.code === 'Escape') game.set({ panel: null });
 				return;
 			}
-			if ((e.code === 'KeyE' || e.code === 'Enter') && s.inRange && s.started) {
-				game.set({ panel: s.inRange });
-				game.visit(s.inRange);
+			if (keymap.is('jump', e.code)) {
+				jump();
+				return;
+			}
+			if (keymap.is('attack', e.code)) {
+				attack();
+				return;
+			}
+			if (keymap.is('interact', e.code) && s.inRange) {
+				interact(s.inRange);
 				return;
 			}
 			keys.add(e.code);
@@ -51,111 +101,336 @@ function useKeyboard() {
 			keys.delete(e.code);
 			sync();
 		};
-		const blur = () => {
+		const clear = () => {
 			keys.clear();
-			sync();
+			resetInput();
 		};
 		window.addEventListener('keydown', down);
 		window.addEventListener('keyup', up);
-		window.addEventListener('blur', blur);
+		window.addEventListener('blur', clear);
+		document.addEventListener('visibilitychange', clear);
 		return () => {
 			window.removeEventListener('keydown', down);
 			window.removeEventListener('keyup', up);
-			window.removeEventListener('blur', blur);
+			window.removeEventListener('blur', clear);
+			document.removeEventListener('visibilitychange', clear);
 		};
 	}, []);
+}
+
+/** Ray-marches the camera ray against the height function: no terrain mesh needed for picking. */
+function pickGround(ndc: THREE.Vector2, camera: THREE.Camera) {
+	const ray = new THREE.Raycaster();
+	ray.setFromCamera(ndc, camera);
+	const o = ray.ray.origin;
+	const d = ray.ray.direction;
+	let prev = 0;
+	for (let t = 0.5; t < 400; t += 0.75) {
+		const x = o.x + d.x * t;
+		const y = o.y + d.y * t;
+		const z = o.z + d.z * t;
+		if (y < groundAt(x, z)) {
+			let a = prev;
+			let b = t;
+			for (let i = 0; i < 8; i++) {
+				const m = (a + b) / 2;
+				if (o.y + d.y * m < groundAt(o.x + d.x * m, o.z + d.z * m)) b = m;
+				else a = m;
+			}
+			return new THREE.Vector3(o.x + d.x * b, o.y + d.y * b, o.z + d.z * b);
+		}
+		prev = t;
+	}
+	return null;
+}
+
+/**
+ * Mouse & touch, WoW-style: drag to orbit the camera, wheel / pinch to zoom,
+ * click / tap on the ground to walk there, on a landmark to walk to it and interact.
+ */
+function usePointerControls() {
+	const { gl, camera } = useThree();
+	useEffect(() => {
+		const el = gl.domElement;
+		el.style.touchAction = 'none';
+		const pointers = new Map<number, { x: number; y: number; sx: number; sy: number }>();
+		let pinch = 0;
+		const ndc = new THREE.Vector2();
+
+		const down = (e: PointerEvent) => {
+			if (!game.get().started || game.get().panel) return;
+			el.setPointerCapture(e.pointerId);
+			pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY });
+			if (pointers.size === 2) {
+				const [a, b] = [...pointers.values()];
+				pinch = Math.hypot(a.x - b.x, a.y - b.y);
+			}
+		};
+		const move = (e: PointerEvent) => {
+			const p = pointers.get(e.pointerId);
+			if (!p) return;
+			const dx = e.clientX - p.x;
+			const dy = e.clientY - p.y;
+			p.x = e.clientX;
+			p.y = e.clientY;
+			if (pointers.size === 2) {
+				const [a, b] = [...pointers.values()];
+				const d = Math.hypot(a.x - b.x, a.y - b.y);
+				player.camera.distance = THREE.MathUtils.clamp(player.camera.distance * (pinch / Math.max(d, 1)), 6, 48);
+				pinch = d;
+				return;
+			}
+			if (Math.hypot(e.clientX - p.sx, e.clientY - p.sy) > 6) {
+				player.camera.dragging = true;
+				player.camera.yaw -= dx * 0.006;
+				player.camera.pitch = THREE.MathUtils.clamp(player.camera.pitch + dy * 0.004, 0.08, 1.25);
+			}
+		};
+		const up = (e: PointerEvent) => {
+			const p = pointers.get(e.pointerId);
+			pointers.delete(e.pointerId);
+			if (!p) return;
+			const wasClick = Math.hypot(e.clientX - p.sx, e.clientY - p.sy) <= 6 && pointers.size === 0;
+			if (pointers.size === 0) player.camera.dragging = false;
+			if (!wasClick) return;
+			const r = el.getBoundingClientRect();
+			ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+			// clicking a bug: walk to it and strike
+			const mp = new THREE.Vector3();
+			for (const m of mobs) {
+				if (m.state === 'dead' || m.zone !== game.get().zone) continue;
+				mp.set(m.x, groundAt(m.x, m.z) + 1.2, m.z).project(camera);
+				if (mp.z > 1) continue;
+				if (Math.hypot(((mp.x + 1) / 2) * r.width + r.left - e.clientX, ((1 - mp.y) / 2) * r.height + r.top - e.clientY) < 55) {
+					player.attackTarget = m.id;
+					player.moveTarget = null;
+					return;
+				}
+			}
+			const hit = pickGround(ndc, camera);
+			if (!hit) return;
+			player.attackTarget = null;
+			let target: { x: number; z: number; landmark?: string } = { x: hit.x, z: hit.z };
+			// a landmark wins if the click lands on it on screen (models stand above the ground)
+			let picked: (typeof LANDMARKS)[number] | null = null;
+			let bestPx = 80;
+			const sp = new THREE.Vector3();
+			for (const l of LANDMARKS) {
+				sp.set(l.x, groundAt(l.x, l.z) + 2.5, l.z).project(camera);
+				if (sp.z > 1) continue;
+				const px = Math.hypot(((sp.x + 1) / 2) * r.width + r.left - e.clientX, ((1 - sp.y) / 2) * r.height + r.top - e.clientY);
+				if (px < bestPx) {
+					bestPx = px;
+					picked = l;
+				}
+			}
+			for (const l of picked ? [picked] : LANDMARKS) {
+				if (picked || Math.hypot(hit.x - l.x, hit.z - l.z) < Math.max(l.radius, 6)) {
+					const dx = player.x - l.x;
+					const dz = player.z - l.z;
+					const d = Math.hypot(dx, dz) || 1;
+					const stop = Math.max(l.solid + 2.2, 3);
+					target = { x: l.x + (dx / d) * stop, z: l.z + (dz / d) * stop, landmark: l.id };
+					break;
+				}
+			}
+			player.moveTarget = target;
+			window.dispatchEvent(new CustomEvent('world:click', { detail: { x: hit.x, y: hit.y, z: hit.z } }));
+		};
+		const wheel = (e: WheelEvent) => {
+			if (!game.get().started) return;
+			e.preventDefault();
+			player.camera.distance = THREE.MathUtils.clamp(player.camera.distance + e.deltaY * 0.012, 6, 48);
+		};
+		el.addEventListener('pointerdown', down);
+		el.addEventListener('pointermove', move);
+		el.addEventListener('pointerup', up);
+		el.addEventListener('pointercancel', up);
+		el.addEventListener('wheel', wheel, { passive: false });
+		const noMenu = (e: Event) => e.preventDefault();
+		el.addEventListener('contextmenu', noMenu);
+		return () => {
+			el.removeEventListener('pointerdown', down);
+			el.removeEventListener('pointermove', move);
+			el.removeEventListener('pointerup', up);
+			el.removeEventListener('pointercancel', up);
+			el.removeEventListener('wheel', wheel);
+			el.removeEventListener('contextmenu', noMenu);
+		};
+	}, [gl, camera]);
 }
 
 /** Static obstacles as circles in the ground plane. */
 const OBSTACLES: { x: number; z: number; r: number }[] = [
 	...LANDMARKS.filter((l) => l.solid > 0).map((l) => ({ x: l.x, z: l.z, r: l.solid })),
-	...HOUSES.map((h) => ({ x: h.x, z: h.z, r: 4.2 * h.s })),
+	...HOUSES.map((h) => ({ x: h.x, z: h.z, r: h.c })),
 ];
 
-export function Player({ pixelRatio }: { pixelRatio: number }) {
+/** Ring that flashes where the player clicked. */
+function ClickMarker() {
+	const ref = useRef<THREE.Mesh>(null);
+	const life = useRef(0);
+	useEffect(() => {
+		const on = (e: Event) => {
+			const { x, y, z } = (e as CustomEvent<{ x: number; y: number; z: number }>).detail;
+			ref.current?.position.set(x, y + 0.15, z);
+			life.current = 1;
+		};
+		window.addEventListener('world:click', on);
+		return () => window.removeEventListener('world:click', on);
+	}, []);
+	useFrame((_, dt) => {
+		const m = ref.current;
+		if (!m) return;
+		life.current = Math.max(0, life.current - dt * 1.6);
+		m.visible = life.current > 0;
+		m.scale.setScalar(1 + (1 - life.current) * 1.2);
+		(m.material as THREE.MeshBasicMaterial).opacity = life.current;
+	});
+	return (
+		<mesh ref={ref} rotation={[-Math.PI / 2, 0, 0]} visible={false}>
+			<ringGeometry args={[0.5, 0.75, 32]} />
+			<meshBasicMaterial color="#ffd100" transparent toneMapped={false} depthWrite={false} />
+		</mesh>
+	);
+}
+
+export function Player() {
 	useKeyboard();
+	usePointerControls();
 	const { camera } = useThree();
-	const ship = useRef<THREE.Group>(null);
-	const flames = useRef<THREE.Group>(null);
-	const emitters = useRef<THREE.Object3D[]>([]);
+	const hero = useGame((s) => s.hero);
+	const body = useRef<THREE.Group>(null);
+	const [anim, setAnim] = useState('Idle');
+	const [animSpeed, setAnimSpeed] = useState(1);
 	const v = useMemo(
 		() => ({
-			bank: 0,
-			pitch: 0,
-			camPos: new THREE.Vector3(SPAWN.x, 12, SPAWN.z + 18),
-			look: new THREE.Vector3(SPAWN.x, 2, SPAWN.z - 6),
+			camPos: new THREE.Vector3(SPAWN.x, 14, SPAWN.z + 20),
+			look: new THREE.Vector3(SPAWN.x, 2, SPAWN.z),
 			tmp: new THREE.Vector3(),
 			time: 0,
 			lastRange: null as string | null,
 			intro: 0,
+			anim: 'Idle',
+			animSpeed: 1,
+			facing: 0,
+			hurt: 0,
+			swing: 0,
+			swinging: false,
 		}),
-		[],
-	);
-	const emitterNodes = useMemo(
-		() =>
-			[0.45, -0.45].map((x) => {
-				const o = new THREE.Object3D();
-				o.position.set(x, -0.02, 1.3);
-				return o;
-			}),
 		[],
 	);
 
 	useEffect(() => {
-		// test hooks for the dev browser, stripped from production behaviour
+		// test hooks for the dev browser
 		if (process.env.NODE_ENV !== 'production') Object.assign(window, { __player: player, __game: game });
 		player.x = SPAWN.x;
 		player.z = SPAWN.z;
 		player.yaw = SPAWN.yaw;
+		player.camera.yaw = SPAWN.yaw;
 		player.speed = 0;
-	}, []);
+		player.moveTarget = null;
+		const hit = () => {
+			v.hurt = 0.4;
+			window.dispatchEvent(new CustomEvent('ui:hurt'));
+		};
+		const face = (e: Event) => {
+			v.facing = (e as CustomEvent<number>).detail;
+		};
+		window.addEventListener('player:hit', hit);
+		window.addEventListener('player:face', face);
+		return () => {
+			window.removeEventListener('player:hit', hit);
+			window.removeEventListener('player:face', face);
+		};
+	}, [v]);
 
 	useFrame((_, delta) => {
-		const s = ship.current;
-		if (!s) return;
+		const b = body.current;
 		const dt = Math.min(delta, 1 / 20);
 		v.time += dt;
 		const g = game.get();
-		const canDrive = g.started && !g.panel;
+		const canMove = g.started && !g.panel;
 
 		if (player.teleport) {
 			player.x = player.teleport.x;
 			player.z = player.teleport.z;
 			player.yaw = player.teleport.yaw;
+			v.facing = player.teleport.yaw;
+			player.camera.yaw = player.teleport.yaw;
 			player.speed = 0;
+			player.moveTarget = null;
 			player.teleport = null;
 			v.camPos.set(player.x, groundAt(player.x, player.z) + 8, player.z + 14);
 		}
 
-		// arcade physics
-		const inp = canDrive ? player.input : { forward: 0, turn: 0, boost: false };
-		const max = inp.boost ? BOOST_SPEED : MAX_SPEED;
-		const accel = inp.forward > 0 ? 30 : inp.forward < 0 ? -40 : 0;
-		player.speed += accel * dt;
-		player.speed = THREE.MathUtils.clamp(player.speed, -10, max);
-		if (!inp.forward) player.speed *= Math.pow(0.35, dt);
-		if (inp.boost && inp.forward > 0) player.speed += 20 * dt;
-		const grip = THREE.MathUtils.clamp(Math.abs(player.speed) / 8, 0.35, 1);
-		player.yaw += inp.turn * 2.1 * grip * dt * (player.speed < -0.5 ? -1 : 1);
+		// keyboard: left/right turn the camera, up/down walk along it
+		const inp = player.input;
+		if (canMove) player.camera.yaw += inp.turn * 2.2 * dt;
+		let dirX = 0;
+		let dirZ = 0;
+		let want = 0;
+		if (canMove && (inp.forward || inp.strafe)) {
+			// camera-relative movement: arrows / keys (forward) and touch joystick (forward + strafe)
+			const fx = -Math.sin(player.camera.yaw);
+			const fz = -Math.cos(player.camera.yaw);
+			dirX = fx * inp.forward + Math.cos(player.camera.yaw) * inp.strafe;
+			dirZ = fz * inp.forward - Math.sin(player.camera.yaw) * inp.strafe;
+			const len = Math.hypot(dirX, dirZ);
+			const mag = Math.min(1, len);
+			if (len > 0) {
+				dirX /= len;
+				dirZ /= len;
+			}
+			const base = inp.forward < 0 && !inp.strafe ? RUN * 0.6 : inp.boost ? SPRINT : RUN;
+			want = base * mag;
+			player.moveTarget = null;
+			player.attackTarget = null;
+		} else if (canMove && player.attackTarget !== null) {
+			const m = mobs[player.attackTarget];
+			const dx = m.x - player.x;
+			const dz = m.z - player.z;
+			const d = Math.hypot(dx, dz);
+			if (m.state === 'dead') player.attackTarget = null;
+			else if (d < 2.6) {
+				v.facing = Math.atan2(-dx, -dz);
+				attack();
+			} else {
+				dirX = dx / d;
+				dirZ = dz / d;
+				want = RUN;
+			}
+		} else if (canMove && player.moveTarget) {
+			const dx = player.moveTarget.x - player.x;
+			const dz = player.moveTarget.z - player.z;
+			const d = Math.hypot(dx, dz);
+			if (d < 0.6) {
+				const lm = player.moveTarget.landmark;
+				player.moveTarget = null;
+				if (lm) interact(lm);
+			} else {
+				dirX = dx / d;
+				dirZ = dz / d;
+				want = Math.min(RUN, d * 3 + 2);
+			}
+		}
+		player.speed += (want - player.speed) * Math.min(1, dt * 8);
+		let nx = player.x + dirX * player.speed * dt;
+		let nz = player.z + dirZ * player.speed * dt;
 
-		const fx = -Math.sin(player.yaw);
-		const fz = -Math.cos(player.yaw);
-		let nx = player.x + fx * player.speed * dt;
-		let nz = player.z + fz * player.speed * dt;
-
-		// collisions: push out of obstacles
+		// collisions: push out of obstacles (the push is radial, so the player slides around them)
 		for (const o of OBSTACLES) {
 			const dx = nx - o.x;
 			const dz = nz - o.z;
 			const d = Math.hypot(dx, dz);
-			const min = o.r + 1.2;
-			if (d < min && d > 1e-3) {
-				nx = o.x + (dx / d) * min;
-				nz = o.z + (dz / d) * min;
-				player.speed *= 0.6;
+			const min = o.r + 0.8;
+			if (d < min) {
+				const ux = d > 1e-3 ? dx / d : 1;
+				const uz = d > 1e-3 ? dz / d : 0;
+				nx = o.x + ux * min;
+				nz = o.z + uz * min;
 			}
 		}
-		// world bounds: soft walls
 		const inNexus = nz < -300;
 		const cx = inNexus ? NEXUS_CENTER.x : 0;
 		const cz = inNexus ? NEXUS_CENTER.z : -20;
@@ -164,36 +439,76 @@ export function Player({ pixelRatio }: { pixelRatio: number }) {
 		if (rd > R) {
 			nx = cx + ((nx - cx) / rd) * R;
 			nz = cz + ((nz - cz) / rd) * R;
-			player.speed *= 0.5;
+		}
+		if (!inNexus && groundAt(nx, nz) < -1.6) {
+			// the lake is not walkable
+			nx = player.x;
+			nz = player.z;
+			player.moveTarget = null;
 		}
 		player.x = nx;
 		player.z = nz;
-		const gy = groundAt(nx, nz);
-		player.y += (gy + HOVER + Math.sin(v.time * 2) * 0.12 - player.y) * Math.min(1, dt * 10);
-
-		// orientation: yaw, pitch along the slope, bank into turns
-		const ahead = groundAt(nx + fx * 2, nz + fz * 2);
-		const pitchTarget = Math.atan2(ahead - gy, 2) * 0.8;
-		v.pitch += (pitchTarget - v.pitch) * 0.15;
-		v.bank += (inp.turn * 0.45 * grip - v.bank) * 0.1;
-		s.position.set(player.x, player.y, player.z);
-		s.rotation.set(v.pitch, player.yaw, v.bank, 'YXZ');
-
-		if (flames.current) flames.current.scale.set(1, 1, 0.3 + (Math.max(player.speed, 0) / MAX_SPEED) * 1.4 + (inp.boost ? 0.8 : 0));
-
-		// chase camera
-		const dist = 12 + Math.max(player.speed, 0) * 0.12;
-		v.tmp.set(player.x - fx * dist, Math.max(player.y + 7, groundAt(player.x - fx * dist, player.z - fz * dist) + 2.5), player.z - fz * dist);
-		if (!g.started) {
-			// idle intro orbit around the spawn
-			v.intro += dt * 0.12;
-			v.tmp.set(player.x + Math.sin(v.intro) * 26, player.y + 16, player.z + Math.cos(v.intro) * 26);
+		player.attack = Math.max(0, player.attack - dt);
+		if (player.jump.vy !== 0 || player.jump.h > 0) {
+			player.jump.vy -= 26 * dt;
+			player.jump.h = Math.max(0, player.jump.h + player.jump.vy * dt);
+			if (player.jump.h === 0) player.jump.vy = 0;
 		}
-		v.camPos.lerp(v.tmp, 1 - Math.exp(-dt * (g.started ? 4 : 1.5)));
+		player.y = groundAt(nx, nz) + player.jump.h;
+
+		// face the movement direction
+		if (want > 0 && (dirX || dirZ)) {
+			const target = Math.atan2(-dirX, -dirZ);
+			let diff = target - v.facing;
+			diff = Math.atan2(Math.sin(diff), Math.cos(diff));
+			v.facing += diff * Math.min(1, dt * 12);
+			player.yaw = v.facing;
+			// the camera slowly swings behind when walking toward a clicked point
+			if (!inp.forward && !player.camera.dragging) {
+				let cd = v.facing - player.camera.yaw;
+				cd = Math.atan2(Math.sin(cd), Math.cos(cd));
+				player.camera.yaw += cd * Math.min(1, dt * 0.9);
+			}
+		}
+		if (b) {
+			b.position.set(player.x, player.y, player.z);
+			// KayKit models face +Z
+			b.rotation.y = v.facing + Math.PI;
+		}
+
+		const nextAnim =
+			player.attack > 0 ? '1H_Melee_Attack_Slice_Diagonal' : player.jump.h > 0.05 ? 'Jump_Full_Short' : v.hurt > 0 ? 'Hit_A' : player.speed > 6.5 ? 'Running_A' : player.speed > 0.6 ? 'Walking_A' : 'Idle';
+		v.hurt = Math.max(0, v.hurt - dt);
+		if (player.attack > 0 && !v.swinging) v.swing++;
+		v.swinging = player.attack > 0;
+		const animKey = nextAnim === '1H_Melee_Attack_Slice_Diagonal' ? `${nextAnim}#${v.swing}` : nextAnim;
+		const nextSpeed = nextAnim === 'Running_A' ? player.speed / RUN : nextAnim === 'Walking_A' ? Math.max(player.speed / 4, 0.6) : 1;
+		if (animKey !== v.anim) {
+			v.anim = animKey;
+			setAnim(animKey);
+		}
+		if (Math.abs(nextSpeed - v.animSpeed) > 0.1) {
+			v.animSpeed = nextSpeed;
+			setAnimSpeed(nextSpeed);
+		}
+
+		// orbit camera
+		const c = player.camera;
+		if (!g.started) {
+			v.intro += dt * 0.1;
+			v.tmp.set(player.x + Math.sin(v.intro) * 28, player.y + 17, player.z + Math.cos(v.intro) * 28);
+		} else {
+			v.tmp.set(
+				player.x + Math.sin(c.yaw) * Math.cos(c.pitch) * c.distance,
+				player.y + 1.6 + Math.sin(c.pitch) * c.distance,
+				player.z + Math.cos(c.yaw) * Math.cos(c.pitch) * c.distance,
+			);
+			v.tmp.y = Math.max(v.tmp.y, groundAt(v.tmp.x, v.tmp.z) + 1.2);
+		}
+		v.camPos.lerp(v.tmp, 1 - Math.exp(-dt * (g.started ? 10 : 1.5)));
 		camera.position.copy(v.camPos);
-		v.tmp.set(player.x + fx * 6, player.y + 1.2, player.z + fz * 6);
-		if (!g.started) v.tmp.set(player.x, player.y + 1, player.z);
-		v.look.lerp(v.tmp, 1 - Math.exp(-dt * 6));
+		v.tmp.set(player.x, player.y + 1.8, player.z);
+		v.look.lerp(v.tmp, 1 - Math.exp(-dt * 12));
 		camera.lookAt(v.look);
 
 		// interactions: nearest landmark in range
@@ -211,33 +526,30 @@ export function Player({ pixelRatio }: { pixelRatio: number }) {
 			game.set({ inRange: range });
 		}
 
-		// portals: driving through the gate teleports
-		const portal = landmark('portal');
-		const back = landmark('portal-back');
-		if (Math.hypot(player.x - portal.x, player.z - portal.z) < 3 && g.started) {
-			game.visit('portal');
-			player.teleport = { ...NEXUS_SPAWN };
-			game.set({ zone: 'nexus' });
-			game.banner('Le Nexus', "L'ère des agents");
-		}
-		if (Math.hypot(player.x - back.x, player.z - back.z) < 2.6 && g.started) {
-			player.teleport = { x: portal.x, z: portal.z + 10, yaw: Math.PI };
-			game.set({ zone: 'val' });
-			game.banner('Val des Origines', "L'ère du code");
+		// portals: walking through the gate teleports
+		if (g.started) {
+			const portal = landmark('portal');
+			const back = landmark('portal-back');
+			if (Math.hypot(player.x - portal.x, player.z - portal.z) < 2.8) {
+				game.visit('portal');
+				player.teleport = { ...NEXUS_SPAWN };
+				game.set({ zone: 'nexus' });
+				game.banner('Le Nexus', "L'ère des agents");
+			}
+			if (Math.hypot(player.x - back.x, player.z - back.z) < 2.4) {
+				player.teleport = { x: portal.x, z: portal.z + 10, yaw: Math.PI };
+				game.set({ zone: 'val' });
+				game.banner('Val des Origines', "L'ère du code");
+			}
 		}
 	});
 
 	return (
 		<>
-			<Ship
-				ref={(gr) => {
-					ship.current = gr;
-					if (gr && emitterNodes[0].parent !== gr) emitterNodes.forEach((e) => gr.add(e));
-					emitters.current = emitterNodes;
-				}}
-				flameRef={flames}
-			/>
-			<EngineTrail emitters={emitters} pixelRatio={pixelRatio} />
+			<Suspense fallback={null}>
+				<HeroModel key={hero} ref={body} kind={hero} animation={anim} speed={animSpeed} />
+			</Suspense>
+			<ClickMarker />
 		</>
 	);
 }

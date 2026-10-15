@@ -22,6 +22,14 @@
 	--animate-flow: flow 3s linear infinite;
 	--animate-blink: blink 1.1s steps(2) infinite;
 
+	@keyframes hurt {
+		from {
+			opacity: 1;
+		}
+		to {
+			opacity: 0;
+		}
+	}
 	@keyframes zone-in {
 		0% {
 			opacity: 0;
@@ -207,4 +215,10 @@
 	.animate-marquee {
 		animation-play-state: paused;
 	}
+}
+
+/* Portfolio sections reused inside the in-game panels: no page-level spacing. */
+.panel-sections section {
+	padding-block: 0 !important;
+	min-height: 0 !important;
 }

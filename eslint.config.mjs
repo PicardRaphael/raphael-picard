@@ -12,7 +12,7 @@ const eslintConfig = [
 		rules: { 'react-hooks/immutability': 'off' },
 	},
 	{
-		ignores: ['.next/**', 'node_modules/**', 'next-env.d.ts', 'out/**'],
+		ignores: ['.next/**', 'node_modules/**', 'next-env.d.ts', 'out/**', 'old/**'],
 	},
 ];
 

@@ -2,13 +2,15 @@
 
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Bloom, EffectComposer, Vignette } from '@react-three/postprocessing';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 
 import { useGame } from '@/lib/game-store';
 import { player } from '@/lib/player-state';
 import { Starfield } from '../Cosmos';
 import { ValleyLandmarks } from './Landmarks';
+import { Mobs } from './Mobs';
+import { Nature } from './Nature';
 import { Nexus } from './Nexus';
 import { Player } from './Player';
 import { SkyDome } from './SkyDome';
@@ -96,9 +98,13 @@ export default function WorldScene() {
 		>
 			<Atmosphere shadows={q.shadows} />
 			<Valley />
+			<Suspense fallback={null}>
+				<Nature />
+				<Mobs />
+			</Suspense>
 			<ValleyLandmarks />
 			<Nexus pixelRatio={q.pr} />
-			<Player pixelRatio={q.pr} />
+			<Player />
 			{q.post && (
 				<EffectComposer multisampling={0}>
 					<Bloom mipmapBlur intensity={0.75} luminanceThreshold={0.85} luminanceSmoothing={0.2} radius={0.65} />

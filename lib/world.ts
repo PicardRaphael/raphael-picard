@@ -46,14 +46,19 @@ export const LANDMARKS: Landmark[] = [
 
 export const LAKE = { x: -36, z: 22, r: 15, level: -1.4 };
 
-/** Cottages of the village: position, rotation, size. */
+/** Village buildings (KayKit Medieval Hexagon, CC0): model, position, rotation, scale, collision radius. */
 export const HOUSES = [
-	{ x: -16, z: -30, r: 0.3, s: 1 },
-	{ x: -26, z: -24, r: -0.5, s: 0.9 },
-	{ x: -12, z: -46, r: 0.9, s: 1.1 },
-	{ x: 14, z: -26, r: -0.2, s: 0.95 },
-	{ x: 16, z: -12, r: 2.6, s: 0.85 },
-	{ x: -18, z: -6, r: 1.4, s: 0.9 },
+	{ type: 'building_home_A_blue', x: -16, z: -30, r: 0.3, s: 1, c: 5.5 },
+	{ type: 'building_tavern_blue', x: -27, z: -22, r: -0.6, s: 1, c: 6.4 },
+	{ type: 'building_home_B_blue', x: -12, z: -47, r: 0.9, s: 1, c: 5.8 },
+	{ type: 'building_market_blue', x: 15, z: -27, r: -0.3, s: 1, c: 5.8 },
+	{ type: 'building_home_A_blue', x: 17, z: -12, r: 2.6, s: 1, c: 5.8 },
+	{ type: 'building_home_B_blue', x: -19, z: -6, r: 1.4, s: 1, c: 5.8 },
+	{ type: 'building_well_blue', x: -6, z: -32, r: 0, s: 0.8, c: 2 },
+	{ type: 'building_church_blue', x: 52, z: 14, r: -2.2, s: 1.15, c: 7.5 },
+	{ type: 'building_windmill_blue', x: -60, z: -62, r: 0.6, s: 1.2, c: 6.4 },
+	{ type: 'building_watermill_blue', x: -54, z: 30, r: 1.9, s: 1, c: 6.4 },
+	{ type: 'building_castle_blue', x: 64, z: -84, r: -0.7, s: 1.6, c: 13 },
 ];
 
 /** Dirt roads, as polylines. */

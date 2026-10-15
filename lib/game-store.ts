@@ -13,6 +13,8 @@ export type RaceState = { status: 'idle' | 'countdown' | 'running' | 'finished';
 type GameState = {
 	mode: GameMode;
 	started: boolean;
+	/** Chosen character: fantasy knight or cyberpunk runner. */
+	hero: 'knight' | 'runner';
 	sound: boolean;
 	zone: Zone;
 	/** Landmark the player can interact with right now. */
@@ -21,6 +23,8 @@ type GameState = {
 	panel: string | null;
 	quests: Record<string, QuestStatus>;
 	visited: string[];
+	/** Bugs defeated. */
+	kills: number;
 	race: RaceState;
 	toast: { id: number; title: string; text: string } | null;
 	banner: { id: number; title: string; subtitle: string } | null;
@@ -29,12 +33,14 @@ type GameState = {
 let state: GameState = {
 	mode: 'journey',
 	started: false,
+	hero: 'knight',
 	sound: false,
 	zone: 'val',
 	inRange: null,
 	panel: null,
 	quests: Object.fromEntries(QUESTS.map((q, i) => [q.id, i === 0 ? 'available' : 'locked'])) as Record<string, QuestStatus>,
 	visited: [],
+	kills: 0,
 	race: { status: 'idle', checkpoint: 0, total: 0, startedAt: 0, time: 0 },
 	toast: null,
 	banner: null,

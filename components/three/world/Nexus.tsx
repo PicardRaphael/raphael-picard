@@ -288,8 +288,8 @@ export function Nexus({ pixelRatio }: { pixelRatio: number; reflect?: boolean })
 			<Suspense fallback={<Stargate x={back.x} z={back.z} rotation={Math.PI} />}>
 				{/* sunk 1 m so the ring rests on the street instead of hovering 1.2 m above it */}
 				<SfModel file="scifi_gate" height={13} hide={['Object_6']} position={[back.x, -1, back.z]} rotation={[0, Math.PI, 0]} />
-				{/* the ring of the gate model (13 m tall, centred 5.4 m up once sunk, set 3 m in front of the base) gets a real event horizon */}
-				<EventHorizon radius={5.2} position={[back.x, 5.4, back.z + 3.06]} rotation={[0, Math.PI, 0]} />
+				{/* the event horizon sits in the plane of the ring (measured: centre 5.5 m up, on the gate's own z) */}
+				<EventHorizon radius={5.15} position={[back.x, 5.5, back.z]} rotation={[0, Math.PI, 0]} />
 			</Suspense>
 			{/* the gate model's two side wings hover 4 m up: steel pedestals carry them to the street */}
 			{GATE_PEDESTALS.map((p) => (

@@ -105,7 +105,7 @@ function Options() {
 				<button
 					onClick={() => {
 						game.set({
-							quests: Object.fromEntries(QUESTS.map((q, i) => [q.id, i === 0 ? 'available' : 'locked'])),
+							quests: Object.fromEntries(QUESTS.map((q) => [q.id, QUESTS.some((o) => o.next === q.id) ? 'locked' : 'available'])),
 							visited: [],
 							kills: 0,
 							defeated: [],

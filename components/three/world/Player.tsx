@@ -787,6 +787,10 @@ export function Player() {
 			game.set({ inRange: range });
 		}
 
+		// the realm always follows where the hero stands (lights, sky, music and mobs depend on it)
+		const here = player.z < -300 ? 'nexus' : 'val';
+		if (g.zone !== here) game.set({ zone: here });
+
 		// portals: walking through the gate teleports
 		if (g.started) {
 			const portal = landmark('portal');

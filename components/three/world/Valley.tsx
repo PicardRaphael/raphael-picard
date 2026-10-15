@@ -1,8 +1,10 @@
 'use client';
 
+import { useTexture } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import { useLayoutEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
+import { Water as WaterMirror } from 'three/examples/jsm/objects/Water.js';
 
 import { fbm, noise2 } from '@/lib/noise';
 import { HOUSES, LAKE, LANDMARKS, pathDistance, valHeight } from '@/lib/world';
@@ -13,19 +15,11 @@ import { mulberry32 } from '../shapes';
  * forests, rocks and wild flowers. Everything is procedural and instanced.
  */
 
-const C = {
-	grassDark: new THREE.Color('#3f7a2a'),
-	grass: new THREE.Color('#62a136'),
-	grassLight: new THREE.Color('#93bf47'),
-	gold: new THREE.Color('#c2b14c'),
-	path: new THREE.Color('#a8865a'),
-	pathDark: new THREE.Color('#87683f'),
-	sand: new THREE.Color('#d2bb84'),
-	rock: new THREE.Color('#8b8378'),
-	rockDark: new THREE.Color('#5f5a55'),
-	snow: new THREE.Color('#f3efe9'),
-};
-
+/**
+ * Terrain splat weights per vertex: the ground is painted with hand-painted tiling textures by rudolfs
+ * ("Texture pack 2 (Ground)", Sketchfab, CC BY 4.0), the same artist as the trees, so grass, paths,
+ * cliffs and peaks share one brush.
+ */
 function useTerrainGeometry() {
 	return useMemo(() => {
 		const size = 300;
@@ -34,77 +28,117 @@ function useTerrainGeometry() {
 		g.rotateX(-Math.PI / 2);
 		g.translate(0, 0, -20);
 		const pos = g.attributes.position;
-		const colors = new Float32Array(pos.count * 3);
-		const c = new THREE.Color();
+		const splatA = new Float32Array(pos.count * 3); // dry grass, dirt path, sand
+		const splatB = new Float32Array(pos.count * 2); // rock, snow
 		for (let i = 0; i < pos.count; i++) {
 			const x = pos.getX(i);
 			const z = pos.getZ(i);
 			const h = valHeight(x, z);
 			pos.setY(i, h);
-			// slope from finite differences
 			const sx = valHeight(x + 1, z) - h;
 			const sz = valHeight(x, z + 1) - h;
 			const slope = Math.sqrt(sx * sx + sz * sz);
-			const n = fbm(x * 0.05, z * 0.05, 2);
-			c.copy(C.grass).lerp(n > 0 ? C.grassLight : C.grassDark, Math.min(Math.abs(n) * 1.6, 1));
-			const goldPatch = noise2(x * 0.02 + 40, z * 0.02);
-			if (goldPatch > 0.35) c.lerp(C.gold, Math.min((goldPatch - 0.35) * 2, 0.7));
+			const patch = noise2(x * 0.02 + 40, z * 0.02) + fbm(x * 0.08, z * 0.08, 2) * 0.35;
+			const dry = THREE.MathUtils.clamp((patch - 0.15) * 2.2, 0, 0.85);
 			const p = pathDistance(x, z);
-			if (p < 3.6) c.lerp(noise2(x * 0.4, z * 0.4) > 0 ? C.path : C.pathDark, Math.min((3.6 - p) / 1.6, 1));
+			const path = THREE.MathUtils.clamp((3.4 - p) / 1.8 + fbm(x * 0.3, z * 0.3, 2) * 0.35, 0, 1);
 			const ld = Math.hypot(x - LAKE.x, z - LAKE.z);
-			if (h < LAKE.level + 1.2 && ld < LAKE.r + 8) c.lerp(C.sand, 0.85);
-			if (slope > 0.9) c.lerp(C.rock, Math.min((slope - 0.9) * 1.5, 1));
-			if (h > 16) c.lerp(slope > 1.4 ? C.rockDark : C.rock, Math.min((h - 16) / 6, 1));
-			if (h > 30) c.lerp(C.snow, Math.min((h - 30) / 6, 1));
-			colors.set([c.r, c.g, c.b], i * 3);
+			const sand = h < LAKE.level + 1.2 && ld < LAKE.r + 8 ? 0.9 : 0;
+			let rock = THREE.MathUtils.clamp((slope - 0.75) * 1.6, 0, 1);
+			if (h > 14) rock = Math.max(rock, THREE.MathUtils.clamp((h - 14) / 6, 0, 1));
+			const snow = THREE.MathUtils.clamp((h - 30) / 6 - Math.max(0, slope - 2) * 0.4, 0, 1);
+			splatA.set([dry, path, sand], i * 3);
+			splatB.set([rock, snow], i * 2);
 		}
-		g.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+		g.setAttribute('splatA', new THREE.BufferAttribute(splatA, 3));
+		g.setAttribute('splatB', new THREE.BufferAttribute(splatB, 2));
 		g.computeVertexNormals();
 		return g;
 	}, []);
 }
 
-const waterVertex = /* glsl */ `
-varying vec3 vWorld;
-void main() {
-	vec4 w = modelMatrix * vec4(position, 1.0);
-	vWorld = w.xyz;
-	gl_Position = projectionMatrix * viewMatrix * w;
-}
-`;
-const waterFragment = /* glsl */ `
-uniform float uTime;
-uniform vec3 uCenter;
-uniform float uRadius;
-varying vec3 vWorld;
-float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-void main() {
-	float d = length(vWorld.xz - uCenter.xz) / uRadius;
-	vec3 deep = vec3(0.07, 0.32, 0.42);
-	vec3 shallow = vec3(0.24, 0.62, 0.62);
-	vec3 col = mix(deep, shallow, smoothstep(0.2, 1.0, d));
-	// moving ripples and sun sparkles
-	float r = sin(vWorld.x * 1.3 + uTime * 1.2) * sin(vWorld.z * 1.1 - uTime * 0.9);
-	col += vec3(1.0, 0.85, 0.6) * pow(max(r, 0.0), 12.0) * 0.6;
-	vec2 cell = floor(vWorld.xz * 2.0);
-	float s = step(0.985, hash(cell + floor(uTime * 2.0)));
-	col += vec3(1.0, 0.9, 0.7) * s * 0.8;
-	float edge = smoothstep(1.0, 0.92, d);
-	gl_FragColor = vec4(col, 0.88 * edge);
-}
-`;
+const TEX = ['grass', 'grass_dry', 'dirt', 'sand', 'rock', 'snow'] as const;
 
+function useTerrainMaterial() {
+	const maps = useTexture(Object.fromEntries(TEX.map((t) => [t, `/textures/val/${t}.webp`])) as Record<(typeof TEX)[number], string>);
+	return useMemo(() => {
+		for (const t of Object.values(maps)) {
+			t.wrapS = t.wrapT = THREE.RepeatWrapping;
+			t.colorSpace = THREE.SRGBColorSpace;
+			t.anisotropy = 8;
+		}
+		const mat = new THREE.MeshStandardMaterial({ roughness: 0.95, metalness: 0 });
+		mat.onBeforeCompile = (shader) => {
+			for (const t of TEX) shader.uniforms[`t_${t}`] = { value: maps[t] };
+			shader.vertexShader = shader.vertexShader
+				.replace(
+					'#include <common>',
+					`#include <common>
+attribute vec3 splatA;
+attribute vec2 splatB;
+varying vec3 vSplatA;
+varying vec2 vSplatB;
+varying vec2 vTerrainXZ;`,
+				)
+				.replace(
+					'#include <begin_vertex>',
+					`#include <begin_vertex>
+vSplatA = splatA;
+vSplatB = splatB;
+vTerrainXZ = (modelMatrix * vec4(transformed, 1.0)).xz;`,
+				);
+			shader.fragmentShader = shader.fragmentShader
+				.replace(
+					'#include <common>',
+					`#include <common>
+uniform sampler2D ${TEX.map((t) => `t_${t}`).join(', ')};
+varying vec3 vSplatA;
+varying vec2 vSplatB;
+varying vec2 vTerrainXZ;
+vec3 tex(sampler2D s, float tile) { return texture2D(s, vTerrainXZ / tile).rgb; }`,
+				)
+				.replace(
+					'#include <map_fragment>',
+					`// two scales of grass break the tiling
+vec3 ground = mix(tex(t_grass, 7.0), tex(t_grass, 23.0), 0.4);
+ground = mix(ground, tex(t_grass_dry, 9.0), vSplatA.x);
+ground = mix(ground, tex(t_sand, 6.0), vSplatA.z);
+ground = mix(ground, tex(t_dirt, 5.0), smoothstep(0.25, 0.75, vSplatA.y));
+ground = mix(ground, tex(t_rock, 9.0), smoothstep(0.2, 0.8, vSplatB.x));
+ground = mix(ground, tex(t_snow, 10.0), smoothstep(0.3, 0.8, vSplatB.y));
+diffuseColor.rgb *= ground * 1.25;`,
+				);
+		};
+		return mat;
+	}, [maps]);
+}
+
+
+
+/** Real water: planar mirror reflections of the valley, normal-mapped ripples, a teal tint (three.js Water). */
 function Water() {
-	const uniforms = useMemo(() => ({ uTime: { value: 0 }, uCenter: { value: new THREE.Vector3(LAKE.x, 0, LAKE.z) }, uRadius: { value: LAKE.r + 9 } }), []);
+	const normals = useTexture('/textures/waternormals.jpg');
+	const water = useMemo(() => {
+		normals.wrapS = normals.wrapT = THREE.RepeatWrapping;
+		const w = new WaterMirror(new THREE.CircleGeometry(LAKE.r + 9, 64), {
+			textureWidth: 512,
+			textureHeight: 512,
+			waterNormals: normals,
+			sunDirection: new THREE.Vector3(0.4, 0.8, 0.3).normalize(),
+			sunColor: 0xfff1d0,
+			waterColor: 0x0f4f57,
+			distortionScale: 1.6,
+			fog: true,
+		});
+		w.rotation.x = -Math.PI / 2;
+		w.position.set(LAKE.x, LAKE.level, LAKE.z);
+		(w.material as THREE.ShaderMaterial).uniforms.size.value = 3.5;
+		return w;
+	}, [normals]);
 	useFrame((_, dt) => {
-		uniforms.uTime.value += dt;
+		(water.material as THREE.ShaderMaterial).uniforms.time.value += dt * 0.35;
 	});
-	return (
-		<mesh position={[LAKE.x, LAKE.level, LAKE.z]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-			<circleGeometry args={[LAKE.r + 9, 64]} />
-			<shaderMaterial vertexShader={waterVertex} fragmentShader={waterFragment} uniforms={uniforms} transparent />
-		</mesh>
-	);
+	return <primitive object={water} />;
 }
 
 function blocked(x: number, z: number) {
@@ -253,11 +287,10 @@ export function LowPolyForest() {
 
 export function Valley() {
 	const terrain = useTerrainGeometry();
+	const material = useTerrainMaterial();
 	return (
 		<group>
-			<mesh geometry={terrain} receiveShadow>
-				<meshStandardMaterial vertexColors roughness={0.95} flatShading />
-			</mesh>
+			<mesh geometry={terrain} material={material} receiveShadow />
 			<Water />
 		</group>
 	);

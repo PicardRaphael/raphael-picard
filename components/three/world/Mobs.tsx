@@ -9,11 +9,20 @@ import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { game } from '@/lib/game-store';
 import { type Mob, type MobState, mobs } from '@/lib/mobs';
 import { player } from '@/lib/player-state';
+import { HOUSES, LAKE } from '@/lib/world';
 import { groundAt } from './Player';
 
 /** Valley bugs are KayKit skeletons (CC0); Nexus bugs are Quaternius sci-fi robots (CC0, PBR textures). */
 type Kind = { url: string; height: number; hover: number; once: string[]; anim: Record<MobState, string> };
-const KINDS: Record<'skeleton' | 'drone' | 'quadshell' | 'trilobite', Kind> = {
+const KINDS: Record<'skeleton' | 'bones' | 'drone' | 'quadshell' | 'trilobite', Kind> = {
+	// hand-painted Sketchfab monster (CC BY 4.0): Skelet_warrior by uchaikineugene
+	bones: {
+		url: '/models/sf/skeleton_warrior.glb',
+		height: 2.2,
+		hover: 0,
+		once: ['rig|Attack_1', 'rig|Dead'],
+		anim: { idle: 'rig|Idel', walk: 'rig|Walck', chase: 'rig|Run', attack: 'rig|Attack_1', hit: 'rig|Idel', dead: 'rig|Dead' },
+	},
 	skeleton: {
 		url: '/models/skeleton.glb',
 		height: 0,
@@ -45,7 +54,9 @@ const KINDS: Record<'skeleton' | 'drone' | 'quadshell' | 'trilobite', Kind> = {
 };
 Object.values(KINDS).forEach((k) => useGLTF.preload(k.url));
 const ROBOTS = ['drone', 'quadshell', 'trilobite'] as const;
-const kindOf = (mob: Mob) => (mob.zone === 'nexus' ? ROBOTS[mob.id % ROBOTS.length] : 'skeleton');
+/** Lake and houses as circles monsters cannot enter. */
+const MOB_BLOCKERS = [{ x: LAKE.x, z: LAKE.z, r: LAKE.r + 1.5 }, ...HOUSES.map((h) => ({ x: h.x, z: h.z, r: h.c + 0.5 }))];
+const kindOf = (mob: Mob) => (mob.zone === 'nexus' ? ROBOTS[mob.id % ROBOTS.length] : 'bones');
 
 /** Name plate + health bar drawn on a canvas sprite. */
 function useLabel(name: string, nexus: boolean) {
@@ -90,7 +101,8 @@ function MobUnit({ mob }: { mob: Mob }) {
 			const mat = (m.material as THREE.MeshStandardMaterial).clone();
 			// a cursed green glow on skeletons; robots keep their PBR look with a faint neon tint
 			mat.emissive = new THREE.Color(nexus ? '#db2777' : '#16a34a');
-			mat.emissiveIntensity = nexus ? 0.08 : 0.35;
+			// painted monsters keep their colours; robots get a faint neon tint
+			mat.emissiveIntensity = nexus ? 0.08 : 0;
 			m.material = mat;
 		});
 		if (kind.height) {
@@ -104,7 +116,7 @@ function MobUnit({ mob }: { mob: Mob }) {
 	const actions = useMemo(() => Object.fromEntries(animations.map((a) => [a.name, mixer.clipAction(a)])), [animations, mixer]);
 	const label = useLabel(mob.name, nexus);
 	const sprite = useRef<THREE.Sprite>(null);
-	const v = useRef({ anim: '', hp: -1 });
+	const v = useRef({ anim: '', hp: -1, flash: 0 });
 
 	useEffect(() => {
 		label.draw(mob.hp, mob.maxHp);
@@ -123,6 +135,23 @@ function MobUnit({ mob }: { mob: Mob }) {
 		mob.t += dt;
 		mob.cooldown = Math.max(0, mob.cooldown - dt);
 		const dp = Math.hypot(player.x - mob.x, player.z - mob.z);
+
+		// monsters stay on dry land and outside the houses: pushed back to the edge, and they stop wandering there
+		if (mob.zone === 'val') {
+			for (const o of MOB_BLOCKERS) {
+				const ox = mob.x - o.x;
+				const oz = mob.z - o.z;
+				const od = Math.hypot(ox, oz);
+				if (od < o.r && od > 1e-3) {
+					mob.x = o.x + (ox / od) * o.r;
+					mob.z = o.z + (oz / od) * o.r;
+					if (mob.state === 'walk') {
+						mob.state = 'idle';
+						mob.t = 0;
+					}
+				}
+			}
+		}
 
 		// simple AI: wander near home, chase and swing when the player comes close
 		switch (mob.state) {
@@ -212,6 +241,25 @@ function MobUnit({ mob }: { mob: Mob }) {
 		mixer.update(dt);
 		// corpses stay solid for 2 s, then sink into the ground before respawning later
 		const sink = mob.state === 'dead' && mob.t > 2 ? (mob.t - 2) * 0.9 : 0;
+		// a blow shoves the bug back and flashes it red for a moment
+		const struck = mob.state === 'hit' && mob.t < 0.25;
+		if (struck) {
+			const kx = mob.x - player.x;
+			const kz = mob.z - player.z;
+			const kd = Math.hypot(kx, kz) || 1;
+			mob.x += (kx / kd) * 6 * dt;
+			mob.z += (kz / kd) * 6 * dt;
+		}
+		const flash = mob.state === 'hit' ? Math.max(0, 1 - mob.t * 4) : 0;
+		if (flash !== v.current.flash) {
+			v.current.flash = flash;
+			model.traverse((o) => {
+				const m = (o as THREE.Mesh).material as THREE.MeshStandardMaterial | undefined;
+				if (!m?.emissive) return;
+				m.emissive.set(flash > 0 ? '#ff2a2a' : nexus ? '#db2777' : '#16a34a');
+				m.emissiveIntensity = flash > 0 ? flash * 1.2 : nexus ? 0.08 : 0;
+			});
+		}
 		g.position.set(mob.x, groundAt(mob.x, mob.z) - sink + kind.hover + (kind.hover ? Math.sin(mob.t * 2.4) * 0.2 : 0), mob.z);
 		if (mob.state === 'dead' && mob.t > 4.5) g.visible = false;
 		g.rotation.y = mob.yaw;
@@ -221,7 +269,7 @@ function MobUnit({ mob }: { mob: Mob }) {
 			const k = THREE.MathUtils.clamp(d / 14, 1, 3.2);
 			sprite.current.scale.set(3.2 * k, 0.8 * k, 1);
 			sprite.current.position.y = 2.6 + 0.5 * k;
-			sprite.current.visible = d < 75 && (mob.state !== 'dead' || mob.t < 1.5);
+			sprite.current.visible = d < 140 && (mob.state !== 'dead' || mob.t < 1.5);
 		}
 	});
 

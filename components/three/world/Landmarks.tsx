@@ -14,37 +14,28 @@ import { RaphyModel } from './Raphy';
 
 const stone = new THREE.MeshStandardMaterial({ color: '#9a9184', roughness: 0.95, flatShading: true });
 const stoneDark = new THREE.MeshStandardMaterial({ color: '#6c665f', roughness: 1, flatShading: true });
-const arcane = new THREE.MeshBasicMaterial({ color: '#d58bff', toneMapped: false });
+const arcane = new THREE.MeshBasicMaterial({ color: '#8fb0ff', toneMapped: false });
 
 const ground = (x: number, z: number) => valHeight(x, z);
 
-/** Menhirs carved from the painted rocks of the nature kit, so the circle matches the rest of the valley. */
-const STONES = Array.from({ length: 9 }, (_, i) => ({ a: (i / 9) * Math.PI * 2, h: 4.2 + (i % 3) * 1.1, name: ['Rock_Medium_1', 'Rock_Medium_3', 'Rock_Medium_2'][i % 3] }));
+/** Menhirs carved from the painted stone pack, so the circle matches the rest of the valley. */
+const STONES = Array.from({ length: 9 }, (_, i) => ({ a: (i / 9) * Math.PI * 2, h: 4.2 + (i % 3) * 1.1, name: ['RockTall', 'RockBig_3', 'RockTall'][i % 3] }));
 
 function Stones() {
 	const l = landmark('stones');
 	const y = ground(l.x, l.z);
-	const rune = useRef<THREE.Mesh>(null);
-	useFrame(({ clock }) => {
-		if (!rune.current) return;
-		rune.current.rotation.y = clock.elapsedTime * 0.8;
-		rune.current.position.y = 3.2 + Math.sin(clock.elapsedTime * 1.4) * 0.3;
-	});
 	return (
 		<group position={[l.x, y, l.z]}>
 			<Suspense fallback={null}>
 				{STONES.map((st, i) => (
 					<PaintedRock key={i} name={st.name} position={[Math.cos(st.a) * 6.8, 0, Math.sin(st.a) * 6.8]} rotation={-st.a} size={[1.6, st.h, 2]} />
 				))}
-				<PaintedRock name="Rock_Medium_2" position={[0, 0, 0]} size={[3.6, 1.3, 3.6]} />
+				<PaintedRock name="RockBig_1" position={[0, 0, 0]} size={[3.6, 1.3, 3.6]} />
 			</Suspense>
 			<mesh position={[0, 0.06, 0]} rotation={[-Math.PI / 2, 0, 0]} material={arcane}>
 				<ringGeometry args={[4.6, 4.85, 64]} />
 			</mesh>
-			<mesh ref={rune} position={[0, 3.2, 0]} material={arcane}>
-				<octahedronGeometry args={[0.7, 0]} />
-			</mesh>
-			<pointLight position={[0, 3, 0]} color="#c084fc" intensity={18} distance={14} />
+			<pointLight position={[0, 3, 0]} color="#7c9bff" intensity={14} distance={14} />
 		</group>
 	);
 }
@@ -100,7 +91,6 @@ function Portal({ x, z, y, back = false }: { x: number; z: number; y: number; ba
 }
 
 /** Floating WoW-style quest markers: yellow "!" to pick up, yellow "?" to hand in, grey "?" while in progress, golden beam on objectives. */
-const yellow = new THREE.MeshBasicMaterial({ color: '#ffd100', toneMapped: false });
 
 /** WoW-style quest glyph drawn on a canvas: bold serif, golden (or grey) gradient, dark outline. */
 const glyphCache = new Map<string, THREE.Texture>();
@@ -156,34 +146,23 @@ export function QuestMarker({ id, height }: { id: string; height: number }) {
 		const g = ref.current;
 		if (!g) return;
 		g.position.y = height + Math.sin(clock.elapsedTime * 2.2) * 0.3;
-		if (kind === 'objective') g.rotation.y = clock.elapsedTime * 1.5;
 		// keep the marker readable from afar
 		const d = camera.position.distanceTo(g.getWorldPosition(new THREE.Vector3()));
-		g.scale.setScalar(THREE.MathUtils.clamp(d / 14, 1.6, 5));
+		g.scale.setScalar(THREE.MathUtils.clamp(d / 45, 0.6, 2));
 	});
 	if (!kind) return null;
 	return (
 		<>
 			<group ref={ref} position={[0, height, 0]}>
-				{kind === 'objective' ? (
-					<mesh material={yellow}>
-						<octahedronGeometry args={[0.55, 0]} />
-					</mesh>
-				) : (
-					<Glyph kind={kind} />
-				)}
+				{/* objectives use the same golden glyph as the quest givers, so every marker reads alike */}
+				<Glyph kind={kind === 'objective' ? '?' : kind} />
 			</group>
-			{(kind === 'objective' || kind === '?' || kind === '!') && (
-				<mesh position={[0, height / 2 + 20, 0]}>
-					<cylinderGeometry args={[0.5, 0.9, height + 40, 12, 1, true]} />
-					<meshBasicMaterial color="#ffd100" transparent opacity={0.16} blending={THREE.AdditiveBlending} depthWrite={false} side={THREE.DoubleSide} toneMapped={false} />
-				</mesh>
-			)}
+
 		</>
 	);
 }
 
-const MARKER_HEIGHT: Record<string, number> = { raphy: 5.6, tower: 34, forge: 15, stones: 9, portal: 26, holo: 5.8, beacon: 24, agents: 16, core: 16, gallery: 10, 'portal-back': 15, race: 9 };
+const MARKER_HEIGHT: Record<string, number> = { raphy: 5.6, tower: 29, forge: 11, stones: 9, portal: 26, holo: 5.8, beacon: 24, agents: 16, core: 16, gallery: 10, 'portal-back': 15, race: 9 };
 
 /** One marker per place, in both realms. */
 export function QuestMarkers() {

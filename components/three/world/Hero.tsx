@@ -13,12 +13,44 @@ import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
 
 export type HeroKind = 'knight' | 'runner';
 
-const FILES: Record<HeroKind, string> = { knight: '/models/knight.glb', runner: '/models/rogue_hooded.glb' };
+// knight: "3DRT - Fantasy Warrior" by 3DRT.com (Sketchfab, CC BY 4.0): armour, sword and shield are part of the
+// rigged model; runner: KayKit rogue (CC0)
+const FILES: Record<HeroKind, string> = { knight: '/models/sf/warrior.glb', runner: '/models/rogue_hooded.glb' };
+
+/** The warrior ships one 33 s take: its moves are cut out by frame range (30 fps, ranges from 3DRT's sheet). */
+const WARRIOR_TAKES: [string, number, number][] = [
+	['w_idle', 0, 100],
+	['w_defend', 120, 150],
+	['w_attack1', 150, 200],
+	['w_attack2', 230, 290],
+	['w_walk', 320, 360],
+	['w_run', 400, 420],
+	['w_hit', 930, 980],
+];
+const CLIPS: Partial<Record<HeroKind, Record<string, string>>> = {
+	knight: {
+		Idle: 'w_idle',
+		Walking_A: 'w_walk',
+		Running_A: 'w_run',
+		Jump_Full_Short: 'w_run',
+		Hit_A: 'w_hit',
+		Cheer: 'w_defend',
+		Interact: 'w_defend',
+		'1H_Melee_Attack_Slice_Diagonal': 'w_attack1',
+		'1H_Melee_Attack_Slice_Diagonal:1': 'w_attack2',
+		'1H_Melee_Attack_Slice_Diagonal:2': 'w_attack1',
+	},
+};
+const ONCE = ['Cheer', 'Interact', 'Jump_Full_Short', '1H_Melee_Attack_Slice_Diagonal', '1H_Ranged_Shoot', 'Hit_A'];
+const HEIGHT: Partial<Record<HeroKind, number>> = { knight: 2.3 };
+/** The warrior was exported facing -Z: turn it so it looks where it walks. */
+const FACING: Partial<Record<HeroKind, number>> = { knight: Math.PI };
 useGLTF.preload(FILES.knight);
 useGLTF.preload(FILES.runner);
 useGLTF.preload('/models/pistol.glb');
 
 const RUNNER_HIDDEN = ['Knife', 'Knife_Offhand', '1H_Crossbow', '2H_Crossbow', 'Throwable'];
+
 
 /** Hue-shifts the KayKit gradient atlas toward magenta/cyan neon. */
 function neonTexture(src: THREE.Texture) {
@@ -63,6 +95,15 @@ export const HeroModel = forwardRef<THREE.Group, Props>(function HeroModel({ kin
 			}
 			m.material = mat;
 		});
+		const h = HEIGHT[kind];
+		if (h) {
+			clone.updateMatrixWorld(true);
+			const b = new THREE.Box3().setFromObject(clone, true);
+			clone.scale.multiplyScalar(h / Math.max(b.max.y - b.min.y, 0.01));
+			clone.updateMatrixWorld(true);
+			const b2 = new THREE.Box3().setFromObject(clone, true);
+			clone.position.y -= b2.min.y;
+		}
 		if (kind === 'runner') {
 			// the runner trades the crossbow and knives for a sci-fi pistol (Quaternius, CC0)
 			RUNNER_HIDDEN.forEach((n) => {
@@ -87,33 +128,42 @@ export const HeroModel = forwardRef<THREE.Group, Props>(function HeroModel({ kin
 	}, [scene, kind, pistol]);
 
 	const group = useRef<THREE.Group>(null);
-	const { actions } = useAnimations(animations, group);
+	const clips = useMemo(() => {
+		if (kind !== 'knight' || !animations[0]) return animations;
+		return WARRIOR_TAKES.map(([name, from, to]) => THREE.AnimationUtils.subclip(animations[0], name, from, to, 30));
+	}, [animations, kind]);
+	const { actions } = useAnimations(clips, group);
 	const current = useRef<string | null>(null);
+	const playing = useRef<string | null>(null);
 
 	// `animation` may carry a "#n" suffix so that a repeated one-shot (sword swing) restarts
 	useEffect(() => {
-		const name = animation.split('#')[0];
+		const [logical, nth] = animation.split('#');
+		const variant = nth ? CLIPS[kind]?.[`${logical}:${Number(nth) % 3}`] : undefined;
+		const name = variant ?? CLIPS[kind]?.[logical] ?? logical;
 		const next = actions[name];
 		if (!next || current.current === animation) return;
-		const prevName = current.current?.split('#')[0];
+		const prevName = playing.current;
 		const prev = prevName && prevName !== name ? actions[prevName] : null;
-		next.reset().fadeIn(0.2).play();
-		if (['Cheer', 'Interact', 'Jump_Full_Short', '1H_Melee_Attack_Slice_Diagonal', '1H_Ranged_Shoot', 'Hit_A'].includes(name)) {
+		if (ONCE.includes(logical)) {
 			next.setLoop(THREE.LoopOnce, 1);
 			next.clampWhenFinished = true;
-		}
-		prev?.fadeOut(0.2);
+		} else next.setLoop(THREE.LoopRepeat, Infinity);
+		next.reset().fadeIn(0.15).play();
+		prev?.fadeOut(0.15);
 		current.current = animation;
-	}, [animation, actions]);
+		playing.current = name;
+	}, [animation, actions, kind]);
 
 	useFrame(() => {
-		const a = current.current ? actions[current.current.split('#')[0]] : null;
-		if (a) a.timeScale = speed;
+		const a = playing.current ? actions[playing.current] : null;
+		// attacks play a bit faster so a click feels responsive
+		if (a) a.timeScale = current.current?.startsWith('1H_Melee') ? 1.5 : speed;
 	});
 
 	return (
 		<group ref={ref}>
-			<group ref={group}>
+			<group ref={group} rotation={[0, FACING[kind] ?? 0, 0]}>
 				<primitive object={model} />
 			</group>
 			{kind === 'runner' && <pointLight position={[0, 1.6, 0.6]} color="#e879f9" intensity={6} distance={6} />}

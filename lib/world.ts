@@ -46,19 +46,19 @@ export const LANDMARKS: Landmark[] = [
 
 export const LAKE = { x: -36, z: 22, r: 15, level: -1.4 };
 
-/** Village buildings (KayKit Medieval Hexagon, CC0): model, position, rotation, scale, collision radius. */
+/**
+ * Village buildings, all from one hand-painted pack ("Village_Personal Assets" by jakekieferwaddington, CC BY 4.0)
+ * so the valley reads as one place: model, position, rotation, scale, collision radius.
+ */
 export const HOUSES = [
-	{ type: 'building_home_A_blue', x: -16, z: -30, r: 0.3, s: 1, c: 5.5 },
-	{ type: 'building_tavern_blue', x: -27, z: -22, r: -0.6, s: 1, c: 6.4 },
-	{ type: 'building_home_B_blue', x: -12, z: -47, r: 0.9, s: 1, c: 5.8 },
-	{ type: 'building_market_blue', x: 15, z: -27, r: -0.3, s: 1, c: 5.8 },
-	{ type: 'building_home_A_blue', x: 17, z: -12, r: 2.6, s: 1, c: 5.8 },
-	{ type: 'building_home_B_blue', x: -19, z: -6, r: 1.4, s: 1, c: 5.8 },
-	{ type: 'building_well_blue', x: -6, z: -32, r: 0, s: 0.8, c: 2 },
-	{ type: 'building_church_blue', x: 52, z: 14, r: -2.2, s: 1.15, c: 7.5 },
-	{ type: 'building_windmill_blue', x: -60, z: -62, r: 0.6, s: 1.2, c: 6.4 },
-	{ type: 'building_watermill_blue', x: -54, z: 30, r: 1.9, s: 1, c: 6.4 },
-	{ type: 'building_castle_blue', x: 64, z: -84, r: -0.7, s: 1.6, c: 13 },
+	{ type: 'house_a', x: -16, z: -30, r: 0.3, s: 1, c: 5.5 },
+	{ type: 'house_c', x: -27, z: -18, r: -0.6, s: 1, c: 5 },
+	{ type: 'house_c', x: -12, z: -47, r: 0.9, s: 1, c: 5 },
+	{ type: 'house_a', x: 15, z: -27, r: -0.3, s: 1, c: 5.5 },
+	{ type: 'house_a', x: 17, z: -12, r: 2.6, s: 1, c: 5.5 },
+	{ type: 'house_c', x: -19, z: -4, r: 1.4, s: 1, c: 5 },
+	{ type: 'house_c', x: 24, z: -52, r: -1.1, s: 1, c: 5 },
+	{ type: 'house_a', x: -36, z: -2, r: 1.9, s: 1, c: 5.5 },
 ];
 
 /** Dirt roads, as polylines. */
@@ -127,7 +127,7 @@ export function valHeight(x: number, z: number) {
 		h = h * (1 - f) + 0.4 * f;
 	}
 	for (const hs of HOUSES) {
-		const f = smooth(9, 4, Math.hypot(x - hs.x, z - hs.z));
+		const f = smooth(hs.c + 6, hs.c + 1, Math.hypot(x - hs.x, z - hs.z));
 		h = h * (1 - f) + 0.4 * f;
 	}
 	// roads sit slightly lower and smoother

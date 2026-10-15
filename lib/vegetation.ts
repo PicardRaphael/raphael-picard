@@ -16,14 +16,15 @@ function mulberry32(seed: number) {
 /** Where the vegetation grows: shared by the renderer and the collisions. */
 type Kind = { names: string[]; height: [number, number]; shadow: boolean };
 
+/** Model names in painted_nature.glb: rudolfs' Handpainted Tree Pack + ashkan.fancy's Stone Pack (CC BY 4.0). */
 export const KINDS = {
-	oak: { names: ['CommonTree_1', 'CommonTree_2', 'CommonTree_4'], height: [9, 14], shadow: true },
-	twisted: { names: ['TwistedTree_1', 'TwistedTree_3'], height: [8, 12], shadow: true },
-	pine: { names: ['Pine_1', 'Pine_3'], height: [12, 18], shadow: true },
-	rock: { names: ['Rock_Medium_1', 'Rock_Medium_2', 'Rock_Medium_3'], height: [1.2, 3.8], shadow: true },
-	bush: { names: ['Bush_Common_Flowers', 'Bush_Common'], height: [1.2, 2.2], shadow: false },
-	grass: { names: ['Grass_Common_Tall', 'Grass_Wispy_Tall', 'Fern_1'], height: [0.7, 1.3], shadow: false },
-	flower: { names: ['Flower_3_Group', 'Flower_4_Group', 'Mushroom_Laetiporus'], height: [0.5, 0.9], shadow: false },
+	oak: { names: ['Oak_1', 'Oak_2', 'OakAutumn_1', 'OakAutumn_2'], height: [9, 13], shadow: true },
+	twisted: { names: ['Birch_1', 'Birch_2', 'DeadOak'], height: [8, 12], shadow: true },
+	pine: { names: ['Pine_1', 'Pine_2', 'Pine_3', 'Spruce_1', 'Spruce_2'], height: [11, 17], shadow: true },
+	rock: { names: ['RockMid_1', 'RockMid_2', 'RockMid_3', 'RockBig_1', 'RockBig_2'], height: [1.4, 3.4], shadow: true },
+	bush: { names: ['Bush'], height: [1.1, 1.8], shadow: false },
+	grass: { names: ['GrassLong_1', 'GrassLong_2', 'GrassShort_1'], height: [0.5, 0.9], shadow: false },
+	flower: { names: ['GrassShort_1', 'GrassLong_2'], height: [0.5, 0.9], shadow: false },
 } satisfies Record<string, Kind>;
 
 type KindName = keyof typeof KINDS;

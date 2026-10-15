@@ -7,11 +7,11 @@ import * as THREE from 'three';
 import { KINDS, type Placement, placements as scatterAll } from '@/lib/vegetation';
 
 /**
- * Painted vegetation from Quaternius' Stylized Nature MegaKit (CC0), instanced.
+ * Hand-painted vegetation (rudolfs' tree pack, ashkan.fancy's stones — Sketchfab, CC BY 4.0), instanced.
  * Each model is split into its sub-meshes (bark, leaves…), one InstancedMesh per sub-mesh.
  */
 
-const URL = '/models/nature.glb';
+const URL = '/models/sf/painted_nature.glb';
 useGLTF.preload(URL);
 
 type KindName = keyof typeof KINDS;
@@ -27,14 +27,23 @@ function useParts() {
 		for (const child of scene.children) {
 			const box = new THREE.Box3().setFromObject(child);
 			const height = Math.max(box.max.y - box.min.y, 0.01);
+			// world-aligned (the packs are Z-up exports), trunk on the placement point whatever the pivot
+			const centre = box.getCenter(new THREE.Vector3());
 			const list: Part[] = [];
 			child.traverse((o) => {
 				const m = o as THREE.Mesh;
 				if (!m.isMesh) return;
 				const g = m.geometry.clone();
-				g.applyMatrix4(m.matrixWorld.clone().premultiply(new THREE.Matrix4().copy(child.matrixWorld).invert()));
+				g.applyMatrix4(m.matrixWorld);
+				g.translate(-centre.x, 0, -centre.z);
 				const mat = (m.material as THREE.MeshStandardMaterial).clone();
 				mat.roughness = 1;
+				// leaf cards and grass tufts are alpha-cut textures
+				if (mat.transparent || mat.alphaTest > 0 || mat.map?.format === THREE.RGBAFormat) {
+					mat.transparent = false;
+					mat.alphaTest = 0.45;
+					mat.side = THREE.DoubleSide;
+				}
 				list.push({ geometry: g, material: mat, height, minY: box.min.y });
 			});
 			parts[child.name] = list;

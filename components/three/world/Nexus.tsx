@@ -9,6 +9,8 @@ import { NEXUS_CENTER, landmark } from '@/lib/world';
 import { constellation, knot, mulberry32 } from '../shapes';
 import { Cyber } from './Cyber';
 import { Street } from './Street';
+import { NexusProps } from './NexusProps';
+import { SfModel } from './SfModel';
 import { Stargate } from './Stargate';
 import { RaphyModel } from './Raphy';
 
@@ -214,7 +216,10 @@ export function Nexus({ pixelRatio, reflect }: { pixelRatio: number; reflect: bo
 			<Gallery />
 			<Beacon />
 			<HoloNpc />
-			<Stargate x={back.x} z={back.z} rotation={Math.PI} />
+			<Suspense fallback={<Stargate x={back.x} z={back.z} rotation={Math.PI} />}>
+				<SfModel file="scifi_gate" height={13} position={[back.x, 0, back.z]} rotation={[0, Math.PI, 0]} />
+			</Suspense>
+			<NexusProps />
 			<group position={[race.x, 0, race.z]}>
 				<Pad x={0} z={0} r={5} />
 				{[-1, 1].map((s) => (

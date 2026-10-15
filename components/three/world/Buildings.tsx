@@ -1,54 +1,29 @@
 'use client';
 
-import { useGLTF } from '@react-three/drei';
-import { useMemo } from 'react';
-import * as THREE from 'three';
-
 import { HOUSES, landmark, valHeight } from '@/lib/world';
-import { TowerMagic } from './TowerMagic';
+import { SfModel, preloadSf } from './SfModel';
 
-/** Medieval buildings from KayKit Medieval Hexagon (CC0): one hex tile = 2 units, scaled to the world. */
-const URL = '/models/village.glb';
-useGLTF.preload(URL);
-const UNIT = 6;
-
-export function Building({ type, x, z, r = 0, s = 1, y }: { type: string; x: number; z: number; r?: number; s?: number; y?: number }) {
-	const { scene } = useGLTF(URL);
-	const obj = useMemo(() => {
-		const src = scene.getObjectByName(type);
-		if (!src) return null;
-		const clone = src.clone(true);
-		clone.position.set(0, 0, 0);
-		clone.traverse((o) => {
-			const m = o as THREE.Mesh;
-			if (m.isMesh) {
-				m.castShadow = true;
-				m.receiveShadow = true;
-			}
-		});
-		const box = new THREE.Box3().setFromObject(clone);
-		clone.position.y = -box.min.y;
-		return clone;
-	}, [scene, type]);
-	if (!obj) return null;
-	return (
-		<group position={[x, (y ?? valHeight(x, z)) - 0.2, z]} rotation={[0, r, 0]} scale={UNIT * s}>
-			<primitive object={obj} />
-		</group>
-	);
-}
+/**
+ * Every building of the valley comes from the same hand-painted village pack (CC BY 4.0), split per house,
+ * so roofs, timber and stone share one palette. Heights keep the pack's own proportions.
+ */
+const MODELS: Record<string, { file: string; height: number }> = {
+	house_a: { file: 'v_house_a', height: 12.2 },
+	house_c: { file: 'v_house_c', height: 9.5 },
+};
+preloadSf('v_house_a', 'v_house_c', 'v_tower_house', 'blacksmith');
 
 export function Village() {
 	const forge = landmark('forge');
 	const tower = landmark('tower');
 	return (
 		<group>
-			{HOUSES.map((h, i) => (
-				<Building key={i} {...h} />
-			))}
-			<Building type="building_blacksmith_blue" x={forge.x} z={forge.z} r={0.6} s={1.25} />
-			<Building type="building_tower_A_blue" x={tower.x} z={tower.z} r={0.3} s={1.5} />
-			<TowerMagic scale={UNIT * 1.5} />
+			{HOUSES.map((h, i) => {
+				const m = MODELS[h.type];
+				return <SfModel key={i} file={m.file} height={m.height * h.s} position={[h.x, valHeight(h.x, h.z) - 0.3, h.z]} rotation={[0, h.r, 0]} />;
+			})}
+			<SfModel file="blacksmith" height={9} position={[forge.x, valHeight(forge.x, forge.z) - 0.2, forge.z]} rotation={[0, 0.6, 0]} />
+			<SfModel file="v_tower_house" height={26} position={[tower.x, valHeight(tower.x, tower.z) - 0.3, tower.z]} rotation={[0, 0.3, 0]} />
 		</group>
 	);
 }

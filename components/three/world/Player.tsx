@@ -12,6 +12,7 @@ import { player } from '@/lib/player-state';
 import { canopies, vegetationObstacles } from '@/lib/vegetation';
 import { HOUSES, LANDMARKS, NEXUS_CENTER, NEXUS_RADIUS, NEXUS_SPAWN, SPAWN, VAL_RADIUS, groundAt, landmark } from '@/lib/world';
 import { FpsWeapon } from './FpsWeapon';
+import { CARS, SHOPS } from './NexusProps';
 import { HeroModel } from './Hero';
 import { fireBolt } from './Lasers';
 
@@ -51,7 +52,7 @@ function damage(target: (typeof mobs)[number]) {
 /** The runner plays in first person unless the visitor scrolled out to the third-person view. */
 export const isFps = () => game.get().hero === 'runner' && player.camera.firstPerson;
 
-export const attackRange = () => (game.get().hero === 'runner' ? 22 : 3.4);
+export const attackRange = () => (game.get().hero === 'runner' ? 22 : 4.6);
 
 /** FPS shot: the bug closest to the aiming ray (within 45 m) is hit; otherwise the bolt flies straight ahead. */
 function fpsShot() {
@@ -98,7 +99,19 @@ export function attack() {
 		const fx = -Math.sin(player.yaw);
 		const fz = -Math.cos(player.yaw);
 		setTimeout(() => fireBolt({ x: player.x + fx * 0.8, y: player.y + 1.4, z: player.z + fz * 0.8 }, target, () => damage(target)), 120);
-	} else setTimeout(() => damage(target), 260);
+	} else
+		// the blade lands mid-swing: every bug in the arc in front of the knight takes the blow
+		setTimeout(() => {
+			const fx = -Math.sin(player.yaw);
+			const fz = -Math.cos(player.yaw);
+			for (const m of mobs) {
+				if (m.state === 'dead' || m.zone !== game.get().zone) continue;
+				const dx = m.x - player.x;
+				const dz = m.z - player.z;
+				const d = Math.hypot(dx, dz);
+				if (d < 5 && (d < 1.5 || (dx * fx + dz * fz) / d > 0.35)) damage(m);
+			}
+		}, 380);
 }
 
 export function jump() {
@@ -385,6 +398,8 @@ function usePointerControls() {
 const OBSTACLES: { x: number; z: number; r: number }[] = [
 	...LANDMARKS.filter((l) => l.solid > 0).map((l) => ({ x: l.x, z: l.z, r: l.solid })),
 	...HOUSES.map((h) => ({ x: h.x, z: h.z, r: h.c })),
+	...SHOPS.map((s) => ({ x: s.x, z: s.z, r: 6 })),
+	...CARS.map((c) => ({ x: c.x, z: c.z, r: 2.2 })),
 ];
 
 /** Ring that flashes where the player clicked. */
@@ -419,7 +434,7 @@ function ClickMarker() {
 export function Player() {
 	useKeyboard();
 	usePointerControls();
-	const { camera } = useThree();
+	const { camera, scene } = useThree();
 	const hero = useGame((s) => s.hero);
 	const [firstPerson, setFirstPerson] = useState(player.camera.firstPerson);
 	useEffect(() => {
@@ -457,7 +472,7 @@ export function Player() {
 
 	useEffect(() => {
 		// test hooks for the dev browser
-		if (process.env.NODE_ENV !== 'production') Object.assign(window, { __player: player, __game: game, __keymap: keymap });
+		if (process.env.NODE_ENV !== 'production') Object.assign(window, { __player: player, __game: game, __keymap: keymap, __scene: scene, __camera: camera, __THREE: THREE, __mobs: mobs, __attack: attack });
 		player.x = SPAWN.x;
 		player.z = SPAWN.z;
 		player.yaw = SPAWN.yaw;
@@ -477,7 +492,7 @@ export function Player() {
 			window.removeEventListener('player:hit', hit);
 			window.removeEventListener('player:face', face);
 		};
-	}, [v]);
+	}, [v, scene, camera]);
 
 	useFrame((_, delta) => {
 		const b = body.current;
@@ -590,11 +605,17 @@ export function Player() {
 		const inNexus = nz < -300;
 		const cx = inNexus ? NEXUS_CENTER.x : 0;
 		const cz = inNexus ? NEXUS_CENTER.z : -20;
-		const R = inNexus ? NEXUS_RADIUS : VAL_RADIUS;
+		// the valley is walkable up to the foot of the mountains
+		const R = inNexus ? NEXUS_RADIUS : Math.min(VAL_RADIUS, 92);
 		const rd = Math.hypot(nx - cx, nz - cz);
 		if (rd > R) {
 			nx = cx + ((nx - cx) / rd) * R;
 			nz = cz + ((nz - cz) / rd) * R;
+		}
+		// too steep: slide back (cliffs and mountain flanks are not walkable)
+		if (!inNexus && groundAt(nx, nz) - groundAt(player.x, player.z) > Math.max(0.35, Math.hypot(nx - player.x, nz - player.z) * 1.1)) {
+			nx = player.x;
+			nz = player.z;
 		}
 		if (!inNexus && groundAt(nx, nz) < -1.6) {
 			// the lake is not walkable
@@ -654,12 +675,20 @@ export function Player() {
 		const c = player.camera;
 		if (!g.started) {
 			v.intro += dt * 0.1;
-			v.tmp.set(player.x + Math.sin(v.intro) * 28, player.y + 17, player.z + Math.cos(v.intro) * 28);
+			v.tmp.set(player.x + Math.sin(v.intro) * 40, player.y + 30, player.z + Math.cos(v.intro) * 40);
 		} else {
 			const pitch = THREE.MathUtils.clamp(c.pitch + v.lookPitch, 0.06, 1.3);
-			// pull the camera in when a tree crown stands between it and the hero
+			// pull the camera in when a tree crown or a building stands between it and the hero
 			let dist = c.distance;
-			v.crowns ??= canopies();
+			// tree crowns and buildings both pull the camera in front of them
+			v.crowns ??= [
+				...canopies(),
+				...HOUSES.map((h) => ({ x: h.x, z: h.z, r: h.c + 0.8, top: groundAt(h.x, h.z) + 13 })),
+				...['tower', 'forge'].map((id) => {
+					const l = landmark(id);
+					return { x: l.x, z: l.z, r: l.solid + 1.5, top: groundAt(l.x, l.z) + (id === 'tower' ? 27 : 9) };
+				}),
+			];
 			for (let t = 2; t < c.distance; t += 1) {
 				const sx = player.x + Math.sin(viewYaw) * Math.cos(pitch) * t;
 				const sz = player.z + Math.cos(viewYaw) * Math.cos(pitch) * t;
@@ -675,6 +704,18 @@ export function Player() {
 				player.y + 1.6 + Math.sin(pitch) * v.dist,
 				player.z + Math.cos(viewYaw) * Math.cos(pitch) * v.dist,
 			);
+			v.tmp.y = Math.max(v.tmp.y, groundAt(v.tmp.x, v.tmp.z) + 1.2);
+			// relief between the hero and the camera: bring the camera closer instead of through the hill
+			for (let t = 0.2; t <= 1; t += 0.1) {
+				const sx = player.x + (v.tmp.x - player.x) * t;
+				const sz = player.z + (v.tmp.z - player.z) * t;
+				const sy = player.y + 1.6 + (v.tmp.y - player.y - 1.6) * t;
+				if (sy < groundAt(sx, sz) + 0.6) {
+					const k = Math.max(0.25, t - 0.1);
+					v.tmp.set(player.x + (v.tmp.x - player.x) * k, player.y + 1.6 + (v.tmp.y - player.y - 1.6) * k, player.z + (v.tmp.z - player.z) * k);
+					break;
+				}
+			}
 			v.tmp.y = Math.max(v.tmp.y, groundAt(v.tmp.x, v.tmp.z) + 1.2);
 		}
 		if (fps) {

@@ -2,8 +2,8 @@
 
 import { useSyncExternalStore } from 'react';
 
+import { type Zone, landmark } from './world';
 import { QUESTS, type QuestStatus, initialQuests, objectiveDone, quest } from './quests';
-import type { Zone } from './world';
 
 /** UI store shared by the 3D world and the DOM overlay (quests, panels, race, sound). */
 export type GameMode = 'journey' | 'pilot' | 'race';
@@ -48,6 +48,8 @@ type GameState = {
 	quality: 'high' | 'low';
 	race: RaceState;
 	toast: { id: number; title: string; text: string } | null;
+	/** Small line announcing an objective reached or a quest to hand in. */
+	ticker: { id: number; text: string } | null;
 	banner: { id: number; title: string; subtitle: string } | null;
 };
 
@@ -77,10 +79,30 @@ let state: GameState = {
 	quality: 'high',
 	race: { status: 'idle', checkpoint: 0, total: 0, startedAt: 0, time: 0 },
 	toast: null,
+	ticker: null,
 	banner: null,
 };
 
 const listeners = new Set<() => void>();
+
+const toastQueue: { title: string; text: string }[] = [];
+let toastBusyUntil = 0;
+let toastTimer: ReturnType<typeof setTimeout> | null = null;
+/** Shows the next queued toast once the current one (4.5 s) is gone. */
+function pumpToasts() {
+	if (toastTimer || !toastQueue.length) return;
+	toastTimer = setTimeout(
+		() => {
+			toastTimer = null;
+			const next = toastQueue.shift();
+			if (!next) return;
+			toastBusyUntil = Date.now() + 4800;
+			game.set({ toast: { id: Date.now(), ...next } });
+			pumpToasts();
+		},
+		Math.max(0, toastBusyUntil - Date.now()),
+	);
+}
 
 /** What the server rendered: React hydrates from it, then switches to the restored save. */
 const INITIAL: GameState = state;
@@ -126,29 +148,47 @@ export const game = {
 	flag(name: string) {
 		if (!state.flags.includes(name)) game.set((s) => ({ flags: [...s.flags, name] }));
 	},
+	/** Toasts wait their turn: one at a time, never on top of another. */
 	toast(title: string, text: string) {
-		game.set({ toast: { id: Date.now(), title, text } });
+		toastQueue.push({ title, text });
+		pumpToasts();
 	},
 	banner(title: string, subtitle: string) {
 		game.set({ banner: { id: Date.now(), title, subtitle } });
 	},
 	/** Called when the player opens a landmark: progresses objectives. */
-	visit(id?: string) {
+	/** Progresses objectives; `before` is the hunt progress prior to this step (for the ticker). */
+	visit(id?: string, before = state.progress) {
 		const s = state;
 		const visited = !id || s.visited.includes(id) ? s.visited : [...s.visited, id];
 		const quests = { ...s.quests };
+		let tick: string | null = null;
 		for (const q of QUESTS) {
 			if (quests[q.id] !== 'active') continue;
-			if (q.objectives.every((o) => objectiveDone(q, o, visited, s.progress))) quests[q.id] = 'ready';
+			// what this very step achieved, announced by the ticker
+			for (const o of q.objectives) {
+				if (objectiveDone(q, o, s.visited, before) || !objectiveDone(q, o, visited, s.progress)) continue;
+				const done = q.objectives.filter((x) => objectiveDone(q, x, visited, s.progress)).length;
+				tick = `${o.label} ✓  ·  ${q.title} ${done}/${q.objectives.length}`;
+			}
+			const hunt = q.objectives.find((o) => o.kills);
+			if (!tick && hunt?.kills && (s.progress[q.id] ?? 0) > (before[q.id] ?? 0)) {
+				tick = `Bug corrigé  ·  ${q.title} ${Math.min(s.progress[q.id] ?? 0, hunt.kills.n)}/${hunt.kills.n}`;
+			}
+			if (q.objectives.every((o) => objectiveDone(q, o, visited, s.progress))) {
+				quests[q.id] = 'ready';
+				tick = `Quête accomplie : retourne voir ${landmark(q.turnIn).name.split(',')[0]}`;
+			}
 		}
-		game.set({ visited, quests });
+		game.set({ visited, quests, ...(tick ? { ticker: { id: Date.now(), text: tick } } : {}) });
 	},
 	/** A bug was defeated in a realm: counts for every active hunt quest of that realm. */
 	kill(zone: 'val' | 'nexus') {
+		const before = state.progress;
 		const progress = { ...state.progress };
 		for (const q of QUESTS) if (state.quests[q.id] === 'active' && q.objectives.some((o) => o.kills?.zone === zone)) progress[q.id] = (progress[q.id] ?? 0) + 1;
 		game.set({ progress });
-		game.visit();
+		game.visit(undefined, before);
 	},
 	accept(id: string) {
 		game.set((s) => ({ quests: { ...s.quests, [id]: 'active' }, progress: { ...s.progress, [id]: 0 }, tracked: id }));

@@ -98,7 +98,7 @@ describe('game store', () => {
 		expect(game.get().progress.purge).toBe(1);
 	});
 
-	it('complete: done, toast, next quest auto-accepted when the giver is the turn-in NPC', () => {
+	it('complete: done, toast, next quest auto-accepted when the giver is the turn-in NPC', async () => {
 		game.accept('origines');
 		visitAll('origines');
 		game.complete('origines');
@@ -107,7 +107,11 @@ describe('game store', () => {
 		// portail is given by raphy, who is also the turn-in NPC of origines
 		expect(s.quests.portail).toBe('active');
 		expect(s.tracked).toBe('portail');
-		expect(s.toast?.title).toContain('Artisan du code');
+		// toasts are queued: the reward shows on the next tick, once nothing else is on screen
+		await new Promise((r) => setTimeout(r, 10));
+		expect(game.get().toast?.title).toContain('Artisan du code');
+		// and each step of the quest was announced by the ticker
+		expect(s.ticker?.text).toContain('Raphy');
 	});
 
 	it('complete: unlocks the next quest and side quests that require it', () => {

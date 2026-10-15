@@ -20,7 +20,8 @@ export function HeadPrompt() {
 		ref.current?.position.set(player.x, player.y + 2.9, player.z);
 	});
 	if (!id || panel || isFps()) return null;
-	const key = keymap.get().interact[0]?.replace('Key', '') ?? 'E';
+	// a key letter means nothing on a touch screen
+	const key = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches ? '☝' : (keymap.get().interact[0]?.replace('Key', '') ?? 'E');
 	return (
 		<group ref={ref}>
 			<Html center zIndexRange={[20, 0]} style={{ pointerEvents: 'auto' }}>

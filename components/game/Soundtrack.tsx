@@ -10,6 +10,7 @@ export function Soundtrack() {
 	const sound = useGame((s) => s.sound);
 	const zone = useGame((s) => s.zone);
 	const toast = useGame((s) => s.toast);
+	const ticker = useGame((s) => s.ticker);
 
 	useEffect(() => {
 		if (sound) void music.start();
@@ -28,6 +29,10 @@ export function Soundtrack() {
 	useEffect(() => {
 		if (toast) music.sfx('quest');
 	}, [toast]);
+	// each step of a quest chimes too
+	useEffect(() => {
+		if (ticker) music.sfx('quest');
+	}, [ticker]);
 
 	useEffect(() => {
 		const hit = () => music.sfx('hit');

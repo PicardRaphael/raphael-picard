@@ -10,7 +10,7 @@ export function BugCard() {
 	const id = useGame((s) => s.bugCard);
 	useEffect(() => {
 		if (id === null) return;
-		const t = setTimeout(() => game.set({ bugCard: null }), 14000);
+		const t = setTimeout(() => game.set({ bugCard: null }), window.matchMedia('(pointer: coarse)').matches ? 9000 : 14000);
 		return () => clearTimeout(t);
 	}, [id]);
 	if (id === null) return null;
@@ -20,7 +20,7 @@ export function BugCard() {
 		<div
 			key={id}
 			role="status"
-			className={`fixed bottom-24 left-1/2 z-30 w-[min(92vw,30rem)] -translate-x-1/2 animate-[zone-in_14s_ease-out_forwards] rounded-2xl border-2 p-5 shadow-2xl backdrop-blur-xl ${
+			className={`fixed bottom-24 left-1/2 z-30 w-[min(92vw,30rem)] -translate-x-1/2 animate-[zone-in_14s_ease-out_forwards] rounded-2xl border-2 p-5 shadow-2xl backdrop-blur-xl [@media(max-height:500px)]:bottom-2 [@media(max-height:500px)]:max-h-[52vh] [@media(max-height:500px)]:w-[min(80vw,36rem)] [@media(max-height:500px)]:overflow-y-auto [@media(max-height:500px)]:p-3 ${
 				nexus ? 'border-[#ff4fd8]/60 bg-[#0b0614]/92 shadow-[#ff4fd8]/20' : 'border-[#c8a35a]/70 bg-[#1a1209]/92 shadow-[#c8a35a]/20'
 			}`}
 		>
@@ -33,7 +33,7 @@ export function BugCard() {
 					✕
 				</button>
 			</div>
-			<div className="mt-4 grid gap-3 sm:grid-cols-2">
+			<div className="mt-4 grid gap-3 sm:grid-cols-2 [@media(max-height:500px)]:mt-2 [@media(max-height:500px)]:grid-cols-2 [@media(max-height:500px)]:text-xs">
 				<div className="rounded-xl bg-[#ef4444]/10 p-3">
 					<p className="text-xs font-bold tracking-wider text-[#f87171] uppercase">Le problème</p>
 					<p className="mt-1 text-sm leading-relaxed text-white/90">{m.problem}</p>

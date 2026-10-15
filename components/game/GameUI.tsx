@@ -42,6 +42,17 @@ function ZoneBanner() {
 	);
 }
 
+/** "Forge examinée ✓ · 1/3": the small line that rewards each step of a quest. */
+function Ticker() {
+	const ticker = useGame((s) => s.ticker);
+	if (!ticker) return null;
+	return (
+		<div key={ticker.id} role="status" className="pointer-events-none fixed inset-x-0 top-[30vh] z-30 flex animate-[zone-in_3s_ease-out_forwards] justify-center px-4 [@media(max-height:500px)]:top-[34vh]">
+			<p className="rounded-full border border-[#ffd100]/40 bg-black/70 px-4 py-1.5 font-mono text-sm text-[#ffe9a3] backdrop-blur-md">{ticker.text}</p>
+		</div>
+	);
+}
+
 function Toast() {
 	const toast = useGame((s) => s.toast);
 	const visible = toast;
@@ -79,7 +90,8 @@ function QuestTracker() {
 	const tracked = useGame((s) => s.tracked);
 	const kills = useGame((s) => s.kills);
 	const running = QUESTS.filter((q) => quests[q.id] === 'active' || quests[q.id] === 'ready');
-	const offered = QUESTS.filter((q) => quests[q.id] === 'available');
+	// the story quest (the one that leads somewhere) comes before the side quests
+	const offered = QUESTS.filter((q) => quests[q.id] === 'available').sort((a, b) => Number(!!b.next) - Number(!!a.next));
 	// the followed quest first, so the trail and the list agree
 	const sorted = [...running].sort((a, b) => (a.id === tracked ? -1 : b.id === tracked ? 1 : 0));
 	const who = (id: string) => landmark(id).name.split(',')[0];
@@ -100,7 +112,7 @@ function QuestTracker() {
 						<span className="block truncate text-white/85">{quests[q.id] === 'ready' ? `À rendre : ${who(q.turnIn)}` : next?.label}</span>
 					</>
 				) : (
-					<span className="text-[#ffd100]">{offered.length ? `! ${offered.length} quête${offered.length > 1 ? 's' : ''} à prendre` : `☠ ${kills} / ${mobs.length}`}</span>
+					<span className="text-[#ffd100]">{offered.length ? `➤ Parle à ${who(offered[0].giver)}` : `☠ ${kills} / ${mobs.length}`}</span>
 				)}
 			</button>
 		);
@@ -339,6 +351,7 @@ export function GameUI() {
 			)}
 			<ZoneBanner />
 			<Toast />
+			<Ticker />
 			<BugCard />
 			<Soundtrack />
 			<HurtFlash />

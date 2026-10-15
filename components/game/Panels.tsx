@@ -93,9 +93,16 @@ const RAPHY_TIPS = [
 	'Dans le Nexus, le Noyau d’orchestration montre l’architecture réelle de NeoChat, une vraie question à l’appui.',
 	'Tu préfères lire tranquillement ? La « Version classique » en haut à gauche ouvre le portfolio en une page.',
 ];
+/** Re-rendered with the game state: the line follows the quest the visitor just accepted or handed in. */
+function RaphyLine() {
+	const g = useGame((s) => s);
+	return <>{raphyLine(g)}</>;
+}
+
 function raphyLine(g: ReturnType<typeof game.get>) {
 	const intro = 'Je suis Raphy, la mascotte de Raphaël Picard, ingénieur IA à Lyon : il conçoit des agents qui tournent en production et forme les équipes à l’IA.';
 	if (g.quests.origines === 'available') return intro + ' Bienvenue dans le Val des Origines !';
+	if (g.quests.origines === 'ready' || g.quests.parcours === 'ready') return 'Tu as tout vu ! Termine la quête ci-dessus, la suite t’attend.';
 	if (g.quests.origines === 'active') {
 		const left = ['forge', 'tower', 'stones'].filter((id) => !g.visited.includes(id)).map((id) => landmark(id).name);
 		return left.length ? `Il te reste à voir : ${left.join(', ')}. Suis les « ? » dorés.` : 'Tu as tout vu ! Reviens me parler pour terminer la quête.';
@@ -231,7 +238,7 @@ function Body({ id }: { id: string }) {
 		default:
 			return (
 				<div className="mx-auto max-w-3xl space-y-5 px-4 sm:px-6">
-					{(id === 'raphy' || NPC_TEXT[id]) && <p className="text-xl leading-relaxed text-white/90">{id === 'raphy' ? raphyLine(game.get()) : NPC_TEXT[id]}</p>}
+					{(id === 'raphy' || NPC_TEXT[id]) && <p className="text-xl leading-relaxed text-white/90">{id === 'raphy' ? <RaphyLine /> : NPC_TEXT[id]}</p>}
 				</div>
 			);
 	}

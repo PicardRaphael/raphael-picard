@@ -276,7 +276,7 @@ function MobUnit({ mob }: { mob: Mob }) {
 		if (sprite.current) {
 			// name plates: near bugs (or the one chasing the hero) only, hidden by walls, faded out from 25 to 35 m
 			const d = state.camera.position.distanceTo(g.position);
-			const k = THREE.MathUtils.clamp(d / 14, 1, 3.2);
+			const k = THREE.MathUtils.clamp(d / 14, 0.45, 3.2);
 			sprite.current.scale.set(3.2 * k, 0.8 * k, 1);
 			sprite.current.position.y = 2.6 + 0.5 * k;
 			const near = mob.state === 'chase' || mob.state === 'attack' ? 1 : THREE.MathUtils.clamp((35 - d) / 10, 0, 1);

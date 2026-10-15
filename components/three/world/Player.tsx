@@ -754,6 +754,11 @@ export function Player() {
 					dist = Math.max(3.5, t - 1);
 					break;
 				}
+				// in the Nexus the street canyon is walled: the camera comes in front of the facades
+				if (g.zone === 'nexus' && !nexusWalkable(sx, sz)) {
+					dist = Math.max(3, t - 1);
+					break;
+				}
 			}
 			v.dist += (dist - v.dist) * Math.min(1, dt * (dist < v.dist ? 12 : 3));
 			v.tmp.set(
@@ -832,12 +837,12 @@ export function Player() {
 				player.teleport = { ...NEXUS_SPAWN };
 				game.set({ zone: 'nexus' });
 				game.flag('nexus');
-				game.banner('Le Nexus', "L'ère des agents");
+				game.banner('Le Nexus', 'L’ère des agents');
 			}
 			if (Math.hypot(player.x - back.x, player.z - back.z) < 2.4) {
 				player.teleport = { x: portal.x, z: portal.z + 10, yaw: Math.PI };
 				game.set({ zone: 'val' });
-				game.banner('Val des Origines', "L'ère du code");
+				game.banner('Val des Origines', 'L’ère du code');
 			}
 		}
 	});

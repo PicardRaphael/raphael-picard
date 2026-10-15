@@ -35,6 +35,9 @@ export function NexusCity() {
 			let mat = glow.get(src);
 			if (!mat) {
 				const m = src.clone();
+				// the city's normal maps yield NaN pixels on some GPUs (ANGLE/D3D11) that bloom spreads over the whole frame:
+				// dropped, invisible at night and cheaper anyway
+				m.normalMap = null;
 				if (m.map) {
 					m.emissiveMap = m.map;
 					m.emissive = new THREE.Color('#ffd9b0');
@@ -51,6 +54,8 @@ export function NexusCity() {
 				if (!m.isMesh) return;
 				m.castShadow = false;
 				m.receiveShadow = true;
+				// zero-length tangents on some facades (NaN under bloom): three derives them in the shader instead
+				if (m.geometry.attributes.tangent) m.geometry.deleteAttribute('tangent');
 				m.material = night(m.material as THREE.MeshStandardMaterial);
 			});
 			return clone;

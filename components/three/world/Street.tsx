@@ -20,8 +20,8 @@ export function Street() {
 		<group>
 			<mesh position={[NEXUS_CENTER.x, -0.06, NEXUS_CENTER.z]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
 				<planeGeometry args={[520, 520]} />
-				{/* asphalt-coloured, so the joins between the city blocks never show a black seam */}
-				<meshStandardMaterial color="#2b2d34" metalness={0.3} roughness={0.85} />
+				{/* wet asphalt: the joins between the city blocks never show a seam, and the side streets catch the neon */}
+				<meshStandardMaterial color="#1b1d24" metalness={0.5} roughness={0.35} />
 			</mesh>
 			{lights.map((l, i) => (
 				<pointLight key={i} position={[l.x, 7, l.z]} color={l.c} intensity={90} distance={34} decay={1.5} />

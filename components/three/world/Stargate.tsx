@@ -45,7 +45,7 @@ void main() {
 	col += vec3(0.5, 0.75, 1.0) * pow(max(0.0, 1.0 - r * 2.2), 2.0) * 0.35;
 	// darker rim where the water meets the ring
 	col *= 0.55 + 0.45 * smoothstep(1.0, 0.82, r);
-	gl_FragColor = vec4(col, 0.95);
+	gl_FragColor = vec4(col, 1.0);
 }
 `;
 

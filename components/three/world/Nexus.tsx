@@ -13,6 +13,7 @@ import { Street } from './Street';
 import { NexusCity } from './NexusCity';
 import { SfModel } from './SfModel';
 import { EventHorizon, Stargate } from './Stargate';
+import { HoloPad, PAD_TIME } from './HoloPad';
 import { RaphyModel } from './Raphy';
 
 /**
@@ -62,25 +63,10 @@ function Hologram({ positions, a, b, pixelRatio, ...props }: { positions: Float3
 	);
 }
 
-const padMat = new THREE.MeshStandardMaterial({ color: '#141026', metalness: 0.8, roughness: 0.3 });
-const neon = new THREE.MeshBasicMaterial({ color: '#38bdf8', toneMapped: false });
-const neonPink = new THREE.MeshBasicMaterial({ color: '#e879f9', toneMapped: false });
 const pedestalMat = new THREE.MeshStandardMaterial({ color: '#2c3247', metalness: 0.6, roughness: 0.45 });
 /** Under the side wings of the return gate (x offsets from its centre); Player.tsx makes them solid. */
 const GATE_PEDESTALS = [{ x: -9.6 }, { x: 9.6 }];
 
-function Pad({ x, z, r = 7 }: { x: number; z: number; r?: number }) {
-	return (
-		<group position={[x, 0, z]}>
-			<mesh position={[0, 0.25, 0]} material={padMat} receiveShadow>
-				<cylinderGeometry args={[r, r + 0.6, 0.5, 32]} />
-			</mesh>
-			<mesh position={[0, 0.52, 0]} rotation={[-Math.PI / 2, 0, 0]} material={neon}>
-				<ringGeometry args={[r - 0.4, r - 0.2, 64]} />
-			</mesh>
-		</group>
-	);
-}
 
 /** A holographic kiosk presenting one production agent: a lit pillar and a floating title panel. */
 function Kiosk({ id, title, subtitle, color }: { id: string; title: string; subtitle: string; color: string }) {
@@ -118,11 +104,23 @@ function Kiosk({ id, title, subtitle, color }: { id: string; title: string; subt
 	const face = l.x < 0 ? Math.PI / 2 : -Math.PI / 2;
 	return (
 		<group position={[l.x, 0, l.z]}>
-			<Pad x={0} z={0} r={1.8} />
-			<mesh position={[0, 1.3, 0]} castShadow>
-				<cylinderGeometry args={[0.18, 0.28, 2.6, 12]} />
-				<meshStandardMaterial color="#1c2030" metalness={0.8} roughness={0.35} emissive={color} emissiveIntensity={0.25} />
+			<HoloPad r={1.8} color={color} label={`${title.toUpperCase()} // EN PRODUCTION`} />
+			{/* holo totem: a steel column with glowing edges carries the panel */}
+			<mesh position={[0, 1.55, 0]} castShadow>
+				<boxGeometry args={[0.5, 2.4, 0.5]} />
+				<meshStandardMaterial color="#1c2030" metalness={0.4} roughness={0.45} />
 			</mesh>
+			{[
+				[-0.26, -0.26],
+				[0.26, -0.26],
+				[-0.26, 0.26],
+				[0.26, 0.26],
+			].map(([ex, ez]) => (
+				<mesh key={`${ex}${ez}`} position={[ex, 1.55, ez]}>
+					<boxGeometry args={[0.04, 2.4, 0.04]} />
+					<meshBasicMaterial color={color} toneMapped={false} />
+				</mesh>
+			))}
 			<mesh ref={panel} position={[0, 3.6, 0]} rotation={[0, face, 0]}>
 				<planeGeometry args={[3.6, 1.8]} />
 				<meshBasicMaterial map={tex} transparent side={THREE.DoubleSide} toneMapped={false} />
@@ -187,7 +185,7 @@ function Gallery() {
 	return (
 		// the arc opens toward the avenue: visitors come in from the main street
 		<group position={[l.x, 0, l.z]} rotation={[0, -Math.PI / 2, 0]}>
-			<Pad x={0} z={0} r={6} />
+			<HoloPad r={6} color="#e879f9" color2="#f5d0fe" label="GALERIE // PROJETS" beam={2.2} />
 			<group ref={ref}>
 				{cards.map((c, i) => (
 					<mesh key={i} position={[c.x, 4.2, c.z]} rotation={[0, c.rot, 0]}>
@@ -210,7 +208,7 @@ function Beacon() {
 	});
 	return (
 		<group position={[l.x, 0, l.z]}>
-			<Pad x={0} z={0} r={8} />
+			<HoloPad r={8} color="#c50eff" color2="#38bdf8" label="BALISE // CONTACT" beam={2.6} />
 			<mesh position={[0, 30, 0]}>
 				<cylinderGeometry args={[0.6, 2.4, 60, 24, 1, true]} />
 				<meshBasicMaterial color="#c50eff" transparent opacity={0.18} blending={THREE.AdditiveBlending} depthWrite={false} side={THREE.DoubleSide} toneMapped={false} />
@@ -232,7 +230,7 @@ function HoloNpc() {
 	});
 	return (
 		<group position={[l.x, 0, l.z]}>
-			<Pad x={0} z={0} r={2.4} />
+			<HoloPad r={2.4} color="#38bdf8" color2="#c4b5fd" label="RAPHY.OS" beam={1.4} />
 			<group ref={ref} position={[0, 2.8, 0]}>
 				<Suspense fallback={null}>
 					<RaphyModel hologram scale={1.5} />
@@ -259,6 +257,7 @@ export function Nexus({ pixelRatio }: { pixelRatio: number; reflect?: boolean })
 	const loadCity = heading || near || zone === 'nexus';
 	useFrame((_, dt) => {
 		uniforms.uTime.value += dt;
+		PAD_TIME.value += dt;
 	});
 	return (
 		<group>
@@ -272,11 +271,11 @@ export function Nexus({ pixelRatio }: { pixelRatio: number; reflect?: boolean })
 				</Suspense>
 			)}
 			<group position={[agents.x, 0, agents.z]}>
-				<Pad x={0} z={0} r={6} />
+				<HoloPad r={6} color="#38bdf8" color2="#c50eff" label="CONSTELLATION // AGENTS" beam={2.2} />
 				<Hologram positions={shapes.agents} a="#38bdf8" b="#c50eff" pixelRatio={pixelRatio} position={[0, 7, 0]} scale={1.7} />
 			</group>
 			<group position={[core.x, 0, core.z]}>
-				<Pad x={0} z={0} r={6} />
+				<HoloPad r={6} color="#e879f9" color2="#a78bfa" label="NOYAU // ORCHESTRATION" beam={2.2} />
 				<Hologram positions={shapes.core} a="#e879f9" b="#651fff" pixelRatio={pixelRatio} position={[0, 7, 0]} scale={1.8} />
 			</group>
 			<Gallery />
@@ -286,25 +285,17 @@ export function Nexus({ pixelRatio }: { pixelRatio: number; reflect?: boolean })
 			<Beacon />
 			<HoloNpc />
 			<Suspense fallback={<Stargate x={back.x} z={back.z} rotation={Math.PI} />}>
-				{/* sunk 1 m so the ring rests on the street instead of hovering 1.2 m above it */}
-				<SfModel file="scifi_gate" height={13} hide={['Object_6']} position={[back.x, -1, back.z]} rotation={[0, Math.PI, 0]} />
-				{/* the event horizon sits in the plane of the ring (measured: centre 5.5 m up, on the gate's own z) */}
-				<EventHorizon radius={5.15} position={[back.x, 5.5, back.z]} rotation={[0, Math.PI, 0]} />
+				{/* seated on the street (measured): its own foot plate on the road (-0.06), the ring 21 cm into it */}
+				<SfModel file="scifi_gate" height={13} hide={['Object_6']} position={[back.x, -0.275, back.z]} rotation={[0, Math.PI, 0]} />
+				{/* the event horizon sits in the plane of the ring (measured centre: 6.225 m up, on the gate's own z) */}
+				<EventHorizon radius={5.15} position={[back.x, 6.225, back.z]} rotation={[0, Math.PI, 0]} />
 			</Suspense>
-			{/* the gate model's two side wings hover 4 m up: steel pedestals carry them to the street */}
+			{/* the gate model's side wings hover 4.2 m up: steel pedestals carry them to the street, inside its outer box */}
 			{GATE_PEDESTALS.map((p) => (
-				<group key={p.x} position={[back.x + p.x, 0, back.z]}>
+				<group key={p.x} position={[back.x + p.x, -0.06, back.z]}>
 					<mesh position={[0, 2.1, 0]} material={pedestalMat} castShadow receiveShadow>
-						<boxGeometry args={[5.6, 4.2, 4.8]} />
+						<boxGeometry args={[5.2, 4.2, 4.6]} />
 					</mesh>
-					{/* neon trims: one at mid-height, one along the street so the contact with the ground reads at night */}
-					{[-2.42, 2.42].flatMap((dz) =>
-						[0.12, 2.1].map((y) => (
-							<mesh key={`${dz}-${y}`} position={[0, y, dz]} material={dz > 0 ? neon : neonPink}>
-								<boxGeometry args={[5.62, 0.12, 0.04]} />
-							</mesh>
-						)),
-					)}
 				</group>
 			))}
 		</group>

@@ -175,7 +175,7 @@ export function StartScreen() {
 					>
 						{/* the download fills the button from the left while the world loads */}
 						{!ready && <span className="absolute inset-y-0 left-0 bg-white/15 transition-[width] duration-300" style={{ width: `${loading}%` }} aria-hidden />}
-						<span className="relative">{ready || !queued ? 'Jouer' : `Le monde arrive… ${loading} %`}</span>
+						<span className="relative">{ready || !queued ? 'Jouer' : loading > 0 ? `Le monde arrive… ${loading} %` : 'Le monde arrive…'}</span>
 					</button>
 					<button onClick={() => setKeys(true)} className="pointer-coarse:hidden rounded-full border border-white/30 bg-black/40 px-5 py-3 text-sm text-white hover:bg-black/60">
 						⌨ Touches
@@ -183,7 +183,7 @@ export function StartScreen() {
 				</div>
 				{!ready && (
 					<p className="mt-3 font-mono text-xs text-white/60" role="status">
-						Chargement du monde : {loading} %
+						Chargement du monde{loading > 0 ? ` : ${loading} %` : '…'}
 					</p>
 				)}
 				<KeyHints withMouse className="mt-5 max-w-xl justify-center pointer-coarse:hidden" />

@@ -107,27 +107,20 @@ function Atmosphere({ shadows }: { shadows: boolean }) {
 	);
 }
 
-/** Feeds the download progress to the start screen (which must not import three.js itself). */
-function LoadProgress() {
-	useEffect(() => {
-		const manager = THREE.DefaultLoadingManager;
-		let frame = 0;
-		// loaders report while React renders the suspended models: publish on the next frame, never mid-render
-		manager.onProgress = (_url, loaded, total) => {
-			cancelAnimationFrame(frame);
-			frame = requestAnimationFrame(() => game.set({ loading: Math.min(99, Math.round((loaded / Math.max(total, 1)) * 100)) }));
-		};
-		manager.onLoad = () => {
-			cancelAnimationFrame(frame);
-			frame = requestAnimationFrame(() => game.set({ loading: 100 }));
-		};
-		return () => {
-			cancelAnimationFrame(frame);
-			manager.onProgress = () => {};
-			manager.onLoad = () => {};
-		};
-	}, []);
-	return null;
+/**
+ * Download progress for the start screen (which must not import three.js itself). The loaders start while
+ * React renders the suspended models, before any effect could subscribe: the manager is hooked as soon as
+ * this chunk loads, and publishes on the next frame, never in the middle of a render.
+ */
+if (typeof window !== 'undefined') {
+	const manager = THREE.DefaultLoadingManager;
+	let frame = 0;
+	const publish = (loading: number) => {
+		cancelAnimationFrame(frame);
+		frame = requestAnimationFrame(() => game.set({ loading }));
+	};
+	manager.onProgress = (_url, loaded, total) => publish(Math.min(99, Math.round((loaded / Math.max(total, 1)) * 100)));
+	manager.onLoad = () => publish(100);
 }
 
 /**
@@ -144,8 +137,8 @@ function Warmup() {
 			game.set({ ready: true });
 		};
 		gl.compileAsync(scene, camera).then(finish, finish);
-		// never block the start screen: a slow or failing compile still lets the visitor in
-		const t = setTimeout(finish, 15000);
+		// never block the start screen forever: a failing compile still lets the visitor in (slow 4G needs ~35 s)
+		const t = setTimeout(finish, 45000);
 		return () => clearTimeout(t);
 	}, [gl, scene, camera]);
 	return null;
@@ -169,16 +162,18 @@ export default function WorldScene() {
 			aria-hidden
 		>
 			<Atmosphere shadows={q.shadows} />
-			<LoadProgress />
 			<Suspense fallback={null}>
 				<Valley />
 				<Nature />
 				<ValleyLandmarks />
 				<Mobs />
 				<Lasers />
-				<Nexus pixelRatio={q.pr} reflect={q.post} />
 				<Player />
 				<Warmup />
+			</Suspense>
+			{/* the Nexus loads on its own: the val is playable without waiting for the city across the portal */}
+			<Suspense fallback={null}>
+				<Nexus pixelRatio={q.pr} reflect={q.post} />
 			</Suspense>
 			<HeadPrompt />
 			<QuestTrail />

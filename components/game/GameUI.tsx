@@ -35,9 +35,9 @@ function ZoneBanner() {
 	}, [started]);
 	if (!visible) return null;
 	return (
-		<div key={visible.id} className="pointer-events-none fixed inset-x-0 top-[16vh] z-20 animate-[zone-in_3.8s_ease-out_forwards] text-center">
-			<p className="font-display text-4xl font-extrabold tracking-wide text-[#ffd100] drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] sm:text-6xl">{visible.title}</p>
-			<p className="mt-2 font-mono text-sm tracking-[0.3em] text-white/85 uppercase drop-shadow">{visible.subtitle}</p>
+		<div key={visible.id} className="pointer-events-none fixed inset-x-0 top-[16vh] z-20 [@media(max-height:500px)]:top-[22vh] animate-[zone-in_3.8s_ease-out_forwards] text-center">
+			<p className="font-display text-4xl font-extrabold tracking-wide text-[#ffd100] drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] sm:text-6xl [@media(max-height:500px)]:text-3xl">{visible.title}</p>
+			<p className="mt-2 font-mono text-sm tracking-[0.3em] text-white/85 uppercase drop-shadow [@media(max-height:500px)]:mt-1 [@media(max-height:500px)]:text-xs">{visible.subtitle}</p>
 		</div>
 	);
 }
@@ -47,9 +47,9 @@ function Toast() {
 	const visible = toast;
 	if (!visible) return null;
 	return (
-		<div key={visible.id} role="status" className="fixed inset-x-0 top-24 z-40 flex animate-[zone-in_4.5s_ease-out_forwards] justify-center px-4">
+		<div key={visible.id} role="status" className="fixed inset-x-0 top-24 z-40 flex animate-[zone-in_4.5s_ease-out_forwards] justify-center px-4 [@media(max-height:500px)]:top-14">
 			<div className="flex items-center gap-4 rounded-2xl border-2 border-[#ffd100]/70 bg-[#1b1206]/95 px-5 py-3 shadow-[0_0_40px_-10px_#ffd100]">
-				<span className="grid h-12 w-12 place-items-center rounded-xl border border-[#ffd100] bg-[#ffd100]/15 text-2xl text-[#ffd100]">★</span>
+				<span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-[#ffd100] bg-[#ffd100]/15 text-2xl text-[#ffd100] [@media(max-height:500px)]:h-9 [@media(max-height:500px)]:w-9 [@media(max-height:500px)]:text-lg">★</span>
 				<div>
 					<p className="font-display font-bold text-[#ffd100]">{visible.title}</p>
 					<p className="text-sm text-[#efe4c8]">{visible.text}</p>

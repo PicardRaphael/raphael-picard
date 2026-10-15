@@ -7,9 +7,10 @@ import { game, useGame } from '@/lib/game-store';
 import { player } from '@/lib/player-state';
 import { mobs } from '@/lib/mobs';
 import { music } from '@/lib/music';
-import { QUESTS } from '@/lib/quests';
+import { QUESTS, markerFor } from '@/lib/quests';
 import { LANDMARKS, NEXUS_CENTER, NEXUS_RADIUS, VAL_RADIUS, landmark } from '@/lib/world';
 import { AchievementWatcher, Menu } from './Menu';
+import { drawMarker } from './mapMarkers';
 import { Panel } from './Panels';
 import { Soundtrack } from './Soundtrack';
 import { StartScreen } from './StartScreen';
@@ -106,6 +107,7 @@ function Minimap() {
 	const ref = useRef<HTMLCanvasElement>(null);
 	const zone = useGame((s) => s.zone);
 	const quests = useGame((s) => s.quests);
+	const visited = useGame((s) => s.visited);
 	useEffect(() => {
 		const c = ref.current;
 		const ctx = c?.getContext('2d');
@@ -136,11 +138,7 @@ function Minimap() {
 				if ((l.zone === 'nexus') !== nexus) continue;
 				const x = size / 2 + (l.x - cx) * k;
 				const y = size / 2 + (l.z - cz) * k;
-				const giver = QUESTS.some((q) => (q.giver === l.id && quests[q.id] === 'available') || (q.turnIn === l.id && quests[q.id] === 'ready'));
-				ctx.fillStyle = giver ? '#ffd100' : nexus ? '#e879f9' : '#f3e9cf';
-				ctx.beginPath();
-				ctx.arc(x, y, giver ? 4.5 : 3, 0, Math.PI * 2);
-				ctx.fill();
+				drawMarker(ctx, x, y, markerFor(l.id, quests, visited), 0.55, nexus ? '#e879f9' : '#f3e9cf');
 			}
 			// player arrow
 			const px = size / 2 + (player.x - cx) * k;
@@ -164,7 +162,7 @@ function Minimap() {
 		};
 		draw();
 		return () => cancelAnimationFrame(raf);
-	}, [zone, quests]);
+	}, [zone, quests, visited]);
 	return <canvas ref={ref} width={150} height={150} className="fixed bottom-4 left-4 z-20 h-[120px] w-[120px] pointer-coarse:top-16 pointer-coarse:bottom-auto sm:h-[150px] sm:w-[150px]" aria-hidden />;
 }
 

@@ -5,10 +5,11 @@ import { Suspense, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 
 import { useGame } from '@/lib/game-store';
-import { QUESTS } from '@/lib/quests';
+import { markerFor } from '@/lib/quests';
 import { LANDMARKS, landmark, valHeight } from '@/lib/world';
 import { Village } from './Buildings';
 import { DarkGate } from './DarkGate';
+import { PaintedRock } from './PaintedRock';
 import { RaphyModel } from './Raphy';
 
 const stone = new THREE.MeshStandardMaterial({ color: '#9a9184', roughness: 0.95, flatShading: true });
@@ -16,6 +17,9 @@ const stoneDark = new THREE.MeshStandardMaterial({ color: '#6c665f', roughness: 
 const arcane = new THREE.MeshBasicMaterial({ color: '#d58bff', toneMapped: false });
 
 const ground = (x: number, z: number) => valHeight(x, z);
+
+/** Menhirs carved from the painted rocks of the nature kit, so the circle matches the rest of the valley. */
+const STONES = Array.from({ length: 9 }, (_, i) => ({ a: (i / 9) * Math.PI * 2, h: 4.2 + (i % 3) * 1.1, name: ['Rock_Medium_1', 'Rock_Medium_3', 'Rock_Medium_2'][i % 3] }));
 
 function Stones() {
 	const l = landmark('stones');
@@ -28,18 +32,12 @@ function Stones() {
 	});
 	return (
 		<group position={[l.x, y, l.z]}>
-			{Array.from({ length: 9 }, (_, i) => {
-				const a = (i / 9) * Math.PI * 2;
-				const h = 3.4 + (i % 3) * 0.8;
-				return (
-					<mesh key={i} position={[Math.cos(a) * 6.5, h / 2, Math.sin(a) * 6.5]} rotation={[0, -a, (i % 2 ? 1 : -1) * 0.05]} material={stone} castShadow>
-						<boxGeometry args={[1.1, h, 1.6]} />
-					</mesh>
-				);
-			})}
-			<mesh position={[0, 0.5, 0]} material={stoneDark} castShadow receiveShadow>
-				<cylinderGeometry args={[1.8, 2.1, 1, 8]} />
-			</mesh>
+			<Suspense fallback={null}>
+				{STONES.map((st, i) => (
+					<PaintedRock key={i} name={st.name} position={[Math.cos(st.a) * 6.8, 0, Math.sin(st.a) * 6.8]} rotation={-st.a} size={[1.6, st.h, 2]} />
+				))}
+				<PaintedRock name="Rock_Medium_2" position={[0, 0, 0]} size={[3.6, 1.3, 3.6]} />
+			</Suspense>
 			<mesh position={[0, 0.06, 0]} rotation={[-Math.PI / 2, 0, 0]} material={arcane}>
 				<ringGeometry args={[4.6, 4.85, 64]} />
 			</mesh>
@@ -101,47 +99,91 @@ function Portal({ x, z, y, back = false }: { x: number; z: number; y: number; ba
 	);
 }
 
-/** Floating WoW-style quest marker: yellow "!" to pick up, yellow "?" to turn in. */
+/** Floating WoW-style quest markers: yellow "!" to pick up, yellow "?" to hand in, grey "?" while in progress, golden beam on objectives. */
+const yellow = new THREE.MeshBasicMaterial({ color: '#ffd100', toneMapped: false });
+const grey = new THREE.MeshBasicMaterial({ color: '#b8b8b8', toneMapped: false });
+const outline = new THREE.MeshBasicMaterial({ color: '#2a1a00', toneMapped: false });
+
+function Glyph({ kind }: { kind: '!' | '?' | '?grey' }) {
+	const mat = kind === '?grey' ? grey : yellow;
+	if (kind === '!')
+		return (
+			<>
+				<mesh position={[0, 0.55, -0.02]} material={outline} scale={[1.25, 1.1, 1]}>
+					<boxGeometry args={[0.32, 1.1, 0.2]} />
+				</mesh>
+				<mesh position={[0, 0.55, 0]} material={mat}>
+					<boxGeometry args={[0.32, 1.1, 0.2]} />
+				</mesh>
+				<mesh position={[0, -0.35, 0]} material={mat}>
+					<boxGeometry args={[0.32, 0.32, 0.2]} />
+				</mesh>
+			</>
+		);
+	return (
+		<>
+			<mesh position={[0, 0.65, 0]} material={mat}>
+				<torusGeometry args={[0.38, 0.13, 6, 16, Math.PI * 1.3]} />
+			</mesh>
+			<mesh position={[0.05, 0.02, 0]} material={mat}>
+				<boxGeometry args={[0.26, 0.45, 0.2]} />
+			</mesh>
+			<mesh position={[0.05, -0.42, 0]} material={mat}>
+				<boxGeometry args={[0.26, 0.26, 0.2]} />
+			</mesh>
+		</>
+	);
+}
+
 export function QuestMarker({ id, height }: { id: string; height: number }) {
 	const quests = useGame((s) => s.quests);
+	const visited = useGame((s) => s.visited);
 	const ref = useRef<THREE.Group>(null);
-	const kind = QUESTS.some((q) => q.giver === id && quests[q.id] === 'available') ? '!' : QUESTS.some((q) => q.turnIn === id && quests[q.id] === 'ready') ? '?' : null;
+	const kind = markerFor(id, quests, visited);
 	useFrame(({ clock, camera }) => {
-		if (!ref.current) return;
-		ref.current.position.y = height + Math.sin(clock.elapsedTime * 2.2) * 0.25;
-		ref.current.lookAt(camera.position.x, ref.current.getWorldPosition(new THREE.Vector3()).y, camera.position.z);
+		const g = ref.current;
+		if (!g) return;
+		g.position.y = height + Math.sin(clock.elapsedTime * 2.2) * 0.3;
+		if (kind === 'objective') g.rotation.y = clock.elapsedTime * 1.5;
+		else g.lookAt(camera.position.x, g.getWorldPosition(new THREE.Vector3()).y, camera.position.z);
+		// keep the marker readable from afar
+		const d = camera.position.distanceTo(g.getWorldPosition(new THREE.Vector3()));
+		g.scale.setScalar(THREE.MathUtils.clamp(d / 14, 1.6, 5));
 	});
 	if (!kind) return null;
 	return (
-		<group ref={ref} position={[0, height, 0]}>
-			{kind === '!' ? (
-				<>
-					<mesh position={[0, 0.55, 0]}>
-						<boxGeometry args={[0.32, 1.1, 0.2]} />
-						<meshBasicMaterial color="#ffd100" toneMapped={false} />
+		<>
+			<group ref={ref} position={[0, height, 0]}>
+				{kind === 'objective' ? (
+					<mesh material={yellow}>
+						<octahedronGeometry args={[0.55, 0]} />
 					</mesh>
-					<mesh position={[0, -0.35, 0]}>
-						<boxGeometry args={[0.32, 0.32, 0.2]} />
-						<meshBasicMaterial color="#ffd100" toneMapped={false} />
-					</mesh>
-				</>
-			) : (
-				<>
-					<mesh position={[0, 0.65, 0]}>
-						<torusGeometry args={[0.38, 0.13, 6, 16, Math.PI * 1.3]} />
-						<meshBasicMaterial color="#ffd100" toneMapped={false} />
-					</mesh>
-					<mesh position={[0.05, 0.02, 0]}>
-						<boxGeometry args={[0.26, 0.45, 0.2]} />
-						<meshBasicMaterial color="#ffd100" toneMapped={false} />
-					</mesh>
-					<mesh position={[0.05, -0.42, 0]}>
-						<boxGeometry args={[0.26, 0.26, 0.2]} />
-						<meshBasicMaterial color="#ffd100" toneMapped={false} />
-					</mesh>
-				</>
+				) : (
+					<Glyph kind={kind} />
+				)}
+			</group>
+			{(kind === 'objective' || kind === '?' || kind === '!') && (
+				<mesh position={[0, height / 2 + 20, 0]}>
+					<cylinderGeometry args={[0.5, 0.9, height + 40, 12, 1, true]} />
+					<meshBasicMaterial color="#ffd100" transparent opacity={0.16} blending={THREE.AdditiveBlending} depthWrite={false} side={THREE.DoubleSide} toneMapped={false} />
+				</mesh>
 			)}
-		</group>
+		</>
+	);
+}
+
+const MARKER_HEIGHT: Record<string, number> = { raphy: 5.6, tower: 34, forge: 15, stones: 9, portal: 26, holo: 5.8, beacon: 24, agents: 16, core: 16, gallery: 10, 'portal-back': 15, race: 9 };
+
+/** One marker per place, in both realms. */
+export function QuestMarkers() {
+	return (
+		<>
+			{LANDMARKS.map((l) => (
+				<group key={l.id} position={[l.x, l.zone === 'val' ? ground(l.x, l.z) : 0, l.z]}>
+					<QuestMarker id={l.id} height={MARKER_HEIGHT[l.id] ?? 12} />
+				</group>
+			))}
+		</>
 	);
 }
 
@@ -167,7 +209,6 @@ function RaphyNpc() {
 					<RaphyModel scale={1.5} />
 				</Suspense>
 			</group>
-			<QuestMarker id="raphy" height={5.6} />
 		</group>
 	);
 }
@@ -182,11 +223,7 @@ export function ValleyLandmarks() {
 			<Stones />
 			<RaphyNpc />
 			<DarkGate x={portal.x} z={portal.z - 1} y={ground(portal.x, portal.z) - 0.4} />
-			{LANDMARKS.filter((l) => l.zone === 'val' && l.id !== 'raphy').map((l) => (
-				<group key={l.id} position={[l.x, ground(l.x, l.z), l.z]}>
-					<QuestMarker id={l.id} height={l.id === 'tower' ? 29 : 13} />
-				</group>
-			))}
+			<QuestMarkers />
 		</group>
 	);
 }

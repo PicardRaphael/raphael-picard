@@ -8,7 +8,7 @@ import { projects } from '@/content/work';
 import { NEXUS_CENTER, landmark } from '@/lib/world';
 import { constellation, knot, mulberry32 } from '../shapes';
 import { Cyber } from './Cyber';
-import { PortalGate, QuestMarker } from './Landmarks';
+import { PortalGate } from './Landmarks';
 import { RaphyModel } from './Raphy';
 
 /**
@@ -188,7 +188,6 @@ function Beacon() {
 					<RaphyModel hologram scale={9} />
 				</Suspense>
 			</group>
-			<QuestMarker id="beacon" height={22} />
 		</group>
 	);
 }
@@ -207,7 +206,6 @@ function HoloNpc() {
 					<RaphyModel hologram scale={1.5} />
 				</Suspense>
 			</group>
-			<QuestMarker id="holo" height={5.8} />
 		</group>
 	);
 }

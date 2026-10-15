@@ -7,7 +7,7 @@ const links = STATIONS.filter((s) => !['accueil', 'contact', 'architecture'].inc
 
 export function Header() {
 	return (
-		<header className="fixed inset-x-0 top-0 z-40">
+		<header className="fixed inset-x-0 top-0 z-40 border-b border-white/10 bg-[#05040c]/85 backdrop-blur-xl">
 			<nav aria-label="Navigation principale" className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
 				<Link href="/portfolio#accueil" className="group flex items-center gap-3" aria-label="Raphaël Picard — accueil">
 					<Logo className="h-8 w-8 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-[-8deg]" />
@@ -18,7 +18,7 @@ export function Header() {
 						</span>
 					</span>
 				</Link>
-				<ul className="glass hidden items-center gap-1 rounded-full px-2 py-1.5 md:flex">
+				<ul className="hidden items-center gap-1 rounded-full border border-white/10 bg-white/[0.04] px-2 py-1.5 md:flex">
 					{links.map((s) => (
 						<li key={s.id}>
 							<a

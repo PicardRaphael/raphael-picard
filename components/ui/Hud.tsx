@@ -77,22 +77,22 @@ export function Hud() {
 			{/* portal crossing flash */}
 			{flash > 0 && <div key={flash} className="pointer-events-none fixed inset-0 z-30 animate-[portal-flash_1.2s_ease-out_forwards] bg-white" aria-hidden />}
 
-			<div className="pointer-events-none fixed bottom-4 left-4 z-30 hidden font-mono text-[11px] sm:block" aria-hidden>
-				<div className="glass pointer-events-auto w-64 rounded-2xl p-4">
+			<div className="pointer-events-none fixed right-4 bottom-4 z-30 hidden font-mono text-xs lg:block" aria-hidden>
+				<div className="pointer-events-auto w-64 rounded-2xl border border-white/15 bg-[#0a0716]/92 p-4 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)] backdrop-blur-xl">
 					<p className={`tracking-[0.25em] uppercase ${accent}`}>{REALMS[realm].name}</p>
-					<p className="text-dim mt-0.5">{REALMS[realm].era}</p>
+					<p className="text-mist mt-0.5">{REALMS[realm].era}</p>
 					<p className="text-ink mt-3 text-sm">
 						<span className={accent}>{s.code}</span> · {s.sector}
 					</p>
 					<div className="mt-3 flex items-center gap-2">
-						<span className="text-dim">VIT</span>
+						<span className="text-mist">VIT</span>
 						<span className="h-1 flex-1 overflow-hidden rounded-full bg-white/10">
 							<span ref={barRef} className="from-violet to-magenta block h-full origin-left scale-x-0 bg-gradient-to-r" />
 						</span>
 						<span ref={speedRef} className="text-ink w-8 text-right">
 							0.00
 						</span>
-						<span className="text-dim">c</span>
+						<span className="text-mist">c</span>
 					</div>
 					<div className="mt-3 flex items-center justify-between gap-2">
 						<button
@@ -140,7 +140,7 @@ export function Hud() {
 				onClick={() => game.set({ sound: !sound })}
 				aria-pressed={sound}
 				aria-label={sound ? 'Couper la musique' : 'Activer la musique'}
-				className="glass fixed right-4 bottom-4 z-30 grid h-11 w-11 place-items-center rounded-full font-mono text-sm sm:hidden"
+				className="fixed right-4 bottom-4 z-30 grid h-11 w-11 place-items-center rounded-full border border-white/15 bg-[#0a0716]/90 font-mono text-sm backdrop-blur-xl lg:hidden"
 			>
 				{sound ? '♪' : '✕'}
 			</button>

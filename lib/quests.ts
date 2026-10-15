@@ -60,3 +60,14 @@ export type QuestStatus = 'locked' | 'available' | 'active' | 'ready' | 'done';
 export function quest(id: string) {
 	return QUESTS.find((q) => q.id === id);
 }
+
+export type Marker = '!' | '?' | '?grey' | 'objective' | null;
+
+/** WoW-style marker of a place: quest to pick up, quest to hand in (gold / grey) or objective to visit. */
+export function markerFor(id: string, quests: Record<string, QuestStatus>, visited: string[]): Marker {
+	if (QUESTS.some((q) => q.giver === id && quests[q.id] === 'available')) return '!';
+	if (QUESTS.some((q) => q.turnIn === id && quests[q.id] === 'ready')) return '?';
+	if (QUESTS.some((q) => quests[q.id] === 'active' && q.objectives.some((o) => o.id === id) && !visited.includes(id))) return 'objective';
+	if (QUESTS.some((q) => q.turnIn === id && quests[q.id] === 'active')) return '?grey';
+	return null;
+}

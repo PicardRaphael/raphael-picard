@@ -2,11 +2,13 @@
 
 import { useEffect, useMemo, useRef } from 'react';
 
+import { drawMarker } from './mapMarkers';
+
 import { game, useGame } from '@/lib/game-store';
 import { mobs } from '@/lib/mobs';
 import { fbm, noise2 } from '@/lib/noise';
 import { player } from '@/lib/player-state';
-import { QUESTS } from '@/lib/quests';
+import { markerFor } from '@/lib/quests';
 import { HOUSES, LAKE, LANDMARKS, NEXUS_CENTER, NEXUS_RADIUS, VAL_RADIUS, pathDistance, valHeight } from '@/lib/world';
 
 const SIZE = 640;
@@ -59,6 +61,7 @@ export function WorldMap() {
 	const open = useGame((s) => s.overlay === 'map');
 	const zone = useGame((s) => s.zone);
 	const quests = useGame((s) => s.quests);
+	const visited = useGame((s) => s.visited);
 	const ref = useRef<HTMLCanvasElement>(null);
 	const valley = useMemo(() => (typeof document === 'undefined' || !open ? null : bakeValley()), [open]);
 
@@ -79,6 +82,8 @@ export function WorldMap() {
 		const toPx = (x: number, z: number) => [((x - cx) / (2 * R) + 0.5) * SIZE, ((z - cz) / (2 * R) + 0.5) * SIZE] as const;
 		const draw = () => {
 			raf = requestAnimationFrame(draw);
+			// the canvas is shown smaller than 640 px on phones: scale text and markers back up
+			const k = Math.min(2.4, Math.max(1, SIZE / Math.max(c.clientWidth, 1)));
 			ctx.clearRect(0, 0, SIZE, SIZE);
 			if (nexus) {
 				ctx.fillStyle = '#0b0718';
@@ -107,34 +112,28 @@ export function WorldMap() {
 				const [x, y] = toPx(m.x, m.z);
 				ctx.fillStyle = '#ef4444';
 				ctx.beginPath();
-				ctx.arc(x, y, 4, 0, Math.PI * 2);
+				ctx.arc(x, y, 4 * k, 0, Math.PI * 2);
 				ctx.fill();
 			}
-			ctx.font = '600 13px sans-serif';
+			ctx.font = `700 ${Math.round(14 * k)}px sans-serif`;
 			ctx.textAlign = 'center';
 			for (const l of LANDMARKS) {
 				if (l.zone !== zone) continue;
 				const [x, y] = toPx(l.x, l.z);
-				const quest = QUESTS.some((q) => (q.giver === l.id && quests[q.id] === 'available') || (q.turnIn === l.id && quests[q.id] === 'ready'));
-				ctx.save();
-				ctx.translate(x, y);
-				ctx.rotate(Math.PI / 4);
-				ctx.fillStyle = quest ? '#ffd100' : '#ffffff';
-				ctx.strokeStyle = '#111';
-				ctx.lineWidth = 2;
-				ctx.fillRect(-7, -7, 14, 14);
-				ctx.strokeRect(-7, -7, 14, 14);
-				ctx.restore();
-				ctx.fillStyle = '#fff';
+				const marker = markerFor(l.id, quests, visited);
+				drawMarker(ctx, x, y, marker, k);
+				ctx.fillStyle = marker === 'objective' ? '#ffd100' : '#fff';
 				ctx.strokeStyle = 'rgba(0,0,0,0.8)';
-				ctx.lineWidth = 4;
-				ctx.strokeText(l.name, x, y - 14);
-				ctx.fillText(l.name, x, y - 14);
+				ctx.lineWidth = 4 * k;
+				const label = k > 1.4 ? l.name.split(',')[0].replace(/^(La |Le |Les )/, '') : l.name;
+				ctx.strokeText(label, x, y - 17 * k);
+				ctx.fillText(label, x, y - 17 * k);
 			}
 			const [px, py] = toPx(player.x, player.z);
 			ctx.save();
 			ctx.translate(px, py);
 			ctx.rotate(-player.yaw);
+			ctx.scale(k, k);
 			ctx.fillStyle = '#ffd100';
 			ctx.strokeStyle = '#000';
 			ctx.lineWidth = 2;
@@ -150,7 +149,7 @@ export function WorldMap() {
 		};
 		draw();
 		return () => cancelAnimationFrame(raf);
-	}, [open, zone, valley, quests]);
+	}, [open, zone, valley, quests, visited]);
 
 	if (!open) return null;
 
@@ -170,7 +169,7 @@ export function WorldMap() {
 	};
 
 	return (
-		<div className="fixed inset-0 z-40 grid place-items-center bg-black/70 p-4" role="dialog" aria-modal="true" aria-label="Carte du monde">
+		<div className="fixed inset-0 z-40 grid place-items-center bg-black/70 p-2 sm:p-4" role="dialog" aria-modal="true" aria-label="Carte du monde">
 			<button className="absolute inset-0" aria-label="Fermer la carte" onClick={() => game.set({ overlay: null })} />
 			<div className="relative">
 				<canvas
@@ -178,7 +177,7 @@ export function WorldMap() {
 					width={SIZE}
 					height={SIZE}
 					onClick={onClick}
-					className="aspect-square w-[min(88vw,82vh)] cursor-pointer rounded-[2rem] shadow-[0_0_80px_-10px_rgba(0,0,0,0.9)]"
+					className="aspect-square w-[min(96vw,82vh)] cursor-pointer rounded-[2rem] shadow-[0_0_80px_-10px_rgba(0,0,0,0.9)]"
 				/>
 				<p className="mt-3 text-center font-mono text-xs text-white/70">Clique sur un lieu pour t’y rendre · M ou Échap pour fermer</p>
 				<button onClick={() => game.set({ overlay: null })} className="absolute -top-3 -right-3 grid h-10 w-10 place-items-center rounded-lg bg-[#b91c1c] text-white">

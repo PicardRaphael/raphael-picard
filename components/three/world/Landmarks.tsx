@@ -101,37 +101,49 @@ function Portal({ x, z, y, back = false }: { x: number; z: number; y: number; ba
 
 /** Floating WoW-style quest markers: yellow "!" to pick up, yellow "?" to hand in, grey "?" while in progress, golden beam on objectives. */
 const yellow = new THREE.MeshBasicMaterial({ color: '#ffd100', toneMapped: false });
-const grey = new THREE.MeshBasicMaterial({ color: '#b8b8b8', toneMapped: false });
-const outline = new THREE.MeshBasicMaterial({ color: '#2a1a00', toneMapped: false });
+
+/** WoW-style quest glyph drawn on a canvas: bold serif, golden (or grey) gradient, dark outline. */
+const glyphCache = new Map<string, THREE.Texture>();
+function glyphTexture(kind: '!' | '?' | '?grey') {
+	const hit = glyphCache.get(kind);
+	if (hit) return hit;
+	const c = document.createElement('canvas');
+	c.width = 128;
+	c.height = 256;
+	const ctx = c.getContext('2d');
+	if (ctx) {
+		const char = kind === '!' ? '!' : '?';
+		ctx.font = '900 230px Georgia, "Times New Roman", serif';
+		ctx.textAlign = 'center';
+		ctx.textBaseline = 'middle';
+		const g = ctx.createLinearGradient(0, 30, 0, 230);
+		if (kind === '?grey') {
+			g.addColorStop(0, '#f2f2f2');
+			g.addColorStop(1, '#8a8a8a');
+		} else {
+			g.addColorStop(0, '#fff3a0');
+			g.addColorStop(0.45, '#ffd100');
+			g.addColorStop(1, '#d97706');
+		}
+		ctx.lineJoin = 'round';
+		ctx.lineWidth = 16;
+		ctx.strokeStyle = '#1a0f00';
+		ctx.strokeText(char, 64, 140);
+		ctx.fillStyle = g;
+		ctx.fillText(char, 64, 140);
+	}
+	const t = new THREE.CanvasTexture(c);
+	t.colorSpace = THREE.SRGBColorSpace;
+	glyphCache.set(kind, t);
+	return t;
+}
 
 function Glyph({ kind }: { kind: '!' | '?' | '?grey' }) {
-	const mat = kind === '?grey' ? grey : yellow;
-	if (kind === '!')
-		return (
-			<>
-				<mesh position={[0, 0.55, -0.02]} material={outline} scale={[1.25, 1.1, 1]}>
-					<boxGeometry args={[0.32, 1.1, 0.2]} />
-				</mesh>
-				<mesh position={[0, 0.55, 0]} material={mat}>
-					<boxGeometry args={[0.32, 1.1, 0.2]} />
-				</mesh>
-				<mesh position={[0, -0.35, 0]} material={mat}>
-					<boxGeometry args={[0.32, 0.32, 0.2]} />
-				</mesh>
-			</>
-		);
+	const map = useMemo(() => glyphTexture(kind), [kind]);
 	return (
-		<>
-			<mesh position={[0, 0.65, 0]} material={mat}>
-				<torusGeometry args={[0.38, 0.13, 6, 16, Math.PI * 1.3]} />
-			</mesh>
-			<mesh position={[0.05, 0.02, 0]} material={mat}>
-				<boxGeometry args={[0.26, 0.45, 0.2]} />
-			</mesh>
-			<mesh position={[0.05, -0.42, 0]} material={mat}>
-				<boxGeometry args={[0.26, 0.26, 0.2]} />
-			</mesh>
-		</>
+		<sprite scale={[0.9, 1.8, 1]}>
+			<spriteMaterial map={map} transparent depthWrite={false} toneMapped={false} />
+		</sprite>
 	);
 }
 
@@ -145,7 +157,6 @@ export function QuestMarker({ id, height }: { id: string; height: number }) {
 		if (!g) return;
 		g.position.y = height + Math.sin(clock.elapsedTime * 2.2) * 0.3;
 		if (kind === 'objective') g.rotation.y = clock.elapsedTime * 1.5;
-		else g.lookAt(camera.position.x, g.getWorldPosition(new THREE.Vector3()).y, camera.position.z);
 		// keep the marker readable from afar
 		const d = camera.position.distanceTo(g.getWorldPosition(new THREE.Vector3()));
 		g.scale.setScalar(THREE.MathUtils.clamp(d / 14, 1.6, 5));

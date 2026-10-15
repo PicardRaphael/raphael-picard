@@ -92,3 +92,9 @@ export function vegetationObstacles() {
 		...p.rock.map((r) => ({ x: r.x, z: r.z, r: r.h * 0.45 })),
 	];
 }
+
+/** Tree crowns as circles: the camera stays out of them. */
+export function canopies() {
+	const p = placements();
+	return [...p.oak, ...p.pine, ...p.twisted].map((t) => ({ x: t.x, z: t.z, r: 2.6 + t.h * 0.12, top: t.y + t.h }));
+}

@@ -9,16 +9,15 @@ import { keymap } from '@/lib/keymap';
 import { mobs, nearestMob } from '@/lib/mobs';
 import { music } from '@/lib/music';
 import { player } from '@/lib/player-state';
-import { vegetationObstacles } from '@/lib/vegetation';
-import { HOUSES, LANDMARKS, NEXUS_CENTER, NEXUS_RADIUS, NEXUS_SPAWN, SPAWN, VAL_RADIUS, landmark, valHeight } from '@/lib/world';
+import { canopies, vegetationObstacles } from '@/lib/vegetation';
+import { HOUSES, LANDMARKS, NEXUS_CENTER, NEXUS_RADIUS, NEXUS_SPAWN, SPAWN, VAL_RADIUS, groundAt, landmark } from '@/lib/world';
 import { HeroModel } from './Hero';
+import { fireBolt } from './Lasers';
 
 const RUN = 10;
 const SPRINT = 15;
 
-export function groundAt(x: number, z: number) {
-	return z < -300 ? 0 : valHeight(x, z);
-}
+export { groundAt };
 
 function resetInput() {
 	player.input.forward = 0;
@@ -35,25 +34,35 @@ export function interact(id: string) {
 }
 
 /** Sword swing: hits the nearest bug in front of the player. */
+function damage(target: (typeof mobs)[number]) {
+	if (target.state === 'dead') return;
+	target.hp -= 1;
+	music.sfx('hit');
+	target.state = 'hit';
+	target.t = 0;
+	if (target.hp <= 0) {
+		game.set((s) => ({ kills: s.kills + 1 }));
+		game.toast(`${target.name} vaincu !`, target.lesson);
+	}
+}
+
+/** Melee for the knight (sword), ranged laser shots for the cyberpunk runner. */
+export const attackRange = () => (game.get().hero === 'runner' ? 22 : 3.4);
+
 export function attack() {
 	if (player.attack > 0 || !game.get().started || game.get().panel) return;
-	player.attack = 0.65;
+	const ranged = game.get().hero === 'runner';
+	player.attack = ranged ? 0.45 : 0.65;
 	music.sfx('swing');
-	const target = nearestMob(player.x, player.z, 3.4);
-	if (!target) return;
+	const target = nearestMob(player.x, player.z, attackRange());
+	if (!target || target.zone !== game.get().zone) return;
 	player.yaw = Math.atan2(-(target.x - player.x), -(target.z - player.z));
 	window.dispatchEvent(new CustomEvent('player:face', { detail: player.yaw }));
-	setTimeout(() => {
-		if (target.state === 'dead') return;
-		target.hp -= 1;
-		music.sfx('hit');
-		target.state = 'hit';
-		target.t = 0;
-		if (target.hp <= 0) {
-			game.set((s) => ({ kills: s.kills + 1 }));
-			game.toast(`${target.name} vaincu !`, target.lesson);
-		}
-	}, 260);
+	if (ranged) {
+		const fx = -Math.sin(player.yaw);
+		const fz = -Math.cos(player.yaw);
+		setTimeout(() => fireBolt({ x: player.x + fx * 0.8, y: player.y + 1.4, z: player.z + fz * 0.8 }, target, () => damage(target)), 120);
+	} else setTimeout(() => damage(target), 260);
 }
 
 export function jump() {
@@ -252,6 +261,19 @@ function usePointerControls() {
 			e.preventDefault();
 			player.camera.distance = THREE.MathUtils.clamp(player.camera.distance + e.deltaY * 0.012, 6, 48);
 		};
+		// free look: the camera follows the mouse without clicking (mouse only, not touch)
+		const look = (e: PointerEvent) => {
+			if (e.pointerType !== 'mouse' || pointers.size > 0) return;
+			const r = el.getBoundingClientRect();
+			player.camera.lookX = THREE.MathUtils.clamp(((e.clientX - r.left) / r.width) * 2 - 1, -1, 1);
+			player.camera.lookY = THREE.MathUtils.clamp(((e.clientY - r.top) / r.height) * 2 - 1, -1, 1);
+		};
+		const leave = () => {
+			player.camera.lookX = 0;
+			player.camera.lookY = 0;
+		};
+		el.addEventListener('pointermove', look);
+		el.addEventListener('pointerleave', leave);
 		el.addEventListener('pointerdown', down);
 		el.addEventListener('pointermove', move);
 		el.addEventListener('pointerup', up);
@@ -260,6 +282,8 @@ function usePointerControls() {
 		const noMenu = (e: Event) => e.preventDefault();
 		el.addEventListener('contextmenu', noMenu);
 		return () => {
+			el.removeEventListener('pointermove', look);
+			el.removeEventListener('pointerleave', leave);
 			el.removeEventListener('pointerdown', down);
 			el.removeEventListener('pointermove', move);
 			el.removeEventListener('pointerup', up);
@@ -327,6 +351,10 @@ export function Player() {
 			hurt: 0,
 			swing: 0,
 			solid: null as null | { x: number; z: number; r: number }[],
+			crowns: null as null | { x: number; z: number; r: number; top: number }[],
+			lookYaw: 0,
+			lookPitch: 0,
+			dist: 13,
 			swinging: false,
 		}),
 		[],
@@ -334,7 +362,7 @@ export function Player() {
 
 	useEffect(() => {
 		// test hooks for the dev browser
-		if (process.env.NODE_ENV !== 'production') Object.assign(window, { __player: player, __game: game });
+		if (process.env.NODE_ENV !== 'production') Object.assign(window, { __player: player, __game: game, __keymap: keymap });
 		player.x = SPAWN.x;
 		player.z = SPAWN.z;
 		player.yaw = SPAWN.yaw;
@@ -378,15 +406,23 @@ export function Player() {
 		// keyboard: left/right turn the camera, up/down walk along it
 		const inp = player.input;
 		if (canMove) player.camera.yaw += inp.turn * 2.2 * dt;
+		// free look: the view leans toward the mouse, and keeps turning near the screen edges
+		const lx = g.started && !g.panel && !g.overlay && !player.camera.dragging ? player.camera.lookX : 0;
+		const ly = g.started && !g.panel && !g.overlay && !player.camera.dragging ? player.camera.lookY : 0;
+		const edge = Math.max(0, Math.abs(lx) - 0.72) / 0.28;
+		player.camera.yaw -= Math.sign(lx) * edge * edge * 1.9 * dt;
+		v.lookYaw += (-lx * 0.55 - v.lookYaw) * Math.min(1, dt * 4);
+		v.lookPitch += (ly * 0.22 - v.lookPitch) * Math.min(1, dt * 4);
+		const viewYaw = player.camera.yaw + v.lookYaw;
 		let dirX = 0;
 		let dirZ = 0;
 		let want = 0;
 		if (canMove && (inp.forward || inp.strafe)) {
 			// camera-relative movement: arrows / keys (forward) and touch joystick (forward + strafe)
-			const fx = -Math.sin(player.camera.yaw);
-			const fz = -Math.cos(player.camera.yaw);
-			dirX = fx * inp.forward + Math.cos(player.camera.yaw) * inp.strafe;
-			dirZ = fz * inp.forward - Math.sin(player.camera.yaw) * inp.strafe;
+			const fx = -Math.sin(viewYaw);
+			const fz = -Math.cos(viewYaw);
+			dirX = fx * inp.forward + Math.cos(viewYaw) * inp.strafe;
+			dirZ = fz * inp.forward - Math.sin(viewYaw) * inp.strafe;
 			const len = Math.hypot(dirX, dirZ);
 			const mag = Math.min(1, len);
 			if (len > 0) {
@@ -403,7 +439,7 @@ export function Player() {
 			const dz = m.z - player.z;
 			const d = Math.hypot(dx, dz);
 			if (m.state === 'dead') player.attackTarget = null;
-			else if (d < 2.6) {
+			else if (d < (game.get().hero === 'runner' ? 16 : 2.6)) {
 				v.facing = Math.atan2(-dx, -dz);
 				attack();
 			} else {
@@ -492,11 +528,11 @@ export function Player() {
 		}
 
 		const nextAnim =
-			player.attack > 0 ? '1H_Melee_Attack_Slice_Diagonal' : player.jump.h > 0.05 ? 'Jump_Full_Short' : v.hurt > 0 ? 'Hit_A' : player.speed > 6.5 ? 'Running_A' : player.speed > 0.6 ? 'Walking_A' : 'Idle';
+			player.attack > 0 ? (g.hero === 'runner' ? '1H_Ranged_Shoot' : '1H_Melee_Attack_Slice_Diagonal') : player.jump.h > 0.05 ? 'Jump_Full_Short' : v.hurt > 0 ? 'Hit_A' : player.speed > 6.5 ? 'Running_A' : player.speed > 0.6 ? 'Walking_A' : 'Idle';
 		v.hurt = Math.max(0, v.hurt - dt);
 		if (player.attack > 0 && !v.swinging) v.swing++;
 		v.swinging = player.attack > 0;
-		const animKey = nextAnim === '1H_Melee_Attack_Slice_Diagonal' ? `${nextAnim}#${v.swing}` : nextAnim;
+		const animKey = nextAnim.startsWith('1H_') ? `${nextAnim}#${v.swing}` : nextAnim;
 		const nextSpeed = nextAnim === 'Running_A' ? player.speed / RUN : nextAnim === 'Walking_A' ? Math.max(player.speed / 4, 0.6) : 1;
 		if (animKey !== v.anim) {
 			v.anim = animKey;
@@ -513,10 +549,24 @@ export function Player() {
 			v.intro += dt * 0.1;
 			v.tmp.set(player.x + Math.sin(v.intro) * 28, player.y + 17, player.z + Math.cos(v.intro) * 28);
 		} else {
+			const pitch = THREE.MathUtils.clamp(c.pitch + v.lookPitch, 0.06, 1.3);
+			// pull the camera in when a tree crown stands between it and the hero
+			let dist = c.distance;
+			v.crowns ??= canopies();
+			for (let t = 2; t < c.distance; t += 1) {
+				const sx = player.x + Math.sin(viewYaw) * Math.cos(pitch) * t;
+				const sz = player.z + Math.cos(viewYaw) * Math.cos(pitch) * t;
+				const sy = player.y + 1.6 + Math.sin(pitch) * t;
+				if (g.zone === 'val' && v.crowns.some((k) => sy < k.top && Math.abs(sx - k.x) < k.r && Math.abs(sz - k.z) < k.r && Math.hypot(sx - k.x, sz - k.z) < k.r)) {
+					dist = Math.max(3.5, t - 1);
+					break;
+				}
+			}
+			v.dist += (dist - v.dist) * Math.min(1, dt * (dist < v.dist ? 12 : 3));
 			v.tmp.set(
-				player.x + Math.sin(c.yaw) * Math.cos(c.pitch) * c.distance,
-				player.y + 1.6 + Math.sin(c.pitch) * c.distance,
-				player.z + Math.cos(c.yaw) * Math.cos(c.pitch) * c.distance,
+				player.x + Math.sin(viewYaw) * Math.cos(pitch) * v.dist,
+				player.y + 1.6 + Math.sin(pitch) * v.dist,
+				player.z + Math.cos(viewYaw) * Math.cos(pitch) * v.dist,
 			);
 			v.tmp.y = Math.max(v.tmp.y, groundAt(v.tmp.x, v.tmp.z) + 1.2);
 		}

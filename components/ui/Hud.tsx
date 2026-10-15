@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { game, useGame } from '@/lib/game-store';
+import { music } from '@/lib/music';
 import { sceneState } from '@/lib/scene-state';
 import { REALMS, STATIONS } from '@/lib/stations';
 
@@ -68,6 +69,18 @@ export function Hud() {
 		};
 	}, []);
 
+	// same generative soundtrack as the 3D world: harp in the ancient lands, synthwave in the Nexus
+	useEffect(() => {
+		if (!sound) music.stop();
+	}, [sound]);
+	useEffect(() => {
+		music.setTheme(realm === 'ancien' ? 'val' : 'nexus');
+	}, [realm]);
+	const toggleSound = () => {
+		if (!sound) void music.start();
+		game.set({ sound: !sound });
+	};
+
 	if (mode !== 'journey') return null;
 	const s = STATIONS[station];
 	const accent = realm === 'ancien' ? 'text-[#ffb35c]' : 'text-signal';
@@ -94,19 +107,10 @@ export function Hud() {
 						</span>
 						<span className="text-mist">c</span>
 					</div>
-					<div className="mt-3 flex items-center justify-between gap-2">
+					<div className="mt-3 flex items-center justify-end gap-2">
 						<button
 							type="button"
-							onPointerDown={() => (sceneState.boost = 1)}
-							onPointerUp={() => (sceneState.boost = 0)}
-							onPointerLeave={() => (sceneState.boost = 0)}
-							className="text-mist hover:text-ink rounded-lg border border-white/10 px-2 py-1 transition-colors"
-						>
-							⎵ Boost
-						</button>
-						<button
-							type="button"
-							onClick={() => game.set({ sound: !sound })}
+							onClick={toggleSound}
 							aria-pressed={sound}
 							className="text-mist hover:text-ink rounded-lg border border-white/10 px-2 py-1 transition-colors"
 						>
@@ -137,7 +141,7 @@ export function Hud() {
 
 			<button
 				type="button"
-				onClick={() => game.set({ sound: !sound })}
+				onClick={toggleSound}
 				aria-pressed={sound}
 				aria-label={sound ? 'Couper la musique' : 'Activer la musique'}
 				className="fixed right-4 bottom-4 z-30 grid h-11 w-11 place-items-center rounded-full border border-white/15 bg-[#0a0716]/90 font-mono text-sm backdrop-blur-xl lg:hidden"

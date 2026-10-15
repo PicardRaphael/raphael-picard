@@ -150,3 +150,8 @@ export function landmark(id: string) {
 	if (!l) throw new Error(`Unknown landmark ${id}`);
 	return l;
 }
+
+/** Ground height anywhere: the valley relief, or the flat floor of the Nexus. */
+export function groundAt(x: number, z: number) {
+	return z < -300 ? 0 : valHeight(x, z);
+}

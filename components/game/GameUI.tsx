@@ -13,6 +13,7 @@ import { AchievementWatcher, Menu } from './Menu';
 import { drawMarker } from './mapMarkers';
 import { Panel } from './Panels';
 import { Soundtrack } from './Soundtrack';
+import { KeyHints } from './KeyHints';
 import { StartScreen } from './StartScreen';
 import { HurtFlash, TouchControls, ZoomButtons } from './TouchControls';
 import { WorldMap } from './WorldMap';
@@ -140,6 +141,14 @@ function Minimap() {
 				const y = size / 2 + (l.z - cz) * k;
 				drawMarker(ctx, x, y, markerFor(l.id, quests, visited), 0.55, nexus ? '#e879f9' : '#f3e9cf');
 			}
+			// bugs
+			for (const m of mobs) {
+				if (m.zone !== zone || m.state === 'dead') continue;
+				ctx.fillStyle = '#ef4444';
+				ctx.beginPath();
+				ctx.arc(size / 2 + (m.x - cx) * k, size / 2 + (m.z - cz) * k, 2.6, 0, Math.PI * 2);
+				ctx.fill();
+			}
 			// player arrow
 			const px = size / 2 + (player.x - cx) * k;
 			const py = size / 2 + (player.z - cz) * k;
@@ -200,14 +209,9 @@ function Corner() {
 	);
 }
 
+/** Compact key hints, bottom-right, desktop only. */
 function Controls() {
-	return (
-		<p className="pointer-events-none fixed right-4 bottom-4 z-20 hidden text-right font-mono text-[11px] leading-5 text-white/70 drop-shadow sm:block">
-			clic : aller · glisser : caméra · molette : zoom
-			<br />
-			flèches : bouger · Espace sauter · F attaquer · E interagir
-		</p>
-	);
+	return <KeyHints className="pointer-events-none fixed right-4 bottom-4 z-20 hidden justify-end pointer-fine:sm:flex" />;
 }
 
 export function GameUI() {

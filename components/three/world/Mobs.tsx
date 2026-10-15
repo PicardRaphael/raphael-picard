@@ -11,17 +11,41 @@ import { type Mob, type MobState, mobs } from '@/lib/mobs';
 import { player } from '@/lib/player-state';
 import { groundAt } from './Player';
 
-const URL = '/models/skeleton.glb';
-useGLTF.preload(URL);
-
-const ANIM: Record<MobState, string> = {
-	idle: 'Idle',
-	walk: 'Walking_A',
-	chase: 'Walking_A',
-	attack: '1H_Melee_Attack_Chop',
-	hit: 'Hit_A',
-	dead: 'Death_A',
+/** Valley bugs are KayKit skeletons (CC0); Nexus bugs are Quaternius sci-fi robots (CC0, PBR textures). */
+type Kind = { url: string; height: number; hover: number; once: string[]; anim: Record<MobState, string> };
+const KINDS: Record<'skeleton' | 'drone' | 'quadshell' | 'trilobite', Kind> = {
+	skeleton: {
+		url: '/models/skeleton.glb',
+		height: 0,
+		hover: 0,
+		once: ['Death_A', 'Hit_A', '1H_Melee_Attack_Chop'],
+		anim: { idle: 'Idle', walk: 'Walking_A', chase: 'Walking_A', attack: '1H_Melee_Attack_Chop', hit: 'Hit_A', dead: 'Death_A' },
+	},
+	drone: {
+		url: '/models/drone.glb',
+		height: 1.3,
+		hover: 1.6,
+		once: ['Attack', 'Hit', 'BackFlip'],
+		anim: { idle: 'Idle', walk: 'Look', chase: 'Charging', attack: 'Attack', hit: 'Hit', dead: 'BackFlip' },
+	},
+	quadshell: {
+		url: '/models/quadshell.glb',
+		height: 1.7,
+		hover: 0,
+		once: ['Attack', 'Hit', 'TurnOff'],
+		anim: { idle: 'Idle', walk: 'Walk', chase: 'Run', attack: 'Attack', hit: 'Hit', dead: 'TurnOff' },
+	},
+	trilobite: {
+		url: '/models/trilobite.glb',
+		height: 2.2,
+		hover: 0,
+		once: ['Attack', 'Hit', 'TurnOff'],
+		anim: { idle: 'Idle', walk: 'Walk', chase: 'Run', attack: 'Attack', hit: 'Hit', dead: 'TurnOff' },
+	},
 };
+Object.values(KINDS).forEach((k) => useGLTF.preload(k.url));
+const ROBOTS = ['drone', 'quadshell', 'trilobite'] as const;
+const kindOf = (mob: Mob) => (mob.zone === 'nexus' ? ROBOTS[mob.id % ROBOTS.length] : 'skeleton');
 
 /** Name plate + health bar drawn on a canvas sprite. */
 function useLabel(name: string, nexus: boolean) {
@@ -53,7 +77,8 @@ function useLabel(name: string, nexus: boolean) {
 }
 
 function MobUnit({ mob }: { mob: Mob }) {
-	const { scene, animations } = useGLTF(URL);
+	const kind = KINDS[kindOf(mob)];
+	const { scene, animations } = useGLTF(kind.url);
 	const nexus = mob.zone === 'nexus';
 	const model = useMemo(() => {
 		const clone = SkeletonUtils.clone(scene) as THREE.Group;
@@ -63,13 +88,17 @@ function MobUnit({ mob }: { mob: Mob }) {
 			m.castShadow = true;
 			m.frustumCulled = false;
 			const mat = (m.material as THREE.MeshStandardMaterial).clone();
-			// a cursed glow: green in the valley, neon pink in the Nexus
+			// a cursed green glow on skeletons; robots keep their PBR look with a faint neon tint
 			mat.emissive = new THREE.Color(nexus ? '#db2777' : '#16a34a');
-			mat.emissiveIntensity = 0.35;
+			mat.emissiveIntensity = nexus ? 0.08 : 0.35;
 			m.material = mat;
 		});
+		if (kind.height) {
+			const box = new THREE.Box3().setFromObject(clone);
+			clone.scale.setScalar(kind.height / Math.max(box.max.y - box.min.y, 0.01));
+		}
 		return clone;
-	}, [scene, nexus]);
+	}, [scene, nexus, kind]);
 	const group = useRef<THREE.Group>(null);
 	const mixer = useMemo(() => new THREE.AnimationMixer(model), [model]);
 	const actions = useMemo(() => Object.fromEntries(animations.map((a) => [a.name, mixer.clipAction(a)])), [animations, mixer]);
@@ -84,7 +113,7 @@ function MobUnit({ mob }: { mob: Mob }) {
 		};
 	}, [label, mixer, mob]);
 
-	useFrame((_, delta) => {
+	useFrame((state, delta) => {
 		const dt = Math.min(delta, 1 / 20);
 		const g = group.current;
 		if (!g) return;
@@ -161,13 +190,13 @@ function MobUnit({ mob }: { mob: Mob }) {
 				break;
 		}
 
-		const anim = mob.state === 'hit' && mob.hp <= 0 ? 'Death_A' : ANIM[mob.state];
+		const anim = mob.state === 'hit' && mob.hp <= 0 ? kind.anim.dead : kind.anim[mob.state];
 		if (anim !== v.current.anim) {
 			const next = actions[anim];
 			const prev = actions[v.current.anim];
 			if (next) {
 				next.reset();
-				if (anim === 'Death_A' || anim === 'Hit_A' || anim === '1H_Melee_Attack_Chop') {
+				if (kind.once.includes(anim)) {
 					next.setLoop(THREE.LoopOnce, 1);
 					next.clampWhenFinished = true;
 				}
@@ -183,17 +212,24 @@ function MobUnit({ mob }: { mob: Mob }) {
 		mixer.update(dt);
 		// corpses stay solid for 2 s, then sink into the ground before respawning later
 		const sink = mob.state === 'dead' && mob.t > 2 ? (mob.t - 2) * 0.9 : 0;
-		g.position.set(mob.x, groundAt(mob.x, mob.z) - sink, mob.z);
+		g.position.set(mob.x, groundAt(mob.x, mob.z) - sink + kind.hover + (kind.hover ? Math.sin(mob.t * 2.4) * 0.2 : 0), mob.z);
 		if (mob.state === 'dead' && mob.t > 4.5) g.visible = false;
 		g.rotation.y = mob.yaw;
-		if (sprite.current) sprite.current.visible = mob.state !== 'dead' || mob.t < 1.5;
+		if (sprite.current) {
+			// name plates stay readable: drawn on top and scaled with the distance
+			const d = state.camera.position.distanceTo(g.position);
+			const k = THREE.MathUtils.clamp(d / 14, 1, 3.2);
+			sprite.current.scale.set(3.2 * k, 0.8 * k, 1);
+			sprite.current.position.y = 2.6 + 0.5 * k;
+			sprite.current.visible = d < 75 && (mob.state !== 'dead' || mob.t < 1.5);
+		}
 	});
 
 	return (
 		<group ref={group}>
 			<primitive object={model} />
-			<sprite ref={sprite} position={[0, 3.1, 0]} scale={[3.2, 0.8, 1]}>
-				<spriteMaterial map={label.tex} transparent depthWrite={false} />
+			<sprite ref={sprite} position={[0, 3.1, 0]} scale={[3.2, 0.8, 1]} renderOrder={20}>
+				<spriteMaterial map={label.tex} transparent depthWrite={false} depthTest={false} toneMapped={false} />
 			</sprite>
 		</group>
 	);

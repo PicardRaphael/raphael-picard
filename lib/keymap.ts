@@ -1,7 +1,7 @@
 'use client';
 
 /** Rebindable controls, stored per visitor in localStorage (falls back to defaults when storage is unavailable). */
-export type Action = 'forward' | 'back' | 'left' | 'right' | 'jump' | 'attack' | 'interact' | 'sprint';
+export type Action = 'forward' | 'back' | 'left' | 'right' | 'jump' | 'attack' | 'interact' | 'sprint' | 'map' | 'menu';
 
 export const ACTIONS: { id: Action; label: string }[] = [
 	{ id: 'forward', label: 'Avancer' },
@@ -12,6 +12,8 @@ export const ACTIONS: { id: Action; label: string }[] = [
 	{ id: 'attack', label: 'Attaquer' },
 	{ id: 'interact', label: 'Interagir' },
 	{ id: 'sprint', label: 'Sprinter' },
+	{ id: 'map', label: 'Carte' },
+	{ id: 'menu', label: 'Menu / options' },
 ];
 
 /** Two keys per action: a primary (editable) and a fixed secondary so arrows always work. */
@@ -24,6 +26,9 @@ const DEFAULTS: Record<Action, [string, string]> = {
 	attack: ['KeyF', 'Digit1'],
 	interact: ['KeyE', 'Enter'],
 	sprint: ['ShiftLeft', 'ShiftRight'],
+	// M sits on the Semicolon key of an AZERTY keyboard
+	map: ['KeyM', 'Semicolon'],
+	menu: ['KeyO', 'Escape'],
 };
 
 const STORAGE = 'rp-keymap-v1';

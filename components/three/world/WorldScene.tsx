@@ -12,6 +12,7 @@ import { ValleyLandmarks } from './Landmarks';
 import { phaseFor, NIGHT } from '@/lib/daytime';
 import { Rain } from './Cyber';
 import { Lanterns } from './Lanterns';
+import { Lasers } from './Lasers';
 import { Mobs } from './Mobs';
 import { Nature } from './Nature';
 import { Nexus } from './Nexus';
@@ -58,7 +59,7 @@ function Atmosphere({ shadows }: { shadows: boolean }) {
 
 	useEffect(() => {
 		const fogK = weather === 'fog' ? 0.35 : weather === 'rain' ? 0.7 : 1;
-		scene.fog = val ? new THREE.Fog(weather === 'rain' ? '#7d8796' : L.fog, L.near * fogK, L.far * fogK) : new THREE.Fog('#160828', 30 * fogK, 210 * fogK);
+		scene.fog = val ? new THREE.Fog(weather === 'rain' ? '#7d8796' : L.fog, L.near * fogK, L.far * fogK) : new THREE.Fog('#0b0e1a', 28 * fogK, 200 * fogK);
 		scene.background = val ? null : new THREE.Color('#07030f');
 	}, [val, scene, L, weather]);
 
@@ -75,10 +76,10 @@ function Atmosphere({ shadows }: { shadows: boolean }) {
 	return (
 		<>
 			{val && <SkyDome night={weather === 'rain' ? Math.max(night, 0.35) : night} />}
-			<hemisphereLight args={[val ? L.hemi[0] : '#6d4bd8', val ? L.hemi[1] : '#0b0618', (val ? L.hemi[2] : 0.7) * dim]} />
+			<hemisphereLight args={[val ? L.hemi[0] : '#41507f', val ? L.hemi[1] : '#05060a', (val ? L.hemi[2] : 0.55) * dim]} />
 			<directionalLight
 				ref={sun}
-				color={val ? L.sun[0] : '#9f7aea'}
+				color={val ? L.sun[0] : '#8fb3ff'}
 				intensity={(val ? L.sun[1] : 0.9) * dim}
 				castShadow={shadows}
 				shadow-mapSize={[2048, 2048]}
@@ -119,9 +120,10 @@ export default function WorldScene() {
 			<Suspense fallback={null}>
 				<Nature />
 				<Mobs />
+				<Lasers />
 			</Suspense>
 			<ValleyLandmarks />
-			<Nexus pixelRatio={q.pr} />
+			<Nexus pixelRatio={q.pr} reflect={q.post} />
 			<Player />
 			{q.post && (
 				<EffectComposer multisampling={0}>

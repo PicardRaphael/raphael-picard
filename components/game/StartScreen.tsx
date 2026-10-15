@@ -1,16 +1,17 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState, useSyncExternalStore } from 'react';
+import { useEffect, useState } from 'react';
 
 import { game, useGame } from '@/lib/game-store';
 import { ACTIONS, type Action, keyLabel, keymap } from '@/lib/keymap';
 import { music } from '@/lib/music';
+import { KeyHints } from './KeyHints';
 
 type LayoutMap = Map<string, string>;
 
 /** Real key labels for the visitor's layout (AZERTY shows Z, not W) when the browser exposes it. */
-function useLayoutLabels() {
+export function useLayoutLabels() {
 	const [layout, setLayout] = useState<LayoutMap | null>(null);
 	useEffect(() => {
 		const kb = (navigator as Navigator & { keyboard?: { getLayoutMap?: () => Promise<LayoutMap> } }).keyboard;
@@ -91,14 +92,6 @@ export function StartScreen() {
 	const started = useGame((s) => s.started);
 	const hero = useGame((s) => s.hero);
 	const [keys, setKeys] = useState(false);
-	const label = useLayoutLabels();
-	// key bindings live in localStorage: only print them once mounted (no hydration mismatch)
-	const client = useSyncExternalStore(
-		() => () => undefined,
-		() => true,
-		() => false,
-	);
-	const k = keymap.get();
 
 	useEffect(() => {
 		if (started) return;
@@ -158,13 +151,7 @@ export function StartScreen() {
 						⌨ Touches
 					</button>
 				</div>
-				<p className="mt-4 max-w-xl font-mono text-[11px] leading-5 text-white/65">
-					Clic / toucher : se déplacer, parler, attaquer · glisser : tourner la caméra · molette / pincer : zoom
-					<br />
-					{client
-						? `${label(k.forward[0])}${label(k.left[0])}${label(k.back[0])}${label(k.right[0])} ou flèches · ${label(k.jump[0])} sauter · ${label(k.attack[0])} attaquer · ${label(k.interact[0])} interagir`
-						: 'Flèches pour bouger · Espace sauter · F attaquer · E interagir'}
-				</p>
+				<KeyHints withMouse className="mt-5 max-w-xl justify-center" />
 				<Link href="/portfolio" className="mt-4 text-sm text-white/70 underline-offset-4 hover:text-white hover:underline">
 					Version classique du portfolio →
 				</Link>

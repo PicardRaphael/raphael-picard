@@ -10,7 +10,7 @@ export const player = {
 	/** Click / tap to move: walk to this point, then open the landmark if set. */
 	moveTarget: null as null | { x: number; z: number; landmark?: string },
 	/** Orbit camera, driven by mouse drag / touch / wheel / pinch. */
-	camera: { yaw: 0, pitch: 0.42, distance: 13, dragging: false },
+	camera: { yaw: 0, pitch: 0.42, distance: 13, dragging: false, lookX: 0, lookY: 0 },
 	/** Jump: vertical offset and velocity. */
 	jump: { h: 0, vy: 0 },
 	/** Seconds left in the current sword swing (0 = ready). */

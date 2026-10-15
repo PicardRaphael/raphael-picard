@@ -8,6 +8,7 @@ import { projects } from '@/content/work';
 import { NEXUS_CENTER, landmark } from '@/lib/world';
 import { constellation, knot, mulberry32 } from '../shapes';
 import { Cyber } from './Cyber';
+import { Street } from './Street';
 import { PortalGate } from './Landmarks';
 import { RaphyModel } from './Raphy';
 
@@ -15,30 +16,6 @@ import { RaphyModel } from './Raphy';
  * The Nexus: a neon city floor, holographic towers and three AI "systems",
  * with the giant Raphy hologram as contact beacon.
  */
-
-const gridVertex = /* glsl */ `
-varying vec3 vWorld;
-void main() { vec4 w = modelMatrix * vec4(position, 1.0); vWorld = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }
-`;
-const gridFragment = /* glsl */ `
-uniform float uTime;
-uniform vec2 uCenter;
-varying vec3 vWorld;
-float line(float v, float w) { float d = abs(fract(v - 0.5) - 0.5) / fwidth(v); return 1.0 - min(d / w, 1.0); }
-void main() {
-	vec2 p = vWorld.xz;
-	float g1 = max(line(p.x / 4.0, 1.0), line(p.y / 4.0, 1.0));
-	float g2 = max(line(p.x / 20.0, 1.4), line(p.y / 20.0, 1.4));
-	float dist = length(p - uCenter);
-	float pulse = 0.5 + 0.5 * sin(dist * 0.15 - uTime * 2.0);
-	vec3 base = vec3(0.02, 0.015, 0.05);
-	vec3 violet = vec3(0.4, 0.12, 1.0);
-	vec3 cyan = vec3(0.22, 0.74, 0.97);
-	vec3 col = base + violet * g1 * 0.35 + mix(cyan, violet, pulse) * g2 * 0.9;
-	col *= smoothstep(160.0, 40.0, dist) * 0.9 + 0.1;
-	gl_FragColor = vec4(col, 1.0);
-}
-`;
 
 const pointsVertex = /* glsl */ `
 uniform float uTime;
@@ -210,7 +187,7 @@ function HoloNpc() {
 	);
 }
 
-export function Nexus({ pixelRatio }: { pixelRatio: number }) {
+export function Nexus({ pixelRatio, reflect }: { pixelRatio: number; reflect: boolean }) {
 	const agents = landmark('agents');
 	const core = landmark('core');
 	const back = landmark('portal-back');
@@ -222,10 +199,9 @@ export function Nexus({ pixelRatio }: { pixelRatio: number }) {
 	});
 	return (
 		<group>
-			<mesh position={[NEXUS_CENTER.x, 0, NEXUS_CENTER.z]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-				<planeGeometry args={[520, 520]} />
-				<shaderMaterial vertexShader={gridVertex} fragmentShader={gridFragment} uniforms={uniforms} extensions={{ derivatives: true } as never} />
-			</mesh>
+			<Suspense fallback={null}>
+				<Street reflect={reflect} />
+			</Suspense>
 			<Cyber />
 			<group position={[agents.x, 0, agents.z]}>
 				<Pad x={0} z={0} r={6} />

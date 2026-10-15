@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { ACHIEVEMENTS, unlocked } from '@/lib/achievements';
 import { game, useGame } from '@/lib/game-store';
+import { keymap } from '@/lib/keymap';
 import { player } from '@/lib/player-state';
 import { QUESTS } from '@/lib/quests';
 import { site } from '@/lib/site';
@@ -188,7 +189,7 @@ function Body({ tab }: { tab: Tab }) {
 							<li>Flèches ou ZQSD : bouger</li>
 							<li>Espace : sauter · Maj : sprinter</li>
 							<li>F : attaquer · E : interagir</li>
-							<li>M : carte · Échap : menu</li>
+							<li>M : carte · Échap ou O : menu</li>
 						</ul>
 					</div>
 					<div>
@@ -213,7 +214,6 @@ function Body({ tab }: { tab: Tab }) {
 					<li>Végétation : Stylized Nature MegaKit par Quaternius (CC0)</li>
 					<li>Musique : générée en direct avec la Web Audio API</li>
 					<li>Moteur : Next.js, React Three Fiber, three.js, shaders GLSL maison</li>
-					<li>Inspiration : le portfolio de Bruno Simon</li>
 				</ul>
 			);
 		case 'help':
@@ -233,8 +233,18 @@ export function Menu() {
 	useEffect(() => {
 		const on = (e: KeyboardEvent) => {
 			if (!game.get().started) return;
-			if (e.code === 'KeyM') game.set({ overlay: game.get().overlay === 'map' ? null : 'map' });
-			if (e.code === 'Escape' && !game.get().panel) game.set({ overlay: game.get().overlay ? null : 'menu' });
+			if (e.target instanceof Element && e.target.closest('input, textarea, select')) return;
+			const isMap = keymap.is('map', e.code) || e.key.toLowerCase() === 'm';
+			if (isMap && !game.get().panel) {
+				e.preventDefault();
+				game.set({ overlay: game.get().overlay === 'map' ? null : 'map' });
+				return;
+			}
+			if (e.code === 'Escape' && game.get().overlay) {
+				game.set({ overlay: null });
+				return;
+			}
+			if (keymap.is('menu', e.code) && !game.get().panel) game.set({ overlay: game.get().overlay === 'menu' ? null : 'menu' });
 		};
 		window.addEventListener('keydown', on);
 		return () => window.removeEventListener('keydown', on);

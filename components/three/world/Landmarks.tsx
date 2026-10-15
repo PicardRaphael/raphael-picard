@@ -162,7 +162,7 @@ export function QuestMarker({ id, height }: { id: string; height: number }) {
 	);
 }
 
-const MARKER_HEIGHT: Record<string, number> = { raphy: 5.6, tower: 28.5, forge: 11, stones: 9, portal: 26, holo: 5.8, beacon: 24, agents: 16, core: 16, gallery: 10, 'portal-back': 15, race: 9 };
+const MARKER_HEIGHT: Record<string, number> = { raphy: 5.6, tower: 28.5, forge: 11, stones: 9, portal: 26, holo: 5.8, beacon: 24, agents: 16, core: 16, gallery: 10, 'portal-back': 15, race: 9, royal: 14.5, schoolmouv: 14.5, leasys: 12, neochat: 6.4, neodoc: 6.4, neomail: 6.4 };
 
 /** One marker per place, in both realms. */
 export function QuestMarkers() {

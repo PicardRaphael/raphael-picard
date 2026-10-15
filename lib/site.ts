@@ -1,11 +1,11 @@
 export const site = {
 	url: 'https://www.raphaelpicard.com',
 	name: 'Raphaël Picard',
-	role: 'Ingénieur IA · Lead IA',
+	role: 'Senior AI Engineer & Responsable IA',
 	jobTitle: 'Senior AI Engineer & Responsable IA',
-	title: 'Raphaël Picard — Ingénieur IA : agents, RAG, MCP & Claude Code',
+	title: 'Raphaël Picard — Senior AI Engineer & Responsable IA : agents, RAG, MCP',
 	description:
-		"Ingénieur IA basé à Lyon : je conçois et mets en production des agents IA (LangGraph), des RAG hybrides, des serveurs MCP et un outillage Claude Code avancé. 9+ ans de développement full-stack Python / TypeScript.",
+		'Senior AI Engineer & Responsable IA à Lyon : 8 agents LangGraph en production, RAG hybride, MCP, évaluations Langfuse et DeepEval. 9 ans de Python et TypeScript.',
 	locale: 'fr_FR',
 	location: 'Lyon, France',
 	email: 'raphaelpicard@outlook.fr',

@@ -26,6 +26,21 @@ export const QUESTS: Quest[] = [
 		],
 		outro: "Tu as vu l'artisan. Mais en 2025, il a franchi une porte. Le Portail arcanique s'est éveillé au nord du val : il mène au Nexus, l'ère des agents.",
 		reward: { title: 'Haut fait : Artisan du code', text: '9 ans de développement full-stack découverts.' },
+		next: 'parcours',
+	},
+	{
+		id: 'parcours',
+		title: "Le parcours de l'artisan",
+		giver: 'raphy',
+		turnIn: 'raphy',
+		intro: "Trois maisons du val gardent chacune un chapitre de sa carrière : le Comptoir Royal Canin, l'Atelier Schoolmouv et le Garage Leasys. Va les voir, chacune a une histoire à raconter.",
+		objectives: [
+			{ id: 'leasys', label: 'Ouvrir le Garage Leasys' },
+			{ id: 'schoolmouv', label: "Visiter l'Atelier Schoolmouv" },
+			{ id: 'royal', label: 'Entrer au Comptoir Royal Canin' },
+		],
+		outro: 'Une première IA en production dès 2018, un MVP construit de zéro, une plateforme vendue dans plus de 100 pays. Il ne restait plus qu’à franchir le portail.',
+		reward: { title: 'Haut fait : Compagnon du val', text: 'Le parcours de Raphaël est découvert.' },
 		next: 'portail',
 	},
 	{
@@ -37,6 +52,21 @@ export const QUESTS: Quest[] = [
 		objectives: [{ id: 'portal', label: 'Traverser le Portail arcanique' }],
 		outro: "Connexion établie. Je suis Raphy·OS. Ici, Raphaël construit des agents IA qui tournent en production. Je t'ouvre l'accès au Nexus.",
 		reward: { title: 'Haut fait : Passe-portail', text: 'Bienvenue dans le Nexus.' },
+		next: 'production',
+	},
+	{
+		id: 'production',
+		title: 'Les agents en production',
+		giver: 'holo',
+		turnIn: 'holo',
+		intro: 'Chez Neoteem, huit agents LangGraph travaillent chaque jour. Trois bornes les présentent le long de l’avenue : NeoChat, NeoDoc et NeoMail. Interroge-les.',
+		objectives: [
+			{ id: 'neochat', label: 'Interroger la borne NeoChat' },
+			{ id: 'neodoc', label: 'Interroger la borne NeoDoc' },
+			{ id: 'neomail', label: 'Interroger la borne NeoMail' },
+		],
+		outro: 'Testés, évalués avec DeepEval, observés dans Langfuse : voilà ce que « en production » veut dire pour Raphaël.',
+		reward: { title: 'Haut fait : Opérateur du Nexus', text: 'Les agents en production sont découverts.' },
 		next: 'agents',
 	},
 	{

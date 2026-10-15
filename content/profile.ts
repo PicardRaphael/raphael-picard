@@ -4,18 +4,18 @@
  */
 
 export const hero = {
-	eyebrow: 'Ingénieur IA · Lead IA · Lyon',
+	eyebrow: 'Senior AI Engineer & Responsable IA · Neoteem · Lyon',
 	status: '8 agents IA en production',
 	headline: "J'industrialise l'IA agentique.",
-	lead: "Agents LangGraph, RAG hybrides, serveurs MCP, outillage Claude Code : je conçois des systèmes d'IA qui tiennent en production — testés, évalués, observés. Et je forme les équipes qui les font vivre.",
-	primaryCta: { label: 'Parlons de votre projet IA', href: '#contact' },
+	lead: "Agents LangGraph, RAG hybrides, serveurs MCP : je les mets en production testés, évalués (DeepEval) et observés (Langfuse). Chez Neoteem : 8 agents en production, −33 % de coûts d'inférence, et une équipe formée pour les faire vivre.",
+	primaryCta: { label: 'Voir les agents en production', href: '#projets' },
 	secondaryCta: { label: 'Télécharger le CV', href: '/cv-RaphaelPICARD-IA.pdf' },
 };
 
 export const stats = [
 	{ value: 8, suffix: '', label: 'agents IA en production' },
 	{ value: 162, suffix: '', label: 'skills Claude Code écrites' },
-	{ value: 6, suffix: '', label: 'serveurs MCP construits' },
+	{ value: 33, suffix: ' %', label: "de coûts d'inférence en moins" },
 	{ value: 9, suffix: '+', label: "ans d'ingénierie logicielle" },
 ];
 
@@ -45,7 +45,7 @@ export const about = {
 	title: 'De développeur full-stack à ingénieur IA.',
 	paragraphs: [
 		"Pendant neuf ans, j'ai livré des produits web à grande échelle : une plateforme e-commerce déployée dans plus de 100 pays, un MVP EdTech conçu de zéro, des outils métier pour la mobilité. J'y ai appris ce qui fait tenir un logiciel : l'architecture, les tests, la rigueur de livraison.",
-		"Depuis novembre 2025, je suis Responsable IA chez Neoteem, éditeur d'un ERP pour les professionnels de l'immobilier. Je porte la stratégie IA auprès de la direction, j'encadre le pôle IA et j'ai mis en production huit agents qui travaillent chaque jour avec les données métier.",
+		"Depuis novembre 2025, je suis Senior AI Engineer & Responsable IA chez Neoteem, éditeur d'un ERP pour les professionnels de l'immobilier. J'y ai mis en production huit agents LangGraph (NeoChat, NeoDoc, NeoMail), construit un backend ERP from scratch et fait adopter par la direction une architecture multi-chatbots spécialisés. Je manage le pôle IA (2 à 3 personnes) et je forme toute l'équipe.",
 		"Mon avantage : un profil hybride. Je parle architecture aux développeurs, ROI aux dirigeants, et prompts aux modèles.",
 	],
 	principles: [
@@ -77,7 +77,8 @@ export const expertise: Expertise[] = [
 		pitch: 'Des agents spécialisés qui raisonnent, appellent des outils et collaborent — en production, pas en démo.',
 		points: [
 			'Moteur ReAct déclaratif, function calling, sub-agents',
-			'Routage hybride : embeddings + RRF, repli LLM à la demande',
+			'Routage hybride HybridToolSelector : embeddings + RRF, repli LLM à la demande',
+			'77 routes FastAPI, 14 tools mutualisés entre les agents',
 			'Pipelines Map-Reduce, streaming SSE, mémoire de conversation',
 		],
 		tags: ['LangGraph', 'ReAct', 'Gemini 2.5', 'Claude'],
@@ -100,12 +101,12 @@ export const expertise: Expertise[] = [
 		title: 'MCP & intégrations',
 		pitch: 'Je branche les modèles sur les vraies données de l’entreprise via le Model Context Protocol.',
 		points: [
-			'Serveurs MCP maison en FastMCP, déployés et monitorés',
+			'2 serveurs MCP maison (FastMCP) déployés en production : base de connaissances et PostgreSQL',
 			'Base de connaissances de 989 notes interrogée par les agents',
 			'Apps MCP compatibles Claude, Codex, Gemini CLI et Cursor',
 		],
 		tags: ['MCP', 'FastMCP', 'SQLite FTS5', 'Obsidian'],
-		metric: '6 serveurs MCP',
+		metric: '2 MCP en prod',
 	},
 	{
 		id: 'claude-code',
@@ -114,7 +115,7 @@ export const expertise: Expertise[] = [
 		points: [
 			'162 skills, 41 agents, 47 hooks, 74 rules sur 5 dépôts',
 			'Plugin d’équipe versionné : 41 skills, 12 profils utilisateurs',
-			'7 plugins Cowork : copilote dirigeant, triage support, backlog…',
+			'7 plugins publiés, dont 4 Cowork : copilote dirigeant, triage support, feedback, backlog',
 		],
 		tags: ['Claude Code', 'Cowork', 'Hooks', 'Plugins'],
 		metric: '162 skills',
@@ -127,6 +128,7 @@ export const expertise: Expertise[] = [
 			'Tracing distribué et suivi FinOps avec Langfuse',
 			'DeepEval : faithfulness, LLM-as-judge, non-régression',
 			'Context caching : −33 % de coûts d’inférence',
+			'Tests : 1,68× le volume du code de production',
 		],
 		tags: ['Langfuse', 'DeepEval', 'Pytest', 'FinOps'],
 		metric: '−33 % de coûts',
@@ -149,7 +151,7 @@ export const leadership = {
 	title: 'Stratégie, management & formation',
 	points: [
 		"Architecture multi-chatbots spécialisés proposée à la direction, puis adoptée en production",
-		'Notes de décision : choix de langage, RAG vs base de connaissances, organisation du pôle IA',
-		'Management direct du pôle IA et formation des équipes tech et non-tech à Claude Code, Claude Desktop et Cowork',
+		'Plus de 6 notes de décision stratégiques : choix de langage, RAG vs base de connaissances, organisation du pôle IA',
+		'Management direct de 2 à 3 personnes ; 3 à 5 sessions de formation tech et non-tech (Claude Code, Claude Desktop, Cowork)',
 	],
 };

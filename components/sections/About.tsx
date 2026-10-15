@@ -4,7 +4,7 @@ import { about } from '@/content/profile';
 const sheet = [
 	{ k: 'Classe', v: 'Ingénieur IA' },
 	{ k: 'Spécialisation', v: 'Agents · RAG · MCP' },
-	{ k: 'Rôle', v: 'Lead IA chez Neoteem' },
+	{ k: 'Rôle', v: 'Senior AI Engineer & Responsable IA chez Neoteem' },
 	{ k: 'Expérience', v: "9+ ans d'XP" },
 	{ k: 'Base', v: 'Lyon · remote' },
 	{ k: 'Langues', v: 'Python · TypeScript' },

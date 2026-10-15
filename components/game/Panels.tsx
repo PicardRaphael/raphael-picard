@@ -8,6 +8,7 @@ import { Journey } from '@/components/sections/Journey';
 import { Portal } from '@/components/sections/Portal';
 import { Projects } from '@/components/sections/Projects';
 import { MotionProvider } from '@/components/ui/MotionProvider';
+import { experiences, projects } from '@/content/work';
 import { game, useGame } from '@/lib/game-store';
 import { QUESTS } from '@/lib/quests';
 import { landmark } from '@/lib/world';
@@ -57,7 +58,7 @@ function QuestBlock({ id }: { id: string }) {
 /** Raphy reacts to where the visitor stands in the story instead of repeating the same line. */
 const RAPHY_TIPS = [
 	'Astuce : les bugs du val ont chacun une fiche « problème / parade ». Retrouve-les toutes dans le Bestiaire du menu.',
-	'Raphaël a commencé par le développement web en 2014 ; aujourd’hui il met des agents IA en production. La Forge raconte ce chemin.',
+	'Neuf ans de développement web avant de mettre des agents IA en production : la Forge raconte ce chemin.',
 	'La Tour du Savoir garde ses compétences : agents, RAG, MCP, évaluation, FinOps.',
 	'Le Cercle de pierres porte son manifeste : des agents utiles, mesurés et sûrs.',
 	'Tu préfères lire tranquillement ? La « Version classique » en haut à gauche ouvre le portfolio en une page.',
@@ -68,6 +69,10 @@ function raphyLine(g: ReturnType<typeof game.get>) {
 	if (g.quests.origines === 'active') {
 		const left = ['forge', 'tower', 'stones'].filter((id) => !g.visited.includes(id)).map((id) => landmark(id).name);
 		return left.length ? `Il te reste à voir : ${left.join(', ')}. Suis les « ? » dorés.` : 'Tu as tout vu ! Reviens me parler pour terminer la quête.';
+	}
+	if (g.quests.parcours === 'active') {
+		const left = ['leasys', 'schoolmouv', 'royal'].filter((id) => !g.visited.includes(id)).map((id) => landmark(id).name);
+		return left.length ? `Les maisons du val t’attendent : ${left.join(', ')}.` : 'Tu connais tout son parcours ! Reviens me parler pour terminer la quête.';
 	}
 	if (g.flags.includes('nexus')) return `De retour du Nexus ! ${g.kills} bug${g.kills > 1 ? 's' : ''} corrigé${g.kills > 1 ? 's' : ''} jusqu’ici. Raphy·OS t’attend là-bas pour la suite.`;
 	if (g.quests.portail === 'active' || g.quests.portail === 'available') return 'Le Portail arcanique t’attend au bout du chemin, au nord : de l’autre côté, l’ère des agents.';
@@ -80,6 +85,65 @@ const NPC_TEXT: Record<string, string> = {
 	'portal-back': 'Ce portail te ramène au Val des Origines.',
 	race: 'Le défi du Nexus arrive bientôt.',
 };
+
+/** A chapter of the career (an entry of the CV), shown in a career house of the val. */
+const CAREER: Record<string, string> = { royal: 'Royal Canin', schoolmouv: 'Schoolmouv', leasys: 'Aixia' };
+function CareerChapter({ id }: { id: string }) {
+	const e = experiences.find((x) => x.company.includes(CAREER[id]));
+	if (!e) return null;
+	return (
+		<div className="mx-auto max-w-3xl space-y-5 px-4 sm:px-6">
+			<p className="font-mono text-xs tracking-widest text-[#ffd100] uppercase">{e.period}</p>
+			<h3 className="font-display text-3xl font-bold text-white">
+				{e.role} · <span className="text-[#ffd100]">{e.company}</span>
+			</h3>
+			<p className="text-white/70">{e.context}</p>
+			<ul className="space-y-2">
+				{e.points.map((pt) => (
+					<li key={pt} className="text-lg leading-relaxed text-white/90">
+						◆ {pt}
+					</li>
+				))}
+			</ul>
+			<p className="flex flex-wrap gap-1.5">
+				{e.stack.map((t) => (
+					<span key={t} className="rounded-md bg-white/10 px-2 py-0.5 font-mono text-xs text-white/80">
+						{t}
+					</span>
+				))}
+			</p>
+			<QuestBlock id={id} />
+		</div>
+	);
+}
+
+/** A production agent presented by its kiosk in the Nexus. */
+function ProductionAgent({ id }: { id: string }) {
+	const p = projects.find((x) => x.name.toLowerCase() === id);
+	if (!p) return null;
+	return (
+		<div className="mx-auto max-w-3xl space-y-5 px-4 sm:px-6">
+			<p className="font-mono text-xs tracking-widest text-[#5ef2ff] uppercase">{p.kind}</p>
+			<h3 className="font-display text-3xl font-bold text-white">{p.name}</h3>
+			<p className="text-xl leading-relaxed text-white/90">{p.pitch}</p>
+			<ul className="space-y-2">
+				{p.highlights.map((h) => (
+					<li key={h} className="text-lg leading-relaxed text-white/85">
+						<span className="text-[#5ef2ff]">▸</span> {h}
+					</li>
+				))}
+			</ul>
+			<p className="flex flex-wrap gap-1.5">
+				{p.stack.map((t) => (
+					<span key={t} className="rounded-md bg-white/10 px-2 py-0.5 font-mono text-xs text-white/80">
+						{t}
+					</span>
+				))}
+			</p>
+			<QuestBlock id={id} />
+		</div>
+	);
+}
 
 /** Each place opens the matching visual section of the classic portfolio. */
 function Body({ id }: { id: string }) {
@@ -96,6 +160,14 @@ function Body({ id }: { id: string }) {
 			return <Architecture />;
 		case 'gallery':
 			return <Projects />;
+		case 'royal':
+		case 'schoolmouv':
+		case 'leasys':
+			return <CareerChapter id={id} />;
+		case 'neochat':
+		case 'neodoc':
+		case 'neomail':
+			return <ProductionAgent id={id} />;
 		case 'beacon':
 			return (
 				<>

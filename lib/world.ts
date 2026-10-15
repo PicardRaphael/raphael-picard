@@ -34,6 +34,10 @@ export const LANDMARKS: Landmark[] = [
 	{ id: 'tower', name: 'La Tour du Savoir', hint: 'Entrer dans la tour', zone: 'val', x: 40, z: -42, radius: 9, solid: 4.2 },
 	{ id: 'stones', name: 'Le Cercle du Manifeste', hint: 'Lire les pierres', zone: 'val', x: 28, z: 20, radius: 9, solid: 0 },
 	{ id: 'portal', name: 'Le Portail arcanique', hint: 'Traverser le portail', zone: 'val', x: 0, z: -92, radius: 7, solid: 0 },
+	// career houses: each one tells a chapter of the CV
+	{ id: 'royal', name: 'Le Comptoir Royal Canin', hint: 'Entrer au Comptoir', zone: 'val', x: 17, z: -12, radius: 9.5, solid: 0 },
+	{ id: 'schoolmouv', name: "L'Atelier Schoolmouv", hint: "Visiter l'Atelier", zone: 'val', x: -16, z: -30, radius: 9.5, solid: 0 },
+	{ id: 'leasys', name: 'Le Garage Leasys', hint: 'Ouvrir le Garage', zone: 'val', x: 24, z: -52, radius: 9, solid: 0 },
 	// — Le Nexus (futuristic) —
 	{ id: 'portal-back', name: 'Portail de retour', hint: 'Retourner au val', zone: 'nexus', x: 0, z: NEXUS_Z + 14, radius: 6, solid: 0 },
 	{ id: 'holo', name: 'Raphy·OS', hint: 'Parler à Raphy·OS', zone: 'nexus', x: -10, z: NEXUS_Z - 22, radius: 7, solid: 1.4 },
@@ -41,6 +45,10 @@ export const LANDMARKS: Landmark[] = [
 	{ id: 'core', name: "Noyau d'orchestration", hint: 'Inspecter le noyau', zone: 'nexus', x: 32, z: NEXUS_Z - 34, radius: 10, solid: 2.5 },
 	{ id: 'gallery', name: 'Galerie des Projets', hint: 'Parcourir la galerie', zone: 'nexus', x: 34, z: NEXUS_Z - 118, radius: 10, solid: 0 },
 	{ id: 'beacon', name: 'Balise de contact', hint: 'Activer la balise', zone: 'nexus', x: 0, z: NEXUS_Z - 125, radius: 12, solid: 4 },
+	// production agents: holographic kiosks along the avenue
+	{ id: 'neochat', name: 'Borne NeoChat', hint: 'Interroger NeoChat', zone: 'nexus', x: -10, z: NEXUS_Z - 50, radius: 6, solid: 1.2 },
+	{ id: 'neodoc', name: 'Borne NeoDoc', hint: 'Interroger NeoDoc', zone: 'nexus', x: 10, z: NEXUS_Z - 76, radius: 6, solid: 1.2 },
+	{ id: 'neomail', name: 'Borne NeoMail', hint: 'Interroger NeoMail', zone: 'nexus', x: -10, z: NEXUS_Z - 104, radius: 6, solid: 1.2 },
 	{ id: 'race', name: 'Ligne de départ', hint: 'Lancer la course', zone: 'nexus', x: -30, z: NEXUS_Z - 1, radius: 7, solid: 0 },
 ];
 

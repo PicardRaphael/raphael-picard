@@ -4,12 +4,48 @@ export type Project = {
 	pitch: string;
 	highlights: string[];
 	stack: string[];
-	url: string;
+	/** Public repository; production systems of an employer have none. */
+	url?: string;
+	/** Shipped at work (Neoteem) rather than in the open-source lab. */
+	production?: boolean;
 	featured?: boolean;
 	badge?: string;
 };
 
 export const projects: Project[] = [
+	{
+		name: 'NeoChat',
+		kind: 'En production · Neoteem · 6 agents',
+		pitch: "L'assistant métier des professionnels de la copropriété : un système multi-agents qui répond, cherche, chiffre et cite ses sources sur les données de l'ERP.",
+		highlights: [
+			'Chatbot ReAct outillé : 10 tools métier',
+			'RAG support en 9 nœuds avec reranking cross-encoder',
+			'Devis en Map-Reduce avec 10 enrichers',
+			'Recherche web limitée à 6 sources officielles whitelistées',
+		],
+		stack: ['LangGraph', 'Gemini', 'pgvector', 'FastAPI', 'Langfuse'],
+		production: true,
+		featured: true,
+		badge: 'En production',
+	},
+	{
+		name: 'NeoDoc',
+		kind: 'En production · Neoteem',
+		pitch: 'Un agent documentaire multi-tenant, façon NotebookLM : chaque client interroge ses propres documents, avec des réponses ancrées et sourcées.',
+		highlights: ['Multi-tenant : documents isolés par client', 'Grounding Vertex AI Search', 'Évalué avec DeepEval, tracé dans Langfuse'],
+		stack: ['LangGraph', 'Vertex AI', 'FastAPI'],
+		production: true,
+		badge: 'En production',
+	},
+	{
+		name: 'NeoMail',
+		kind: 'En production · Neoteem',
+		pitch: 'Un agent qui traite les e-mails entrants : déclenché par Pub/Sub, il lit, qualifie et agit dans Gmail.',
+		highlights: ['Agent ReAct déclenché par Google Pub/Sub', 'Intégration Gmail', 'Outils partagés avec les autres agents'],
+		stack: ['LangGraph', 'Pub/Sub', 'Gmail API'],
+		production: true,
+		badge: 'En production',
+	},
 	{
 		name: 'wow-forever',
 		kind: 'App MCP · système expert',
@@ -22,7 +58,6 @@ export const projects: Project[] = [
 		],
 		stack: ['Python', 'uv', 'MCP', 'Claude Code', 'Lua'],
 		url: 'https://github.com/PicardRaphael/wow-forever',
-		featured: true,
 		badge: '970+ commits en 3 semaines',
 	},
 	{
@@ -93,10 +128,13 @@ export const experiences: Experience[] = [
 		context: 'ERP pour les professionnels de l’immobilier · CDI, remote',
 		current: true,
 		points: [
-			'8 agents LangGraph en production : chatbot métier ReAct outillé (14 tools mutualisés), support RAG anti-hallucination, devis Map-Reduce, recherche web sur sources officielles',
-			'Backend ERP from scratch en TypeScript (Bun, Hono, PostgreSQL) et migration d’un legacy 100 % fonctions PostgreSQL',
+			'8 agents LangGraph en production : NeoChat (6 agents), NeoDoc (multi-tenant, grounding Vertex AI), NeoMail (ReAct + Pub/Sub)',
+			'Plateforme IA : 77 routes FastAPI, 14 tools mutualisés, routage HybridToolSelector (RRF) ; tests 1,68× le code de production, DeepEval LLM-as-judge, Langfuse',
+			'Context caching : −33 % de coûts d’inférence',
+			'Backend ERP from scratch en TypeScript (Bun, Hono, PostgreSQL) : 41 endpoints OpenAPI, 496 schémas Zod',
 			'Base de connaissances de 989 notes branchée aux agents via 2 serveurs MCP maison',
-			'Stratégie IA auprès de la direction, management du pôle IA, formation de toute l’équipe',
+			'Architecture multi-chatbots spécialisés proposée à la direction et adoptée ; plus de 6 notes de décision stratégiques',
+			'Management direct de 2 à 3 personnes ; 3 à 5 sessions de formation tech et non-tech',
 		],
 		stack: ['Python', 'FastAPI', 'LangGraph', 'Gemini', 'pgvector', 'Langfuse', 'GCP'],
 	},

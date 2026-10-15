@@ -78,6 +78,56 @@ function Pad({ x, z, r = 7 }: { x: number; z: number; r?: number }) {
 	);
 }
 
+/** A holographic kiosk presenting one production agent: a lit pillar and a floating title panel. */
+function Kiosk({ id, title, subtitle, color }: { id: string; title: string; subtitle: string; color: string }) {
+	const l = landmark(id);
+	const tex = useMemo(() => {
+		const c = document.createElement('canvas');
+		c.width = 512;
+		c.height = 256;
+		const ctx = c.getContext('2d');
+		if (ctx) {
+			ctx.fillStyle = 'rgba(8,10,24,0.82)';
+			ctx.fillRect(0, 0, 512, 256);
+			ctx.strokeStyle = color;
+			ctx.lineWidth = 8;
+			ctx.strokeRect(4, 4, 504, 248);
+			ctx.fillStyle = color;
+			ctx.font = '600 26px monospace';
+			ctx.fillText('EN PRODUCTION · NEOTEEM', 32, 62);
+			ctx.fillStyle = '#ffffff';
+			ctx.font = '800 76px sans-serif';
+			ctx.fillText(title, 32, 150);
+			ctx.fillStyle = '#d6e4ff';
+			ctx.font = '400 28px sans-serif';
+			ctx.fillText(subtitle, 32, 206);
+		}
+		const t = new THREE.CanvasTexture(c);
+		t.colorSpace = THREE.SRGBColorSpace;
+		return t;
+	}, [title, subtitle, color]);
+	const panel = useRef<THREE.Mesh>(null);
+	useFrame(({ clock }) => {
+		if (panel.current) panel.current.position.y = 3.6 + Math.sin(clock.elapsedTime * 1.3 + l.x) * 0.12;
+	});
+	// panels face the middle of the avenue
+	const face = l.x < 0 ? Math.PI / 2 : -Math.PI / 2;
+	return (
+		<group position={[l.x, 0, l.z]}>
+			<Pad x={0} z={0} r={1.8} />
+			<mesh position={[0, 1.3, 0]} castShadow>
+				<cylinderGeometry args={[0.18, 0.28, 2.6, 12]} />
+				<meshStandardMaterial color="#1c2030" metalness={0.8} roughness={0.35} emissive={color} emissiveIntensity={0.25} />
+			</mesh>
+			<mesh ref={panel} position={[0, 3.6, 0]} rotation={[0, face, 0]}>
+				<planeGeometry args={[3.6, 1.8]} />
+				<meshBasicMaterial map={tex} transparent side={THREE.DoubleSide} toneMapped={false} />
+			</mesh>
+			<pointLight position={[0, 3.2, 0]} color={color} intensity={18} distance={10} />
+		</group>
+	);
+}
+
 /** Holographic project cards arranged in an arc, drawn on canvas textures (no font download). */
 function Gallery() {
 	const l = landmark('gallery');
@@ -230,6 +280,9 @@ export function Nexus({ pixelRatio }: { pixelRatio: number; reflect?: boolean })
 				<Hologram positions={shapes.core} a="#e879f9" b="#651fff" pixelRatio={pixelRatio} position={[0, 7, 0]} scale={1.8} />
 			</group>
 			<Gallery />
+			<Kiosk id="neochat" title="NeoChat" subtitle="6 agents · RAG · devis Map-Reduce" color="#5ef2ff" />
+			<Kiosk id="neodoc" title="NeoDoc" subtitle="Documents multi-tenant · Vertex AI" color="#e879f9" />
+			<Kiosk id="neomail" title="NeoMail" subtitle="Agent ReAct · Gmail · Pub/Sub" color="#ffb45c" />
 			<Beacon />
 			<HoloNpc />
 			<Suspense fallback={<Stargate x={back.x} z={back.z} rotation={Math.PI} />}>

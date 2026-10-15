@@ -21,9 +21,9 @@ export function Projects() {
 				<Reveal>
 					<p className="eyebrow">VII — Inventaire</p>
 					<h2 id="projects-title" className="font-display mt-4 max-w-3xl text-4xl leading-tight font-bold text-balance sm:text-5xl">
-						Projets IA open source : apps MCP, plugins et <span className="text-gradient">agents</span>.
+						Agents en <span className="text-gradient">production</span> et labo open source.
 					</h2>
-					<p className="text-mist mt-4 max-w-2xl">Mon labo personnel, tout est sur GitHub. Ouvrez un objet pour l’inspecter.</p>
+					<p className="text-mist mt-4 max-w-2xl">D’abord les agents qui tournent chaque jour chez Neoteem, puis mon labo personnel, open source sur GitHub. Ouvrez un objet pour l’inspecter.</p>
 				</Reveal>
 
 				<ul className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
@@ -69,9 +69,13 @@ export function Projects() {
 												</span>
 											))}
 										</p>
-										<a href={p.url} target="_blank" rel="noopener" className="text-ink text-sm font-semibold underline-offset-4 hover:underline" aria-label={`Voir ${p.name} sur GitHub`}>
-											GitHub ↗
-										</a>
+										{p.url ? (
+											<a href={p.url} target="_blank" rel="noopener" className="text-ink text-sm font-semibold underline-offset-4 hover:underline" aria-label={`Voir ${p.name} sur GitHub`}>
+												GitHub ↗
+											</a>
+										) : (
+											<span className="text-ok font-mono text-xs">● en production</span>
+										)}
 									</div>
 								</article>
 							</Reveal>

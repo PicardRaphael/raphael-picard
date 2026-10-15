@@ -11,6 +11,8 @@ export type Mob = {
 	id: number;
 	name: string;
 	lesson: string;
+	/** The problem this bug stands for. */
+	problem: string;
 	zone: Zone;
 	homeX: number;
 	homeZ: number;
@@ -26,6 +28,29 @@ export type Mob = {
 	tx: number;
 	tz: number;
 	cooldown: number;
+};
+
+/** What each bug is, in one plain sentence. */
+const PROBLEMS: Record<string, string> = {
+	Hallucination: "Le modèle invente une réponse plausible mais fausse : un chiffre, une loi ou une procédure qui n’existe pas.",
+	'Régression': "Un changement de prompt ou de modèle améliore un cas… et en casse dix autres sans que personne ne le voie.",
+	'Bug 404': "Une donnée mal formée traverse l’API et fait planter un écran ou un agent plus loin, loin de sa cause.",
+	'Dette technique': "Chaque raccourci rend la suivante plus coûteuse : le code devient fragile et les livraisons ralentissent.",
+	'Fuite de contexte': "On renvoie au modèle les mêmes milliers de tokens à chaque appel : lent et cher.",
+	Overfitting: "Le système brille sur les exemples de test mais échoue face aux vraies questions des utilisateurs.",
+	'Boucle infinie': "Un agent rappelle le même outil en boucle sans jamais conclure, en brûlant des tokens.",
+	'Flaky test': "Un test passe puis échoue sans changement de code : plus personne ne fait confiance à la CI.",
+	'Code spaghetti': "Tout dépend de tout : impossible de modifier un module sans en casser un autre.",
+	'Merge conflict': "Des branches trop longues divergent et se marchent dessus au moment de fusionner.",
+	'Null pointer': "Une valeur absente surgit là où le code ne l’attend pas et fait tout tomber.",
+	'Prompt injection': "Un texte malveillant caché dans un document ou un message détourne l’agent : « ignore tes consignes et… ».",
+	Timeout: "Appeler un gros LLM pour chaque décision rend l’assistant lent : l’utilisateur attend, puis abandonne.",
+	'Coût explosif': "Sans suivi, la facture d’inférence grimpe en silence jusqu’à la fin du mois.",
+	'Dérive du modèle': "Les réponses se dégradent doucement avec le temps : nouvelles données, nouveau modèle, nouveaux usages.",
+	'Fuite de clé API': "Une clé secrète se retrouve dans le code ou un log, puis sur Internet.",
+	'Cold start': "Le premier appel après une pause met de longues secondes : le service redémarre à froid.",
+	'Token perdu': "La conversation dépasse la fenêtre de contexte : l’agent oublie les consignes du début.",
+	'Agent perdu': "Un agent généraliste à qui l’on confie tout se trompe d’outil et de tâche.",
 };
 
 const SPECS: { name: string; lesson: string; zone: Zone; x: number; z: number }[] = [
@@ -54,6 +79,7 @@ export const mobs: Mob[] = SPECS.map((s, i) => ({
 	id: i,
 	name: s.name,
 	lesson: s.lesson,
+	problem: PROBLEMS[s.name] ?? '',
 	zone: s.zone,
 	homeX: s.x,
 	homeZ: s.z,

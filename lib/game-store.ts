@@ -25,6 +25,10 @@ type GameState = {
 	visited: string[];
 	/** Bugs defeated. */
 	kills: number;
+	/** Ids of the bugs defeated at least once (bestiary). */
+	defeated: number[];
+	/** Problem / solution card currently shown. */
+	bugCard: number | null;
 	/** One-off events used by achievements (left_spawn, map, sound…). */
 	flags: string[];
 	jumps: number;
@@ -50,6 +54,8 @@ let state: GameState = {
 	quests: Object.fromEntries(QUESTS.map((q, i) => [q.id, i === 0 ? 'available' : 'locked'])) as Record<string, QuestStatus>,
 	visited: [],
 	kills: 0,
+	defeated: [],
+	bugCard: null,
 	flags: [],
 	jumps: 0,
 	overlay: null,

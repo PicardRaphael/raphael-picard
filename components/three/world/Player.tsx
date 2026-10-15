@@ -42,12 +42,15 @@ function damage(target: (typeof mobs)[number]) {
 	target.state = 'hit';
 	target.t = 0;
 	if (target.hp <= 0) {
-		game.set((s) => ({ kills: s.kills + 1 }));
-		game.toast(`${target.name} vaincu !`, target.lesson);
+		game.set((s) => ({ kills: s.kills + 1, bugCard: target.id, defeated: s.defeated.includes(target.id) ? s.defeated : [...s.defeated, target.id] }));
+		music.sfx('quest');
 	}
 }
 
 /** Melee for the knight (sword), ranged laser shots for the cyberpunk runner. */
+/** The runner plays in first person unless the visitor scrolled out to the third-person view. */
+export const isFps = () => game.get().hero === 'runner' && player.camera.firstPerson;
+
 export const attackRange = () => (game.get().hero === 'runner' ? 22 : 3.4);
 
 /** FPS shot: the bug closest to the aiming ray (within 45 m) is hit; otherwise the bolt flies straight ahead. */
@@ -79,7 +82,7 @@ function fpsShot() {
 export function attack() {
 	if (player.attack > 0 || !game.get().started || game.get().panel) return;
 	const ranged = game.get().hero === 'runner';
-	if (ranged) {
+	if (ranged && player.camera.firstPerson) {
 		player.attack = 0.18;
 		music.sfx('swing');
 		fpsShot();
@@ -118,7 +121,7 @@ function useKeyboard() {
 			player.input.forward = (has('forward') ? 1 : 0) - (has('back') ? 1 : 0);
 			const side = (has('left') ? 1 : 0) - (has('right') ? 1 : 0);
 			// first person: left/right strafe; third person: they turn the camera like WoW
-			if (game.get().hero === 'runner') {
+			if (isFps()) {
 				player.input.turn = 0;
 				player.input.strafe = -side;
 			} else {
@@ -227,7 +230,7 @@ function usePointerControls() {
 
 		const down = (e: PointerEvent) => {
 			if (!game.get().started || game.get().panel || game.get().overlay) return;
-			if (game.get().hero === 'runner' && e.pointerType === 'mouse' && !player.camera.free) {
+			if (isFps() && e.pointerType === 'mouse' && !player.camera.free) {
 				// first person: capture the mouse (unlimited turning) and shoot at the centre of the screen
 				if (document.pointerLockElement !== el) el.requestPointerLock?.()?.catch?.(() => undefined);
 				attack();
@@ -257,7 +260,7 @@ function usePointerControls() {
 			if (Math.hypot(e.clientX - p.sx, e.clientY - p.sy) > 6) {
 				player.camera.dragging = true;
 				player.camera.yaw -= dx * 0.006;
-				if (game.get().hero === 'runner') player.camera.fpsPitch = THREE.MathUtils.clamp(player.camera.fpsPitch - dy * 0.004, -1.2, 1.2);
+				if (isFps()) player.camera.fpsPitch = THREE.MathUtils.clamp(player.camera.fpsPitch - dy * 0.004, -1.2, 1.2);
 				else player.camera.pitch = THREE.MathUtils.clamp(player.camera.pitch + dy * 0.004, 0.08, 1.25);
 			}
 		};
@@ -315,17 +318,36 @@ function usePointerControls() {
 		const wheel = (e: WheelEvent) => {
 			if (!game.get().started) return;
 			e.preventDefault();
+			if (game.get().hero === 'runner') {
+				// wheel out of first person = third-person view; wheel back in = first person again
+				if (player.camera.firstPerson && e.deltaY > 0) {
+					player.camera.firstPerson = false;
+					player.camera.distance = 7;
+					if (document.pointerLockElement) document.exitPointerLock();
+					window.dispatchEvent(new CustomEvent('fps:view', { detail: false }));
+					return;
+				}
+				if (!player.camera.firstPerson && e.deltaY < 0 && player.camera.distance <= 6.2) {
+					player.camera.firstPerson = true;
+					window.dispatchEvent(new CustomEvent('fps:view', { detail: true }));
+					return;
+				}
+			}
 			player.camera.distance = THREE.MathUtils.clamp(player.camera.distance + e.deltaY * 0.012, 6, 48);
 		};
 		// free look: the camera follows the mouse without clicking (mouse only, not touch)
 		const look = (e: PointerEvent) => {
 			const g = game.get();
-			if (g.hero === 'runner' && g.started && !g.panel && !g.overlay && !player.camera.free && e.pointerType === 'mouse') {
+			if (isFps() && g.started && !g.panel && !g.overlay && !player.camera.free && e.pointerType === 'mouse') {
 				// true first person: every mouse movement turns the view (mouse captured after the first click)
 				player.camera.yaw -= e.movementX * 0.002;
 				player.camera.fpsPitch = THREE.MathUtils.clamp(player.camera.fpsPitch - e.movementY * 0.002, -1.25, 1.25);
 				player.camera.swayX += e.movementX;
 				player.camera.swayY += e.movementY;
+				// remember where the cursor is: near an edge the view keeps turning on its own (no pointer lock)
+				const rr = el.getBoundingClientRect();
+				player.camera.lookX = THREE.MathUtils.clamp(((e.clientX - rr.left) / rr.width) * 2 - 1, -1, 1);
+				player.camera.lookY = THREE.MathUtils.clamp(((e.clientY - rr.top) / rr.height) * 2 - 1, -1, 1);
 				return;
 			}
 			if (e.pointerType !== 'mouse' || pointers.size > 0) return;
@@ -399,6 +421,12 @@ export function Player() {
 	usePointerControls();
 	const { camera } = useThree();
 	const hero = useGame((s) => s.hero);
+	const [firstPerson, setFirstPerson] = useState(player.camera.firstPerson);
+	useEffect(() => {
+		const on = (e: Event) => setFirstPerson((e as CustomEvent<boolean>).detail);
+		window.addEventListener('fps:view', on);
+		return () => window.removeEventListener('fps:view', on);
+	}, []);
 	const body = useRef<THREE.Group>(null);
 	const [anim, setAnim] = useState('Idle');
 	const [animSpeed, setAnimSpeed] = useState(1);
@@ -474,8 +502,17 @@ export function Player() {
 		const inp = player.input;
 		if (canMove) player.camera.yaw += inp.turn * 2.2 * dt;
 		// free look: the view leans toward the mouse, and keeps turning near the screen edges
-		const fps = g.hero === 'runner' && g.started;
+		const fps = g.hero === 'runner' && player.camera.firstPerson && g.started;
 		if (fps && (g.panel || g.overlay) && document.pointerLockElement) document.exitPointerLock();
+		if (fps && !g.panel && !g.overlay && !player.camera.free && !document.pointerLockElement) {
+			// edge relay: the cursor parked near a border keeps turning the view
+			const ax = player.camera.lookX;
+			const ay = player.camera.lookY;
+			const ex = Math.max(0, Math.abs(ax) - 0.8) / 0.2;
+			const ey = Math.max(0, Math.abs(ay) - 0.85) / 0.15;
+			player.camera.yaw -= Math.sign(ax) * ex * 2.4 * dt;
+			player.camera.fpsPitch = THREE.MathUtils.clamp(player.camera.fpsPitch - Math.sign(ay) * ey * 1.2 * dt, -1.25, 1.25);
+		}
 		const lx = !fps && g.started && !g.panel && !g.overlay && !player.camera.dragging ? player.camera.lookX : 0;
 		const ly = !fps && g.started && !g.panel && !g.overlay && !player.camera.dragging ? player.camera.lookY : 0;
 		const edge = Math.max(0, Math.abs(lx) - 0.72) / 0.28;
@@ -696,7 +733,7 @@ export function Player() {
 	return (
 		<>
 			<Suspense fallback={null}>
-				{hero === 'runner' ? <FpsWeapon /> : <HeroModel key={hero} ref={body} kind={hero} animation={anim} speed={animSpeed} />}
+				{hero === 'runner' && firstPerson ? <FpsWeapon /> : <HeroModel key={hero} ref={body} kind={hero} animation={anim} speed={animSpeed} />}
 			</Suspense>
 			<ClickMarker />
 		</>

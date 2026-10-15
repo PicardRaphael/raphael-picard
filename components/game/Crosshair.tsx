@@ -12,18 +12,22 @@ export function Crosshair() {
 	const busy = useGame((s) => Boolean(s.panel || s.overlay));
 	const [locked, setLocked] = useState(false);
 	const [free, setFree] = useState(false);
-	const active = hero === 'runner' && started && !busy;
+	const [firstPerson, setFirstPerson] = useState(true);
+	const active = hero === 'runner' && firstPerson && started && !busy;
 
 	useEffect(() => {
 		const on = () => setLocked(Boolean(document.pointerLockElement));
 		document.addEventListener('pointerlockchange', on);
 		const onFree = (e: Event) => setFree((e as CustomEvent<boolean>).detail);
 		window.addEventListener('fps:cursor', onFree);
+		const onView = (e: Event) => setFirstPerson((e as CustomEvent<boolean>).detail);
+		window.addEventListener('fps:view', onView);
 		const canvas = document.querySelector('canvas');
 		if (canvas && active && !free) canvas.style.cursor = 'none';
 		return () => {
 			document.removeEventListener('pointerlockchange', on);
 			window.removeEventListener('fps:cursor', onFree);
+			window.removeEventListener('fps:view', onView);
 			if (canvas) canvas.style.cursor = '';
 		};
 	}, [active, free]);

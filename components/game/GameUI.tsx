@@ -13,6 +13,7 @@ import { AchievementWatcher, Menu } from './Menu';
 import { drawMarker } from './mapMarkers';
 import { Panel } from './Panels';
 import { Soundtrack } from './Soundtrack';
+import { BugCard } from './BugCard';
 import { Crosshair } from './Crosshair';
 import { KeyHints } from './KeyHints';
 import { StartScreen } from './StartScreen';
@@ -237,6 +238,7 @@ export function GameUI() {
 			)}
 			<ZoneBanner />
 			<Toast />
+			<BugCard />
 			<Soundtrack />
 			<HurtFlash />
 			<Panel />

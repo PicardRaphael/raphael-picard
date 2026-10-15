@@ -5,19 +5,21 @@ import { useEffect, useRef, useState } from 'react';
 
 import { ACHIEVEMENTS, unlocked } from '@/lib/achievements';
 import { game, useGame } from '@/lib/game-store';
+import { mobs } from '@/lib/mobs';
 import { keymap } from '@/lib/keymap';
 import { player } from '@/lib/player-state';
 import { QUESTS } from '@/lib/quests';
 import { site } from '@/lib/site';
 import { SPAWN } from '@/lib/world';
 
-type Tab = 'home' | 'options' | 'controls' | 'achievements' | 'credits' | 'help';
+type Tab = 'home' | 'options' | 'controls' | 'achievements' | 'bestiary' | 'credits' | 'help';
 
 const TABS: { id: Tab; icon: string; label: string }[] = [
 	{ id: 'home', icon: '⌂', label: 'Accueil' },
 	{ id: 'options', icon: '⚙', label: 'Options' },
 	{ id: 'controls', icon: '🎮', label: 'Commandes' },
 	{ id: 'achievements', icon: '🏅', label: 'Hauts faits' },
+	{ id: 'bestiary', icon: '☠', label: 'Bestiaire' },
 	{ id: 'credits', icon: '✦', label: 'Crédits' },
 	{ id: 'help', icon: '?', label: 'Aide' },
 ];
@@ -106,6 +108,7 @@ function Options() {
 							quests: Object.fromEntries(QUESTS.map((q, i) => [q.id, i === 0 ? 'available' : 'locked'])),
 							visited: [],
 							kills: 0,
+							defeated: [],
 							flags: [],
 							jumps: 0,
 							zone: 'val',
@@ -147,6 +150,30 @@ function Achievements() {
 							<div className="mt-1.5 h-2 overflow-hidden rounded-full bg-white/10">
 								<div className={`h-full ${ok ? 'bg-[#a3e635]' : 'bg-[#e879f9]'}`} style={{ width: `${(n / max) * 100}%` }} />
 							</div>
+						</li>
+					);
+				})}
+			</ul>
+		</>
+	);
+}
+
+/** Every bug of the world: problem and fix once defeated, a riddle otherwise. */
+function Bestiary() {
+	const defeated = useGame((s) => s.defeated);
+	return (
+		<>
+			<p className="text-center font-mono text-sm text-[#a3e635]">
+				{defeated.length} / {mobs.length} bugs corrigés
+			</p>
+			<ul className="mt-4 grid gap-3 sm:grid-cols-2">
+				{mobs.map((m) => {
+					const known = defeated.includes(m.id);
+					return (
+						<li key={m.id} className={`rounded-xl border p-3 ${known ? 'border-white/15 bg-white/5' : 'border-white/5 bg-black/30'}`}>
+							<p className={`font-display font-bold ${known ? (m.zone === 'nexus' ? 'text-[#ff7ae6]' : 'text-[#ffd100]') : 'text-white/40'}`}>{known ? m.name : '???'}</p>
+							<p className="mt-1 text-xs leading-relaxed text-white/70">{known ? m.problem : m.zone === 'nexus' ? 'Rôde quelque part dans le Nexus.' : 'Rôde quelque part dans le Val.'}</p>
+							{known && <p className="mt-1.5 text-xs leading-relaxed text-[#86efac]">↳ {m.lesson}</p>}
 						</li>
 					);
 				})}
@@ -206,6 +233,8 @@ function Body({ tab }: { tab: Tab }) {
 			);
 		case 'achievements':
 			return <Achievements />;
+		case 'bestiary':
+			return <Bestiary />;
 		case 'credits':
 			return (
 				<ul className="space-y-2 text-sm text-white/85">

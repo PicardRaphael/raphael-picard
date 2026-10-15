@@ -53,8 +53,7 @@ export const attackRange = () => (game.get().hero === 'runner' ? 22 : 3.4);
 /** FPS shot: the bug closest to the aiming ray (within 45 m) is hit; otherwise the bolt flies straight ahead. */
 function fpsShot() {
 	const yaw = player.camera.yaw;
-	const pitch = player.camera.fpsPitch;
-	const dir = new THREE.Vector3(-Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch));
+	const dir = player.aim.clone();
 	const eye = new THREE.Vector3(player.x, player.y + 1.65, player.z);
 	let best: (typeof mobs)[number] | null = null;
 	let bestD = 1.8;
@@ -221,9 +220,8 @@ function usePointerControls() {
 		const down = (e: PointerEvent) => {
 			if (!game.get().started || game.get().panel || game.get().overlay) return;
 			if (game.get().hero === 'runner' && e.pointerType === 'mouse') {
-				// first person: the first click captures the mouse, the next ones shoot
-				if (document.pointerLockElement !== el) void el.requestPointerLock();
-				else attack();
+				// first person: the reticle follows the mouse, a click shoots where it points
+				attack();
 				return;
 			}
 			el.setPointerCapture(e.pointerId);
@@ -317,7 +315,7 @@ function usePointerControls() {
 				player.camera.fpsPitch = THREE.MathUtils.clamp(player.camera.fpsPitch - e.movementY * 0.0022, -1.2, 1.2);
 				return;
 			}
-			if (e.pointerType !== 'mouse' || pointers.size > 0 || game.get().hero === 'runner') return;
+			if (e.pointerType !== 'mouse' || pointers.size > 0) return;
 			const r = el.getBoundingClientRect();
 			player.camera.lookX = THREE.MathUtils.clamp(((e.clientX - r.left) / r.width) * 2 - 1, -1, 1);
 			player.camera.lookY = THREE.MathUtils.clamp(((e.clientY - r.top) / r.height) * 2 - 1, -1, 1);
@@ -407,6 +405,8 @@ export function Player() {
 			solid: null as null | { x: number; z: number; r: number }[],
 			crowns: null as null | { x: number; z: number; r: number; top: number }[],
 			lookYaw: 0,
+			ray: new THREE.Raycaster(),
+			ndc: new THREE.Vector2(),
 			lookPitch: 0,
 			dist: 13,
 			swinging: false,
@@ -463,6 +463,15 @@ export function Player() {
 		// free look: the view leans toward the mouse, and keeps turning near the screen edges
 		const fps = g.hero === 'runner' && g.started;
 		if (fps && (g.panel || g.overlay) && document.pointerLockElement) document.exitPointerLock();
+		if (fps && !g.panel && !g.overlay) {
+			// turn when the reticle nears the left / right edge, tilt the view toward the top / bottom
+			const ax = player.camera.lookX;
+			const ay = player.camera.lookY;
+			const ex = Math.max(0, Math.abs(ax) - 0.45) / 0.55;
+			player.camera.yaw -= Math.sign(ax) * ex * ex * 2.6 * dt;
+			const ey = Math.max(0, Math.abs(ay) - 0.55) / 0.45;
+			player.camera.fpsPitch = THREE.MathUtils.clamp(player.camera.fpsPitch - Math.sign(ay) * ey * ey * 1.4 * dt, -0.9, 0.9);
+		}
 		const lx = !fps && g.started && !g.panel && !g.overlay && !player.camera.dragging ? player.camera.lookX : 0;
 		const ly = !fps && g.started && !g.panel && !g.overlay && !player.camera.dragging ? player.camera.lookY : 0;
 		const edge = Math.max(0, Math.abs(lx) - 0.72) / 0.28;
@@ -635,6 +644,9 @@ export function Player() {
 			const pt = player.camera.fpsPitch;
 			camera.lookAt(player.x - Math.sin(player.camera.yaw) * Math.cos(pt) * 10, player.y + 1.65 + Math.sin(pt) * 10, player.z - Math.cos(player.camera.yaw) * Math.cos(pt) * 10);
 			v.look.set(player.x, player.y + 1.8, player.z);
+			camera.updateMatrixWorld();
+			v.ray.setFromCamera(v.ndc.set(player.camera.lookX, -player.camera.lookY), camera);
+			player.aim.copy(v.ray.ray.direction);
 		} else {
 			v.camPos.lerp(v.tmp, 1 - Math.exp(-dt * (g.started ? 10 : 1.5)));
 			camera.position.copy(v.camPos);

@@ -1,3 +1,5 @@
+import { Vector3 } from 'three';
+
 /** Live player state, mutated every frame by the 3D world and read by the minimap / HUD (no React re-render). */
 export const player = {
 	x: 0,
@@ -11,6 +13,8 @@ export const player = {
 	moveTarget: null as null | { x: number; z: number; landmark?: string },
 	/** Orbit camera, driven by mouse drag / touch / wheel / pinch. */
 	camera: { yaw: 0, pitch: 0.42, distance: 13, dragging: false, lookX: 0, lookY: 0, fpsPitch: 0 },
+	/** First-person aiming direction (through the reticle). */
+	aim: new Vector3(0, 0, -1),
 	/** Jump: vertical offset and velocity. */
 	jump: { h: 0, vy: 0 },
 	/** Seconds left in the current sword swing (0 = ready). */

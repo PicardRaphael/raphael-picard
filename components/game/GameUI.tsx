@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { game, useGame } from '@/lib/game-store';
 import { player } from '@/lib/player-state';
@@ -38,13 +38,8 @@ function StartScreen() {
 function ZoneBanner() {
 	const banner = useGame((s) => s.banner);
 	const started = useGame((s) => s.started);
-	const [visible, setVisible] = useState<typeof banner>(null);
-	useEffect(() => {
-		if (!banner) return;
-		setVisible(banner);
-		const t = setTimeout(() => setVisible(null), 3800);
-		return () => clearTimeout(t);
-	}, [banner]);
+	// the CSS animation fades the banner out by itself; a new id restarts it
+	const visible = banner;
 	useEffect(() => {
 		if (started) game.banner('Val des Origines', "L'ère du code");
 	}, [started]);
@@ -59,13 +54,7 @@ function ZoneBanner() {
 
 function Toast() {
 	const toast = useGame((s) => s.toast);
-	const [visible, setVisible] = useState<typeof toast>(null);
-	useEffect(() => {
-		if (!toast) return;
-		setVisible(toast);
-		const t = setTimeout(() => setVisible(null), 4500);
-		return () => clearTimeout(t);
-	}, [toast]);
+	const visible = toast;
 	if (!visible) return null;
 	return (
 		<div key={visible.id} role="status" className="fixed inset-x-0 top-24 z-40 flex animate-[zone-in_4.5s_ease-out_forwards] justify-center px-4">

@@ -37,7 +37,8 @@ export function interact(id: string) {
 
 /** Sword swing: hits the nearest bug in front of the player. */
 function damage(target: (typeof mobs)[number]) {
-	if (target.state === 'dead') return;
+	// already beaten (bolts still in flight, a second swing): nothing more to count
+	if (target.state === 'dead' || target.hp <= 0) return;
 	target.hp -= 1;
 	music.sfx('hit');
 	target.state = 'hit';

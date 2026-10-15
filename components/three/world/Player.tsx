@@ -10,8 +10,9 @@ import { mobs, nearestMob } from '@/lib/mobs';
 import { music } from '@/lib/music';
 import { player } from '@/lib/player-state';
 import { canopies, vegetationObstacles } from '@/lib/vegetation';
-import { HOUSES, LANDMARKS, NEXUS_CENTER, NEXUS_RADIUS, NEXUS_SPAWN, SPAWN, VAL_RADIUS, groundAt, landmark, nexusWalkable } from '@/lib/world';
+import { HOUSES, LAKE, LANDMARKS, NEXUS_CENTER, NEXUS_RADIUS, NEXUS_SPAWN, SPAWN, VAL_RADIUS, groundAt, landmark, nexusWalkable, nexusWaypoint, valWaypoint } from '@/lib/world';
 import { FpsWeapon } from './FpsWeapon';
+import { STONES as STONE_RING } from './Landmarks';
 import { HeroModel } from './Hero';
 import { fireBolt } from './Lasers';
 
@@ -394,6 +395,9 @@ function usePointerControls() {
 const OBSTACLES: { x: number; z: number; r: number }[] = [
 	...LANDMARKS.filter((l) => l.solid > 0).map((l) => ({ x: l.x, z: l.z, r: l.solid })),
 	...HOUSES.map((h) => ({ x: h.x, z: h.z, r: h.c })),
+	// the standing stones of the circle and its altar
+	...STONE_RING.map((st) => ({ x: landmark('stones').x + Math.cos(st.a) * 6.8, z: landmark('stones').z + Math.sin(st.a) * 6.8, r: 1.1 })),
+	{ x: landmark('stones').x, z: landmark('stones').z, r: 1.9 },
 ];
 
 /** Ring that flashes where the player clicked. */
@@ -466,7 +470,7 @@ export function Player() {
 
 	useEffect(() => {
 		// test hooks for the dev browser
-		if (process.env.NODE_ENV !== 'production') Object.assign(window, { __player: player, __game: game, __keymap: keymap, __scene: scene, __camera: camera, __THREE: THREE, __mobs: mobs, __attack: attack });
+		if (process.env.NODE_ENV !== 'production') Object.assign(window, { __player: player, __game: game, __keymap: keymap, __scene: scene, __camera: camera, __THREE: THREE, __mobs: mobs, __attack: attack, __walk: nexusWalkable, __veg: vegetationObstacles, __obs: OBSTACLES });
 		player.x = SPAWN.x;
 		player.z = SPAWN.z;
 		player.yaw = SPAWN.yaw;
@@ -571,8 +575,11 @@ export function Player() {
 				player.moveTarget = null;
 				if (lm) interact(lm);
 			} else {
-				dirX = dx / d;
-				dirZ = dz / d;
+				// in the Nexus the route follows the streets instead of cutting through buildings
+				const w = player.z < -300 ? nexusWaypoint(player.x, player.z, player.moveTarget.x, player.moveTarget.z) : valWaypoint(player.x, player.z, player.moveTarget.x, player.moveTarget.z);
+				const wd = Math.hypot(w.x - player.x, w.z - player.z) || 1;
+				dirX = (w.x - player.x) / wd;
+				dirZ = (w.z - player.z) / wd;
 				want = Math.min(RUN, d * 3 + 2);
 			}
 		}
@@ -611,21 +618,34 @@ export function Player() {
 			if (nexusWalkable(nx, player.z)) nz = player.z;
 			else if (nexusWalkable(player.x, nz)) nx = player.x;
 			else {
+				// truly cornered: give up the click-to-move target
+				nx = player.x;
+				nz = player.z;
+				player.moveTarget = null;
+			}
+		}
+		// too steep (cliffs, mountain flanks): slide along the slope when one axis is walkable, else stop
+		const steep = (x: number, z: number) => groundAt(x, z) - groundAt(player.x, player.z) > Math.max(0.35, Math.hypot(x - player.x, z - player.z) * 1.1);
+		if (!inNexus && steep(nx, nz)) {
+			if (!steep(nx, player.z)) nz = player.z;
+			else if (!steep(player.x, nz)) nx = player.x;
+			else {
 				nx = player.x;
 				nz = player.z;
 			}
-			player.moveTarget = null;
 		}
-		// too steep: slide back (cliffs and mountain flanks are not walkable)
-		if (!inNexus && groundAt(nx, nz) - groundAt(player.x, player.z) > Math.max(0.35, Math.hypot(nx - player.x, nz - player.z) * 1.1)) {
-			nx = player.x;
-			nz = player.z;
-		}
-		if (!inNexus && groundAt(nx, nz) < -1.6) {
-			// the lake is not walkable
-			nx = player.x;
-			nz = player.z;
-			player.moveTarget = null;
+		// the lake is not walkable: slide along the shore; from the wet rim (an edge case) any step outward is fine
+		const lakeD = (x: number, z: number) => Math.hypot(x - LAKE.x, z - LAKE.z);
+		const wet = (x: number, z: number) => lakeD(x, z) < LAKE.r + 2 && groundAt(x, z) < -1.6;
+		const blocked = (x: number, z: number) => wet(x, z) && lakeD(x, z) <= lakeD(player.x, player.z);
+		if (!inNexus && blocked(nx, nz)) {
+			if (!blocked(nx, player.z)) nz = player.z;
+			else if (!blocked(player.x, nz)) nx = player.x;
+			else {
+				nx = player.x;
+				nz = player.z;
+				player.moveTarget = null;
+			}
 		}
 		player.x = nx;
 		player.z = nz;

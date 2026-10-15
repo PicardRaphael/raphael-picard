@@ -184,3 +184,43 @@ export function nexusWalkable(x: number, z: number) {
 	if (Math.abs(x) <= NEXUS_AVENUE.x && z >= NEXUS_AVENUE.zMin && z <= NEXUS_AVENUE.zMax) return true;
 	return NEXUS_SIDE_STREETS.some((s) => z >= s.z0 && z <= s.z1 && x * s.side >= 0 && Math.abs(x) <= 60);
 }
+
+/**
+ * Next waypoint toward a target in the Nexus: straight when the line stays in the streets, otherwise through the
+ * avenue (out of the side street first, then along the avenue to the target's street).
+ */
+export function nexusWaypoint(x: number, z: number, tx: number, tz: number) {
+	const len = Math.hypot(tx - x, tz - z);
+	let clear = true;
+	for (let d = 0.8; d < len; d += 0.8) {
+		if (!nexusWalkable(x + ((tx - x) * d) / len, z + ((tz - z) * d) / len)) {
+			clear = false;
+			break;
+		}
+	}
+	if (clear) return { x: tx, z: tz };
+	if (Math.abs(x) > NEXUS_AVENUE.x - 2) return { x: Math.sign(x) * (NEXUS_AVENUE.x - 4), z };
+	return { x: Math.sign(tx || 1) * (NEXUS_AVENUE.x - 4), z: tz };
+}
+
+/** Next waypoint toward a target in the val: straight, unless the lake is in the way — then around its shore. */
+export function valWaypoint(x: number, z: number, tx: number, tz: number) {
+	const R = LAKE.r + 4;
+	const dx = tx - x;
+	const dz = tz - z;
+	const len2 = dx * dx + dz * dz || 1;
+	// closest point of the segment to the lake centre
+	const t = Math.max(0, Math.min(1, ((LAKE.x - x) * dx + (LAKE.z - z) * dz) / len2));
+	const cx = x + dx * t - LAKE.x;
+	const cz = z + dz * t - LAKE.z;
+	if (Math.hypot(cx, cz) > R || Math.hypot(tx - LAKE.x, tz - LAKE.z) < R) return { x: tx, z: tz };
+	// go round on the side of the segment that passes farther from the centre
+	const len = Math.sqrt(len2);
+	let px = -dz / len;
+	let pz = dx / len;
+	if (px * cx + pz * cz < 0) {
+		px = -px;
+		pz = -pz;
+	}
+	return { x: LAKE.x + px * (R + 3), z: LAKE.z + pz * (R + 3) };
+}

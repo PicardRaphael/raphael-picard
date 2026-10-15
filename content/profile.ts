@@ -16,7 +16,7 @@ export const stats = [
 	{ value: 8, suffix: '', label: 'agents IA en production' },
 	{ value: 162, suffix: '', label: 'skills Claude Code écrites' },
 	{ value: 33, suffix: ' %', label: "de coûts d'inférence en moins" },
-	{ value: 8, suffix: '', label: "ans d'ingénierie logicielle" },
+	{ value: 9, suffix: '', label: "ans d'ingénierie logicielle" },
 ];
 
 export const stack = [
@@ -44,7 +44,7 @@ export const about = {
 	eyebrow: 'II — Manifeste',
 	title: 'De développeur full-stack à ingénieur IA.',
 	paragraphs: [
-		"Pendant huit ans, j'ai livré des produits web à grande échelle : une plateforme e-commerce déployée dans plus de 100 pays, un MVP EdTech conçu de zéro, des outils métier pour la mobilité. J'y ai appris ce qui fait tenir un logiciel : l'architecture, les tests, la rigueur de livraison.",
+		"Pendant neuf ans, j'ai livré des produits web à grande échelle : une plateforme e-commerce déployée dans plus de 100 pays, un MVP EdTech conçu de zéro, des outils métier pour la mobilité. J'y ai appris ce qui fait tenir un logiciel : l'architecture, les tests, la rigueur de livraison.",
 		"Depuis novembre 2025, je suis Senior AI Engineer & Responsable IA chez Neoteem, éditeur d'un ERP pour les professionnels de l'immobilier. J'y ai mis en production huit agents LangGraph répartis dans NeoChat, NeoSupport et NeoAgent, construit un backend ERP from scratch et fait adopter par la direction une architecture multi-chatbots spécialisés. Je manage le pôle IA (2 à 3 personnes) et je forme toute l'équipe.",
 		"Mon avantage : un profil hybride. Je parle architecture aux développeurs, ROI aux dirigeants, et prompts aux modèles.",
 	],

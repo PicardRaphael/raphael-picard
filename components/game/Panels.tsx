@@ -5,9 +5,9 @@ import { Architecture } from '@/components/sections/Architecture';
 import { Contact } from '@/components/sections/Contact';
 import { Expertise } from '@/components/sections/Expertise';
 import { Journey } from '@/components/sections/Journey';
-import { Portal } from '@/components/sections/Portal';
 import { Projects } from '@/components/sections/Projects';
 import { MotionProvider } from '@/components/ui/MotionProvider';
+import { about } from '@/content/profile';
 import { experiences, projects } from '@/content/work';
 import { game, useGame } from '@/lib/game-store';
 import { QUESTS } from '@/lib/quests';
@@ -58,7 +58,7 @@ function QuestBlock({ id }: { id: string }) {
 /** Raphy reacts to where the visitor stands in the story instead of repeating the same line. */
 const RAPHY_TIPS = [
 	'Astuce : les bugs du val ont chacun une fiche « problème / parade ». Retrouve-les toutes dans le Bestiaire du menu.',
-	'Huit ans de développement web avant de mettre des agents IA en production : la Forge raconte ce chemin.',
+	'Neuf ans de développement web avant de mettre des agents IA en production : la Forge raconte ce chemin.',
 	'La Tour du Savoir garde ses compétences : agents, RAG, MCP, évaluation, FinOps.',
 	'Le Cercle de pierres porte son manifeste : des agents utiles, mesurés et sûrs.',
 	'Tu préfères lire tranquillement ? La « Version classique » en haut à gauche ouvre le portfolio en une page.',
@@ -85,6 +85,26 @@ const NPC_TEXT: Record<string, string> = {
 	'portal-back': 'Ce portail te ramène au Val des Origines.',
 	race: 'Le défi du Nexus arrive bientôt.',
 };
+
+/** The stone circle carries the manifesto: the principles behind every agent Raphaël ships. */
+function Manifesto() {
+	return (
+		<div className="mx-auto max-w-5xl space-y-6 px-4 sm:px-6">
+			<p className="font-mono text-xs tracking-widest text-[#ffd100] uppercase">Le manifeste</p>
+			<h3 className="font-display text-3xl font-bold text-white sm:text-4xl">Quatre règles gravées dans la pierre.</h3>
+			<ul className="grid gap-4 sm:grid-cols-2">
+				{about.principles.map((p, i) => (
+					<li key={p.title} className="rounded-2xl border border-[#c8a35a]/40 bg-black/30 p-5">
+						<p className="font-mono text-xs text-[#ffd100]">{['I', 'II', 'III', 'IV'][i]}</p>
+						<p className="font-display mt-1 text-xl font-bold text-white">{p.title}</p>
+						<p className="mt-2 leading-relaxed text-white/80">{p.text}</p>
+					</li>
+				))}
+			</ul>
+			<QuestBlock id="stones" />
+		</div>
+	);
+}
 
 /** A chapter of the career (an entry of the CV), shown in a career house of the val. */
 const CAREER: Record<string, string> = { royal: 'Royal Canin', schoolmouv: 'Schoolmouv', leasys: 'Aixia' };
@@ -151,9 +171,9 @@ function Body({ id }: { id: string }) {
 		case 'forge':
 			return <Journey />;
 		case 'tower':
-			return <About />;
+			return <About principles={false} />;
 		case 'stones':
-			return <Portal />;
+			return <Manifesto />;
 		case 'agents':
 			return <Expertise />;
 		case 'core':

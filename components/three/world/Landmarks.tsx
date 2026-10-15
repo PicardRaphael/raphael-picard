@@ -19,7 +19,7 @@ const arcane = new THREE.MeshBasicMaterial({ color: '#8fb0ff', toneMapped: false
 const ground = (x: number, z: number) => valHeight(x, z);
 
 /** Menhirs carved from the painted stone pack, so the circle matches the rest of the valley. */
-const STONES = Array.from({ length: 9 }, (_, i) => ({ a: (i / 9) * Math.PI * 2, h: 4.2 + (i % 3) * 1.1, name: ['RockTall', 'RockBig_3', 'RockTall'][i % 3] }));
+export const STONES = Array.from({ length: 9 }, (_, i) => ({ a: (i / 9) * Math.PI * 2, h: 4.2 + (i % 3) * 1.1, name: ['RockTall', 'RockBig_3', 'RockTall'][i % 3] }));
 
 function Stones() {
 	const l = landmark('stones');

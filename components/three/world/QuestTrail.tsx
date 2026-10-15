@@ -71,7 +71,7 @@ export function QuestTrail() {
 			const d = 2.2 + ((i + ((t * 1.4) % 1)) * STEP);
 			const x = player.x + ux * d;
 			const z = player.z + uz * d;
-			const y = (g.zone === 'val' ? groundAt(x, z) : 0) + 0.08;
+			const y = (g.zone === 'val' ? groundAt(x, z) : 0) + 0.3;
 			const fade = i < shown ? 1 - i / (shown + 4) : 0;
 			const pulse = 0.75 + 0.25 * Math.sin(t * 4 - i * 0.6);
 			im.setMatrixAt(i, m.compose(p.set(x, y, z), q, sc.setScalar(fade * pulse)));

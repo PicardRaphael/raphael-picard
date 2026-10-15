@@ -59,7 +59,7 @@ export function Lanterns({ night }: { night: number }) {
 		return list.filter(
 			(p) =>
 				HOUSES.every((h) => Math.hypot(p.x - h.x, p.z - h.z) > h.c + 2.5) &&
-				LANDMARKS.every((l) => l.zone !== 'val' || Math.hypot(p.x - l.x, p.z - l.z) > l.radius + 3) &&
+				LANDMARKS.every((l) => l.zone !== 'val' || Math.hypot(p.x - l.x, p.z - l.z) > l.radius + (l.id === 'portal' ? 10 : 3)) &&
 				Math.hypot(p.x - LAKE.x, p.z - LAKE.z) > LAKE.r + 2,
 		);
 	}, []);

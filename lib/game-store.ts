@@ -51,7 +51,8 @@ let state: GameState = {
 	zone: 'val',
 	inRange: null,
 	panel: null,
-	quests: Object.fromEntries(QUESTS.map((q, i) => [q.id, i === 0 ? 'available' : 'locked'])) as Record<string, QuestStatus>,
+	// every quest that no other quest leads to is open from the start (side quests run in parallel, like in an MMO)
+	quests: Object.fromEntries(QUESTS.map((q) => [q.id, QUESTS.some((o) => o.next === q.id) ? 'locked' : 'available'])) as Record<string, QuestStatus>,
 	visited: [],
 	kills: 0,
 	defeated: [],

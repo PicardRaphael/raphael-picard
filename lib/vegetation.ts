@@ -100,7 +100,8 @@ export function vegetationObstacles() {
 	const p = placements();
 	return [
 		...[...p.oak, ...p.pine, ...p.twisted].map((t) => ({ x: t.x, z: t.z, r: 0.7 })),
-		...p.rock.map((r) => ({ x: r.x, z: r.z, r: r.h * 0.45 })),
+		// the painted rocks are wider than tall: their footprint is about 0.8× their height
+		...p.rock.map((r) => ({ x: r.x, z: r.z, r: r.h * 0.8 })),
 	];
 }
 

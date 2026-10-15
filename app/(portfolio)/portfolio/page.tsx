@@ -12,7 +12,7 @@ import { Projects } from '@/components/sections/Projects';
 export const metadata: Metadata = {
 	title: 'Portfolio — agents IA, RAG, MCP, parcours et projets',
 	description:
-		"Le portfolio complet de Raphaël Picard, ingénieur IA à Lyon : agents LangGraph en production, RAG hybrides, serveurs MCP, outillage Claude Code, parcours de 8 ans en développement et projets open source.",
+		"Le portfolio complet de Raphaël Picard, ingénieur IA à Lyon : agents LangGraph en production, RAG hybrides, serveurs MCP, outillage Claude Code, parcours de 9 ans en développement et projets open source.",
 	alternates: { canonical: '/portfolio' },
 };
 

@@ -5,7 +5,7 @@ export const site = {
 	jobTitle: 'Senior AI Engineer & Responsable IA',
 	title: 'Raphaël Picard — Senior AI Engineer & Responsable IA : agents, RAG, MCP',
 	description:
-		'Senior AI Engineer & Responsable IA à Lyon : 8 agents LangGraph en production, RAG hybride, MCP, évaluations Langfuse et DeepEval. 8 ans de Python et TypeScript.',
+		'Senior AI Engineer & Responsable IA à Lyon : 8 agents LangGraph en production, RAG hybride, MCP, évaluations Langfuse et DeepEval. 9 ans de Python et TypeScript.',
 	locale: 'fr_FR',
 	location: 'Lyon, France',
 	email: 'raphaelpicard@outlook.fr',

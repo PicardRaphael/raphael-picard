@@ -1,5 +1,6 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
@@ -11,7 +12,6 @@ import { QUESTS, markerFor, objectiveDone } from '@/lib/quests';
 import { LANDMARKS, NEXUS_CENTER, NEXUS_RADIUS, VAL_RADIUS, landmark } from '@/lib/world';
 import { AchievementWatcher, Menu } from './Menu';
 import { drawMarker } from './mapMarkers';
-import { Panel } from './Panels';
 import { Soundtrack } from './Soundtrack';
 import { BugCard } from './BugCard';
 import { Crosshair } from './Crosshair';
@@ -19,6 +19,9 @@ import { KeyHints } from './KeyHints';
 import { StartScreen } from './StartScreen';
 import { HurtFlash, TouchControls, ZoomButtons } from './TouchControls';
 import { WorldMap } from './WorldMap';
+
+// the panels embed every portfolio section (and motion): fetched the first time a place is opened
+const Panel = dynamic(() => import('./Panels').then((m) => m.Panel), { ssr: false });
 
 function ZoneBanner() {
 	const banner = useGame((s) => s.banner);
@@ -270,6 +273,14 @@ function Corner() {
 				<span className="pointer-coarse:hidden">Version classique</span>
 				<span className="hidden pointer-coarse:inline">Classique</span>
 			</Link>
+			<a
+				href="/cv-RaphaelPICARD-IA.pdf"
+				download
+				aria-label="Télécharger le CV (PDF)"
+				className="rounded-full border border-[#ffd9a0]/50 bg-black/50 px-4 py-2 text-sm text-[#ffd9a0] backdrop-blur-md hover:bg-black/70 pointer-coarse:px-3"
+			>
+				CV
+			</a>
 			<button
 				onClick={() => {
 					if (!sound) void music.start();
@@ -286,10 +297,10 @@ function Corner() {
 	);
 }
 
-/** The game is played sideways on phones: in portrait, a full-screen hint asks to turn the device. */
+/** The game is played sideways on phones (not tablets): in portrait, a full-screen hint asks to turn the device. */
 function RotateHint() {
 	return (
-		<div className="fixed inset-0 z-[70] hidden flex-col items-center justify-center gap-5 bg-[#07050f]/95 px-8 text-center pointer-coarse:portrait:flex" role="alert">
+		<div className="fixed inset-0 z-[70] hidden flex-col items-center justify-center gap-5 bg-[#07050f]/95 px-8 text-center pointer-coarse:portrait:max-sm:flex" role="alert">
 			<span className="animate-[spin_2.4s_ease-in-out_infinite] text-6xl text-[#ffd100]" aria-hidden>
 				⟳
 			</span>

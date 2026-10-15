@@ -479,6 +479,8 @@ export function Player() {
 	);
 
 	useEffect(() => {
+		// the touch buttons reach the combat through the shared player state (they never import three.js)
+		player.actions = { attack, jump };
 		// test hooks for the dev browser
 		if (process.env.NODE_ENV !== 'production') Object.assign(window, { __player: player, __game: game, __keymap: keymap, __scene: scene, __camera: camera, __THREE: THREE, __mobs: mobs, __attack: attack, __walk: nexusWalkable, __veg: vegetationObstacles, __obs: OBSTACLES });
 		player.x = SPAWN.x;
@@ -524,7 +526,7 @@ export function Player() {
 		// keyboard: left/right turn the camera, up/down walk along it
 		const inp = player.input;
 		if (canMove) player.camera.yaw += inp.turn * 2.2 * dt;
-		// free look: the view leans toward the mouse, and keeps turning near the screen edges
+		// free look: in first person the view keeps turning near the screen edges; in third person it barely leans
 		const fps = g.hero === 'runner' && player.camera.firstPerson && g.started;
 		if (fps && (g.panel || g.overlay) && document.pointerLockElement) document.exitPointerLock();
 		if (fps && !g.panel && !g.overlay && !player.camera.free && !document.pointerLockElement) {
@@ -538,10 +540,9 @@ export function Player() {
 		}
 		const lx = !fps && g.started && !g.panel && !g.overlay && !player.camera.dragging ? player.camera.lookX : 0;
 		const ly = !fps && g.started && !g.panel && !g.overlay && !player.camera.dragging ? player.camera.lookY : 0;
-		const edge = Math.max(0, Math.abs(lx) - 0.72) / 0.28;
-		player.camera.yaw -= Math.sign(lx) * edge * edge * 1.9 * dt;
-		v.lookYaw += (-lx * 0.55 - v.lookYaw) * Math.min(1, dt * 4);
-		v.lookPitch += (ly * 0.22 - v.lookPitch) * Math.min(1, dt * 4);
+		// third person: only a slight lean toward the cursor, never a turn on its own (the HUD sits at the edges)
+		v.lookYaw += (-lx * 0.12 - v.lookYaw) * Math.min(1, dt * 4);
+		v.lookPitch += (ly * 0.08 - v.lookPitch) * Math.min(1, dt * 4);
 		const viewYaw = player.camera.yaw + v.lookYaw;
 		let dirX = 0;
 		let dirZ = 0;

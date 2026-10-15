@@ -5,15 +5,16 @@ const sheet = [
 	{ k: 'Classe', v: 'Ingénieur IA' },
 	{ k: 'Spécialisation', v: 'Agents · RAG · MCP' },
 	{ k: 'Rôle', v: 'Senior AI Engineer & Responsable IA chez Neoteem' },
-	{ k: 'Expérience', v: '9 ans d’XP' },
+	{ k: 'Expérience', v: '8+ ans d’ingénierie' },
 	{ k: 'Base', v: 'Lyon · télétravail' },
 	{ k: 'Langages', v: 'Python · TypeScript' },
+	{ k: 'Langues', v: 'Français natif · anglais B1 (technique)' },
 ];
 
 /** Concrete proofs rather than self-rated skill bars (figures from content/work.ts and content/profile.ts). */
 const attributes = [
 	{ k: 'Agents & orchestration', v: '7 agents LangGraph en production' },
-	{ k: 'RAG & données', v: 'RAG support en 9 nœuds, 42 vues métier en lecture seule' },
+	{ k: 'RAG & données', v: 'RAG hybride (RRF), 42 vues métier en lecture seule' },
 	{ k: 'Architecture backend', v: '41 endpoints OpenAPI, 496 schémas Zod' },
 	{ k: 'Outillage Claude Code', v: '13 sous-agents, 38 skills, 27 hooks' },
 	{ k: 'Leadership & formation', v: 'Pôle IA de 2 à 3 personnes, 3 à 5 formations' },
@@ -58,7 +59,7 @@ export function About({ principles = true }: { principles?: boolean }) {
 				<Reveal delay={0.15} className="lg:pt-24">
 					<aside aria-label="Fiche de personnage" className="glass relative overflow-hidden rounded-3xl p-6">
 						<div className="from-violet/20 to-magenta/10 pointer-events-none absolute inset-0 bg-gradient-to-br" aria-hidden />
-						<p className="eyebrow relative">Fiche de personnage</p>
+						<p className="eyebrow eyebrow-keep relative">Fiche de personnage</p>
 						<dl className="relative mt-5 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
 							{sheet.map((s) => (
 								<div key={s.k}>

@@ -5,6 +5,7 @@ const paths: Record<string, string> = {
 	'claude-code': 'm8 9-4 3 4 3m8-6 4 3-4 3M14 5l-4 14',
 	llmops: 'M3 20h18M6 16l4-5 3 3 5-7m0 0h-4m4 0v4',
 	backend: 'M4 5h16v5H4zM4 14h16v5H4zM8 7.5h.01M8 16.5h.01',
+	securite: 'M12 3 5 6v5c0 4.5 3 8.3 7 10 4-1.7 7-5.5 7-10V6l-7-3Zm-3 9 2 2 4-4',
 	lead: 'M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.9L12 3Z',
 };
 

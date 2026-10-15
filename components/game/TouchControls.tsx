@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-import { attack, jump } from '@/components/three/world/Player';
+import { useGame } from '@/lib/game-store';
 import { player } from '@/lib/player-state';
 
 /** Virtual joystick (bottom-left) writing analog input, camera-relative like the keyboard. */
@@ -71,6 +71,8 @@ function Round({ label, onPress, className = '' }: { label: string; onPress: () 
 
 export function TouchControls() {
 	const [coarse, setCoarse] = useState(false);
+	// the knight swings a sword, the runner fires: the button shows which
+	const runner = useGame((s) => s.hero === 'runner');
 	useEffect(() => {
 		const mq = window.matchMedia('(pointer: coarse)');
 		const on = () => setCoarse(mq.matches);
@@ -83,8 +85,8 @@ export function TouchControls() {
 		<>
 			<Joystick />
 			<div className="fixed right-5 bottom-6 z-20 flex items-end gap-3">
-				<Round label="⤒" onPress={jump} className="h-14 w-14 text-xl" />
-				<Round label="⚔" onPress={attack} className="h-20 w-20 text-3xl" />
+				<Round label="⤒" onPress={() => player.actions.jump()} className="h-14 w-14 text-xl" />
+				<Round label={runner ? '◎' : '⚔'} onPress={() => player.actions.attack()} className="h-20 w-20 text-3xl" />
 			</div>
 		</>
 	);

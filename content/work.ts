@@ -21,7 +21,7 @@ export const projects: Project[] = [
 			'Moteur ReAct déclaratif : un agent se déclare, son graphe LangGraph en est dérivé',
 			'Les données comme un catalogue : 42 vues métier couvertes par 5 outils génériques, choisies par similarité sémantique',
 			'Passerelle en lecture seule par construction : vues autorisées, colonnes validées, paramètres liés',
-			'5 interruptions LangGraph : aucun mail ne part sans validation humaine',
+			'5 points de contrôle humain (interruptions LangGraph) : aucun mail ne part sans validation',
 			'Pagination par curseur opaque : jamais de liste tronquée présentée comme complète',
 		],
 		stack: ['LangGraph', 'Gemini', 'FastAPI', 'pgvector', 'Hono', 'Langfuse'],
@@ -31,12 +31,12 @@ export const projects: Project[] = [
 	},
 	{
 		name: 'NeoSupport',
-		kind: 'Agent de support autonome · Neoteem',
-		pitch: 'Il répond aux questions d’usage du logiciel à partir de sa documentation, sans intervention humaine.',
+		kind: 'Agent de support · Neoteem',
+		pitch: 'Il répond aux questions d’usage du logiciel à partir de sa documentation, demande une précision quand la question est ambiguë et signale les manques de la doc au lieu d’inventer.',
 		highlights: [
-			'Graphe RAG conditionnel : relances réécrites, orientation métier, cache des réponses',
+			'Graphe RAG conditionnel : relances réécrites, orientation métier, raccourci pour les salutations, cache',
 			'Recherche hybride plein texte + sémantique fusionnée en Reciprocal Rank Fusion, passages étendus à la page complète',
-			'Demande de précision à options et signalement des manques de la documentation',
+			'Classement qui ordonne sans exclure ; service SSE déployé à part ; retours utilisateurs collectés',
 			'Une panne de recherche n’est jamais présentée comme « rien trouvé »',
 		],
 		stack: ['LangGraph', 'pgvector', 'Gemini', 'FastAPI'],
@@ -68,7 +68,7 @@ export const projects: Project[] = [
 		],
 		stack: ['Python', 'uv', 'MCP', 'Claude Code', 'Lua'],
 		url: 'https://github.com/PicardRaphael/wow-forever',
-		badge: '970+ commits en 3 semaines',
+		badge: '400+ fichiers de tests',
 	},
 	{
 		name: 'claude-forge',
@@ -82,7 +82,7 @@ export const projects: Project[] = [
 		stack: ['Python', 'FastMCP', 'SQLite FTS5', 'Claude Code'],
 		url: 'https://github.com/PicardRaphael/claude-forge',
 		featured: true,
-		badge: '770+ commits',
+		badge: 'Serveur MCP · 22 outils',
 	},
 	{
 		name: 'agentsdir',
@@ -139,10 +139,10 @@ export const experiences: Experience[] = [
 		current: true,
 		points: [
 			'Plateforme d’IA générative : 3 applications Python (NeoChat, NeoSupport, NeoAgent) et un backend TypeScript, 7 agents spécialisés en production',
-			'Données métier servies en lecture seule par construction : 42 vues couvertes par 5 outils génériques, 5 points de validation humaine',
+			'Données métier servies en lecture seule par construction : 42 vues couvertes par 5 outils génériques, 5 points de contrôle humain',
 			'Qualité : plus de 7 000 tests, golden set de 64 cas rejoué 5 fois avec DeepEval, chaque conversation tracée dans Langfuse',
 			'Context caching : −33 % de coûts d’inférence',
-			'Backend ERP de zéro en TypeScript (Bun, Hono, PostgreSQL) : 41 endpoints OpenAPI, 496 schémas Zod, mutation testing à 80 %',
+			'Couche de données de l’ERP réécrite de zéro en TypeScript (Bun, Hono, PostgreSQL), en remplacement de fonctions PostgreSQL historiques : 41 endpoints OpenAPI, 496 schémas Zod, mutation testing à 80 %',
 			'Base de connaissances de 989 notes branchée aux agents via 2 serveurs MCP maison',
 			'Architecture multi-chatbots spécialisés proposée à la direction et adoptée ; plus de 6 notes de décision stratégiques',
 			'Encadrement direct de 2 à 3 personnes ; 3 à 5 sessions de formation tech et non-tech',
@@ -153,7 +153,7 @@ export const experiences: Experience[] = [
 		period: 'Déc. 2022 — Nov. 2025',
 		role: 'Développeur Full-Stack & IA',
 		company: 'Raphaël Picard EI',
-		context: 'Indépendant · solutions web et IA sur mesure',
+		context: 'Indépendant · mission Royal Canin jusqu’en avril 2025, puis projets IA : agents, MCP, RAG',
 		points: [
 			'Agents autonomes et workflows multi-agents (LangGraph, CrewAI, OpenAI Agents SDK, AutoGen)',
 			'Premier serveur MCP et chatbot RAG personnel, automatisations n8n (Notion, Slack, Airtable)',
@@ -165,7 +165,7 @@ export const experiences: Experience[] = [
 		period: 'Déc. 2022 — Avr. 2025',
 		role: 'Développeur Front-End Senior',
 		company: 'Royal Canin · Ekino',
-		context: 'Plateforme e-commerce internationale, plus de 100 pays · mission freelance',
+		context: 'Plateforme e-commerce internationale, plus de 100 pays · mission freelance via Raphaël Picard EI (pour Ekino)',
 		points: [
 			'Optimisation des parcours critiques B2B et B2C à l’échelle internationale',
 			'Migration complète JavaScript → TypeScript et refonte en React Hooks',
@@ -191,7 +191,7 @@ export const experiences: Experience[] = [
 		company: 'Aixia Systèmes · Leasys Rent',
 		context: 'Mobilité automobile · CDI',
 		points: [
-			'PWA React intégrant Google Vision pour analyser automatiquement des documents : ma première IA en production',
+			'PWA React intégrant l’API Google Vision pour analyser automatiquement des documents : ma première intégration d’IA en production',
 			'BFF GraphQL (Node.js, Apollo) devant les microservices, monorepo Lerna et CI/CD GitLab',
 			'Migration et sécurisation d’API Symfony 3 → 5',
 		],
@@ -204,9 +204,7 @@ export const certifications = [
 	{ name: 'Claude with the Anthropic API', issuer: 'Anthropic Academy' },
 	{ name: 'Introduction to Agent Skills', issuer: 'Anthropic Academy' },
 	{ name: 'Introduction to Model Context Protocol', issuer: 'Anthropic Academy' },
-	{ name: 'AI Agents Fundamentals', issuer: 'Hugging Face' },
-	{ name: 'Introduction to Large Language Models', issuer: 'Google' },
-	{ name: 'Introduction to Responsible AI', issuer: 'Google' },
+	{ name: 'AI Agents Fundamentals', issuer: 'Hugging Face / Google' },
 	{ name: 'Concepteur Développeur Web — RNCP 6 (Bac+4)', issuer: "O'clock" },
 ];
 

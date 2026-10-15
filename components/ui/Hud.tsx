@@ -90,7 +90,7 @@ export function Hud() {
 			{/* portal crossing flash */}
 			{flash > 0 && <div key={flash} className="pointer-events-none fixed inset-0 z-30 animate-[portal-flash_1.2s_ease-out_forwards] bg-white" aria-hidden />}
 
-			<div className="pointer-events-none fixed right-4 bottom-4 z-30 hidden font-mono text-xs lg:block" aria-hidden>
+			<div className="pointer-events-none fixed right-4 bottom-4 z-30 hidden font-mono text-xs lg:block">
 				<div className="pointer-events-auto w-64 rounded-2xl border border-white/15 bg-[#0a0716]/92 p-4 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)] backdrop-blur-xl">
 					<p className={`tracking-[0.25em] uppercase ${accent}`}>{REALMS[realm].name}</p>
 					<p className="text-mist mt-0.5">{REALMS[realm].era}</p>

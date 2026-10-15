@@ -19,6 +19,8 @@ export const player = {
 	attack: 0,
 	/** Mob the player clicked: walk to it, then strike. */
 	attackTarget: null as null | number,
+	/** Combat actions, wired by the 3D world when it mounts: the touch buttons call them without importing three.js. */
+	actions: { attack: () => {}, jump: () => {} } as { attack: () => void; jump: () => void },
 	/** Set to teleport the player on the next frame. */
 	teleport: null as null | { x: number; z: number; yaw: number },
 };

@@ -117,13 +117,13 @@ describe('no internal identifier leaks', () => {
 });
 
 describe('consistent figures', () => {
-	it('stats: 7 agents in production, 9 years', () => {
+	it('stats: 7 agents in production, 8+ years', () => {
 		expect(profile.stats.find((s) => /agents/.test(s.label))?.value).toBe(7);
-		expect(profile.stats.find((s) => /ans/.test(s.label))?.value).toBe(9);
+		expect(profile.stats.find((s) => /ans/.test(s.label))).toMatchObject({ value: 8, suffix: '+' });
 	});
 
 	it('no other agent count or years of experience anywhere', () => {
-		const wrong = [/\b(?:[0-68-9]|\d{2,}|huit|six|cinq|quatre|trois|deux|dix) agents (?:spécialisés |IA |LangGraph )?en prod/i, /\b(?:8|huit) agents\b/i, /\b(?:8|huit|dix|10) ans\b/i, /\b(?:8|huit) ans d/i];
+		const wrong = [/\b(?:[0-68-9]|\d{2,}|huit|six|cinq|quatre|trois|deux|dix) agents (?:spécialisés |IA |LangGraph )?en prod/i, /\b(?:8|huit) agents\b/i, /\b(?:9|neuf|dix|10) ans\b/i, /\b8 ans\b/, /(?<!plus de )\bhuit ans\b/i];
 		const hits: string[] = [];
 		for (const [f, text] of sources())
 			text.split('\n').forEach((line, i) => {
@@ -135,7 +135,7 @@ describe('consistent figures', () => {
 	it('the agent count and the years are stated with the right figures', () => {
 		const all = visible.map(([, s]) => s).join('\n');
 		expect(all).toMatch(/\b(?:7|sept) agents\b/);
-		expect(all).toMatch(/\b(?:9|neuf) ans\b/);
+		expect(all).toMatch(/8\+ ans|plus de huit ans/);
 	});
 });
 

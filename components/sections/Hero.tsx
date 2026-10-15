@@ -17,6 +17,7 @@ export function Hero() {
 					</p>
 					<h1 id="hero-title" className="font-display mt-6 text-5xl leading-[0.95] font-extrabold tracking-tight text-balance sm:text-7xl lg:text-8xl">
 						Raphaël <span className="text-gradient">Picard</span>
+						<span className="sr-only">, Senior AI Engineer &amp; Responsable IA à Lyon :</span>
 						<span className="text-ink/90 mt-4 block text-2xl font-semibold tracking-normal sm:text-3xl lg:text-4xl">
 							<ScrambleText text={hero.headline} delay={350} />
 						</span>

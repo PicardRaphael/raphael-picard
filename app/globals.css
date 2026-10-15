@@ -9,7 +9,7 @@
 	--color-abyss: #0b0920;
 	--color-ink: #ece9ff;
 	--color-mist: #a39fc4;
-	--color-dim: #6b6790;
+	--color-dim: #8a86ad;
 	--color-violet: #651fff;
 	--color-violet-soft: #8b5cf6;
 	--color-magenta: #c50eff;
@@ -221,4 +221,9 @@
 .panel-sections section {
 	padding-block: 0 !important;
 	min-height: 0 !important;
+}
+
+/* The roman numbering (« VI — … ») belongs to the scroll page; in a game panel the place name is the title. */
+.panel-sections .eyebrow:not(.eyebrow-keep) {
+	display: none;
 }

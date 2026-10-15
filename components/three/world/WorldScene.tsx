@@ -5,7 +5,7 @@ import { Bloom, EffectComposer, Vignette } from '@react-three/postprocessing';
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 
-import { useGame } from '@/lib/game-store';
+import { game, useGame } from '@/lib/game-store';
 import { player } from '@/lib/player-state';
 import { Starfield } from '../Cosmos';
 import { ValleyLandmarks } from './Landmarks';
@@ -36,7 +36,8 @@ function detect(): Quality {
 const LIGHT = {
 	day: { hemi: ['#d6ebff', '#55752f', 1.25], sun: ['#fff1d6', 2.8], fog: '#b9d2ea', near: 140, far: 420 },
 	dusk: { hemi: ['#ffe2b8', '#4a6b2a', 1.1], sun: ['#ffc58a', 2.6], fog: '#e8bf98', near: 120, far: 380 },
-	night: { hemi: ['#4b5aa8', '#0d1020', 0.55], sun: ['#9fb4ff', 0.75], fog: '#151b36', near: 45, far: 210 },
+	// a moonlit night, not a black one: the hand-painted val stays readable after 21 h
+	night: { hemi: ['#5a6ac0', '#141a30', 0.85], sun: ['#a9bcff', 1.1], fog: '#1a2142', near: 60, far: 280 },
 } as const;
 
 /** Sun, fog, sky and weather: the visitor's clock (or the options) in the valley, eternal rainy neon night in the Nexus. */
@@ -44,7 +45,7 @@ function Atmosphere({ shadows }: { shadows: boolean }) {
 	const zone = useGame((s) => s.zone);
 	const timeMode = useGame((s) => s.timeMode);
 	const weatherMode = useGame((s) => s.weather);
-	const { scene } = useThree();
+	const { scene, camera } = useThree();
 	const sun = useRef<THREE.DirectionalLight>(null);
 	const target = useMemo(() => new THREE.Object3D(), []);
 	const phase = phaseFor(timeMode);
@@ -64,7 +65,11 @@ function Atmosphere({ shadows }: { shadows: boolean }) {
 		const fogK = weather === 'fog' ? 0.35 : weather === 'rain' ? 0.7 : 1;
 		scene.fog = val ? new THREE.Fog(weather === 'rain' ? '#7d8796' : L.fog, L.near * fogK, L.far * fogK) : new THREE.Fog('#0b0e1a', 28 * fogK, 200 * fogK);
 		scene.background = val ? null : new THREE.Color('#07030f');
-	}, [val, scene, L, weather]);
+		// nothing is drawn past the fog: the other realm, 600 m away, is culled and costs no draw call
+		const cam = camera as THREE.PerspectiveCamera;
+		cam.far = val ? 450 : 240;
+		cam.updateProjectionMatrix();
+	}, [val, scene, camera, L, weather]);
 
 	// the shadow camera follows the player so shadows stay crisp everywhere
 	useFrame(() => {
@@ -97,9 +102,53 @@ function Atmosphere({ shadows }: { shadows: boolean }) {
 			/>
 			{!val && <Starfield count={2500} pixelRatio={1} />}
 			{weather === 'rain' && <Rain count={val ? 1100 : 1500} />}
-			{val && <Lanterns night={Math.max(night, weather === 'rain' ? 0.5 : 0)} />}
+			<Lanterns on={val} night={Math.max(night, weather === 'rain' ? 0.5 : 0)} />
 		</>
 	);
+}
+
+/** Feeds the download progress to the start screen (which must not import three.js itself). */
+function LoadProgress() {
+	useEffect(() => {
+		const manager = THREE.DefaultLoadingManager;
+		let frame = 0;
+		// loaders report while React renders the suspended models: publish on the next frame, never mid-render
+		manager.onProgress = (_url, loaded, total) => {
+			cancelAnimationFrame(frame);
+			frame = requestAnimationFrame(() => game.set({ loading: Math.min(99, Math.round((loaded / Math.max(total, 1)) * 100)) }));
+		};
+		manager.onLoad = () => {
+			cancelAnimationFrame(frame);
+			frame = requestAnimationFrame(() => game.set({ loading: 100 }));
+		};
+		return () => {
+			cancelAnimationFrame(frame);
+			manager.onProgress = () => {};
+			manager.onLoad = () => {};
+		};
+	}, []);
+	return null;
+}
+
+/**
+ * Mounted once everything of the first scene has loaded: compiles every shader in parallel
+ * (KHR_parallel_shader_compile) instead of freezing on the first frames, then lets the game start.
+ */
+function Warmup() {
+	const { gl, scene, camera } = useThree();
+	useEffect(() => {
+		let done = false;
+		const finish = () => {
+			if (done) return;
+			done = true;
+			game.set({ ready: true });
+		};
+		gl.compileAsync(scene, camera).then(finish, finish);
+		// never block the start screen: a slow or failing compile still lets the visitor in
+		const t = setTimeout(finish, 15000);
+		return () => clearTimeout(t);
+	}, [gl, scene, camera]);
+	return null;
 }
 
 export default function WorldScene() {
@@ -112,22 +161,25 @@ export default function WorldScene() {
 	return (
 		<Canvas
 			className="!fixed inset-0"
-			shadows={q.shadows ? 'soft' : false}
+			shadows={q.shadows}
 			dpr={q.dpr}
 			camera={{ fov: 55, near: 0.3, far: 900, position: [0, 14, 30] }}
-			gl={{ antialias: true, powerPreference: 'high-performance' }}
-			aria-label="Monde 3D explorable de Raphaël Picard"
+			// MSAA comes from the post-processing composer when it runs
+			gl={{ antialias: !q.post, powerPreference: 'high-performance' }}
+			aria-hidden
 		>
 			<Atmosphere shadows={q.shadows} />
-			<Valley />
+			<LoadProgress />
 			<Suspense fallback={null}>
+				<Valley />
 				<Nature />
+				<ValleyLandmarks />
 				<Mobs />
 				<Lasers />
+				<Nexus pixelRatio={q.pr} reflect={q.post} />
+				<Player />
+				<Warmup />
 			</Suspense>
-			<ValleyLandmarks />
-			<Nexus pixelRatio={q.pr} reflect={q.post} />
-			<Player />
 			<HeadPrompt />
 			<QuestTrail />
 			{q.post && (

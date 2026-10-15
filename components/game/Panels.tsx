@@ -68,12 +68,16 @@ function QuestBlock({ id }: { id: string }) {
 				</p>
 			)}
 			{(offer || ready) && (
-				<button
-					onClick={() => (ready ? game.complete(ready.id) : offer && game.accept(offer.id))}
-					className="mt-5 rounded-xl bg-[#ffd100] px-5 py-2.5 font-semibold text-black transition hover:brightness-110"
-				>
-					{ready ? 'Terminer la quête' : 'Accepter la quête'}
-				</button>
+				// stays in sight at the bottom of the panel on short (phone) screens; focused, so Enter accepts
+				<div className="sticky bottom-0 -mx-5 mt-5 bg-gradient-to-t from-black/90 via-black/70 to-transparent px-5 pt-3 pb-1 sm:-mx-6 sm:px-6">
+					<button
+						autoFocus
+						onClick={() => (ready ? game.complete(ready.id) : offer && game.accept(offer.id))}
+						className="rounded-xl bg-[#ffd100] px-5 py-2.5 font-semibold text-black transition hover:brightness-110"
+					>
+						{ready ? 'Terminer la quête' : 'Accepter la quête'}
+					</button>
+				</div>
 			)}
 		</div>
 	);
@@ -82,7 +86,7 @@ function QuestBlock({ id }: { id: string }) {
 /** Raphy reacts to where the visitor stands in the story instead of repeating the same line. */
 const RAPHY_TIPS = [
 	'Astuce : les bugs du val ont chacun une fiche « problème / parade ». Retrouve-les toutes dans le Bestiaire du menu.',
-	'Neuf ans d’ingénierie logicielle, dont l’IA en production depuis 2018 : la Forge raconte ce chemin.',
+	'Plus de huit ans d’ingénierie logicielle, et une première intégration d’IA en production dès 2018 : la Forge raconte ce chemin.',
 	'La Tour du Savoir garde sa fiche de personnage : son parcours et son virage vers l’IA.',
 	'Le Cercle du Manifeste porte ses quatre règles : des agents utiles, mesurés, et sous contrôle humain.',
 	'Dans le Nexus, le Noyau d’orchestration montre l’architecture réelle de NeoChat, une vraie question à l’appui.',
@@ -103,7 +107,7 @@ function raphyLine(g: ReturnType<typeof game.get>) {
 		const left = QUESTS.filter((q) => g.quests[q.id] !== 'done').map((q) => `« ${q.title} »`);
 		return left.length
 			? `Tu as exploré les deux mondes ! Il reste ${left.length > 1 ? `${left.length} quêtes` : `une quête`} à finir si tu veux : ${left.join(', ')}. Et la Balise de contact reste ouverte.`
-			: `Toutes les quêtes sont terminées, ${g.kills} bug${g.kills > 1 ? 's' : ''} corrigé${g.kills > 1 ? 's' : ''} : tu connais Raphaël. Un poste IA à pourvoir ? La Balise de contact du Nexus est ouverte, et le CV se télécharge depuis la version classique.`;
+			: `Toutes les quêtes sont terminées, ${g.kills} bug${g.kills > 1 ? 's' : ''} corrigé${g.kills > 1 ? 's' : ''} : tu connais Raphaël. Un poste IA à pourvoir ? La Balise de contact du Nexus est ouverte, et le CV se télécharge d’un clic, en haut à gauche.`;
 	}
 	if (g.flags.includes('nexus')) return `De retour du Nexus ! ${g.kills} bug${g.kills > 1 ? 's' : ''} corrigé${g.kills > 1 ? 's' : ''} jusqu’ici. Raphy·OS t’attend là-bas pour la suite.`;
 	if (g.quests.portail === 'active' || g.quests.portail === 'available') return 'Le Portail arcanique t’attend au bout du chemin, au nord : de l’autre côté, l’ère des agents.';

@@ -1,6 +1,6 @@
 /**
  * Every word displayed on the site lives here: edit this file to update the portfolio.
- * Numbers come from the CV (oct. 2026), the public architecture sheet of the Neoteem AI platform,
+ * Numbers come from the public architecture sheet of the Neoteem AI platform, the CV,
  * the public GitHub repos and the MCP usage logs.
  */
 
@@ -8,7 +8,7 @@ export const hero = {
 	eyebrow: 'Senior AI Engineer & Responsable IA · Neoteem · Lyon',
 	status: 'NeoChat · NeoSupport · NeoAgent en production',
 	headline: 'J’industrialise l’IA agentique.',
-	lead: 'Agents LangGraph, RAG hybrides, serveurs MCP : je les mets en production, testés, évalués (DeepEval) et observés (Langfuse). Chez Neoteem : 7 agents spécialisés en production, des données servies en lecture seule par construction, −33 % de coûts d’inférence, et une équipe formée pour les faire vivre.',
+	lead: 'Je conçois et mets en production des assistants IA utiles au quotidien. Chez Neoteem, éditeur d’un ERP immobilier, 7 agents spécialisés répondent aux gestionnaires sur leurs données et sur la documentation du logiciel, en lecture seule et sous contrôle humain. Qualité mesurée (plus de 7 000 tests, évaluations DeepEval, traces Langfuse), −33 % de coûts d’inférence grâce au context caching, et une équipe formée pour les faire vivre.',
 	primaryCta: { label: 'Voir les agents en production', href: '#projets' },
 	secondaryCta: { label: 'Télécharger le CV', href: '/cv-RaphaelPICARD-IA.pdf' },
 };
@@ -16,8 +16,8 @@ export const hero = {
 export const stats = [
 	{ value: 7, suffix: '', label: 'agents IA en production' },
 	{ value: 7000, suffix: '+', label: 'tests sur la plateforme IA' },
-	{ value: 33, suffix: ' %', label: 'de coûts d’inférence en moins' },
-	{ value: 9, suffix: '', label: 'ans d’ingénierie logicielle' },
+	{ value: 33, suffix: ' %', label: 'de coûts d’inférence (context caching)' },
+	{ value: 8, suffix: '+', label: 'ans d’ingénierie logicielle' },
 ];
 
 export const stack = [
@@ -42,21 +42,21 @@ export const stack = [
 ];
 
 export const about = {
-	eyebrow: 'II — Le héros',
+	eyebrow: 'II — Manifeste',
 	title: 'De développeur full-stack à ingénieur IA.',
 	paragraphs: [
-		'En neuf ans d’ingénierie logicielle, j’ai livré des produits web à grande échelle : une plateforme e-commerce déployée dans plus de 100 pays, un MVP EdTech conçu de zéro, des outils métier pour la mobilité, où j’ai mis ma première IA en production dès 2018. J’y ai appris ce qui fait tenir un logiciel : l’architecture, les tests, la rigueur de livraison.',
-		'Depuis novembre 2025, je suis Senior AI Engineer & Responsable IA chez Neoteem, éditeur d’un ERP pour les professionnels de l’immobilier. J’y ai mis en production sept agents LangGraph répartis dans NeoChat, NeoSupport et NeoAgent, construit de zéro le backend TypeScript qui leur sert les données et fait adopter par la direction une architecture multi-chatbots spécialisés. J’encadre le pôle IA (2 à 3 personnes) et je forme les équipes, tech et non-tech.',
+		'En plus de huit ans d’ingénierie logicielle, j’ai livré des produits web à grande échelle : une plateforme e-commerce déployée dans plus de 100 pays, un MVP EdTech conçu de zéro, des outils métier pour la mobilité, où j’ai intégré mon premier service d’IA en production dès 2018. J’y ai appris ce qui fait tenir un logiciel : l’architecture, les tests, la rigueur de livraison.',
+		'Depuis novembre 2025, je suis Senior AI Engineer & Responsable IA chez Neoteem, éditeur d’un ERP pour les professionnels de l’immobilier. J’y ai mis en production sept agents LangGraph répartis dans NeoChat, NeoSupport et NeoAgent, réécrit de zéro en TypeScript la couche de données qui les alimente et fait adopter par la direction une architecture multi-chatbots spécialisés. J’encadre le pôle IA (2 à 3 personnes) et je forme les équipes, tech et non-tech.',
 		'Mon avantage : un profil hybride. Je parle architecture aux développeurs, ROI aux dirigeants, et prompts aux modèles.',
 	],
 	principles: [
 		{
 			title: 'Le LLM ne calcule jamais',
-			text: 'Les chiffres viennent d’outils déterministes et testés ; le modèle raisonne, cite sa source et dit « je ne sais pas » quand il le faut.',
+			text: 'Les chiffres viennent de vues et de rapports SQL, via des outils déterministes et testés ; le modèle raisonne, et dit « je ne sais pas » quand il le faut.',
 		},
 		{
 			title: 'Pas d’agent sans évaluation',
-			text: 'Golden set rejoué en plusieurs tirages, LLM-as-judge, traces Langfuse : un agent se mesure avant de se déployer.',
+			text: 'Golden set rejoué en plusieurs tirages avant chaque release, LLM-as-judge, traces Langfuse en production : un agent se mesure avant et après son déploiement.',
 		},
 		{
 			title: 'L’architecture d’abord',
@@ -74,13 +74,14 @@ export type Expertise = { id: string; title: string; pitch: string; points: stri
 export const expertise: Expertise[] = [
 	{
 		id: 'agents',
-		title: 'Agents & multi-agents',
-		pitch: 'Des agents spécialisés qui raisonnent, appellent des outils et collaborent — en production, pas en démo.',
+		title: 'Agents IA',
+		pitch: 'Des agents spécialisés, chacun avec son périmètre d’outils et ses points de contrôle humain — en production, pas en démo.',
 		points: [
 			'Moteur ReAct déclaratif : un agent se déclare (état, prompt, outils, interruptions) et son graphe LangGraph en est dérivé',
 			'Chaque outil est un module autonome : fonction typée, schémas Pydantic, consignes de prompt propres',
 			'Données en catalogue : 42 vues métier couvertes par 5 outils génériques, choisies par similarité sémantique',
-			'Humain dans la boucle : 5 interruptions avant toute action sensible ; streaming SSE, Map-Reduce',
+			'5 points de contrôle humain (interruptions LangGraph) : homonymes, destinataire, rédaction, aperçu avant envoi, suppression',
+			'Invariants vérifiés avant chaque appel d’outil ; jeu d’outils fixe qui échoue bruyamment',
 		],
 		tags: ['LangGraph', 'ReAct', 'Gemini', 'Claude'],
 		metric: '7 agents en prod',
@@ -88,39 +89,40 @@ export const expertise: Expertise[] = [
 	{
 		id: 'rag',
 		title: 'RAG hybride',
-		pitch: 'Des réponses ancrées dans les bons documents, avec une source vérifiable à chaque fois.',
+		pitch: 'Des réponses ancrées dans la documentation, et un aveu clair quand elle ne couvre pas la question.',
 		points: [
 			'Recherche hybride plein texte + sémantique (pgvector) fusionnée en Reciprocal Rank Fusion',
-			'Relances réécrites en questions autonomes, passages étendus à leur page complète',
+			'Relances réécrites en questions autonomes, passages étendus à leur page complète, classement qui ordonne sans exclure',
+			'Demande de précision quand plusieurs sujets correspondent, signalement des manques de la documentation',
 			'Honnêteté des échecs : une panne de recherche n’est jamais présentée comme « rien trouvé »',
 		],
-		tags: ['pgvector', 'RRF', 'LangGraph', 'Qdrant'],
-		metric: 'Support autonome',
+		tags: ['pgvector', 'RRF', 'LangGraph', 'SSE'],
+		metric: 'RRF hybride',
 	},
 	{
-		id: 'mcp',
-		title: 'MCP & intégrations',
-		pitch: 'Je branche les modèles sur les vraies données de l’entreprise via le Model Context Protocol.',
+		id: 'securite',
+		title: 'Sécurité & gouvernance',
+		pitch: 'Un agent ne doit jamais pouvoir faire plus que l’utilisateur qui lui parle — même manipulé.',
 		points: [
-			'2 serveurs MCP maison (FastMCP) déployés en production : base de connaissances et PostgreSQL',
-			'Base de connaissances de 989 notes interrogée par les agents',
-			'Backend conçu pour accueillir des serveurs MCP par domaine métier',
-			'Apps MCP compatibles Claude, Codex, Gemini CLI et Cursor',
+			'Moindre privilège par construction : passerelle en lecture seule, SELECT uniquement, opérateurs en liste fermée, paramètres liés, rapports en liste blanche',
+			'Identité tirée du jeton vérifié, jamais du modèle ; isolation des données : une base par client, choisie par le déploiement',
+			'5 points de contrôle humain avant toute action engageante ; chaque étape tracée dans Langfuse',
+			'CI de sécurité sur chaque PR : analyse statique, détection de secrets, audit des dépendances ; erreurs RFC 9457 sans SQL',
 		],
-		tags: ['MCP', 'FastMCP', 'SQLite FTS5', 'Obsidian'],
-		metric: '2 MCP en prod',
+		tags: ['Moindre privilège', 'Human-in-the-loop', 'SAST', 'Langfuse'],
+		metric: 'Lecture seule',
 	},
 	{
 		id: 'claude-code',
 		title: 'Développement agentique',
-		pitch: 'Le développement lui-même outillé comme un système multi-agent : skills, sous-agents, hooks et plugins.',
+		pitch: 'Le développement lui-même outillé comme un système multi-agent : skills, sous-agents, hooks et serveurs MCP.',
 		points: [
 			'Workflow /spec → /feature → /go → /ship : TDD par sous-agents, une revue par diff, merge humain',
-			'Garde-fous déterministes par hooks : pas de DDL, pas de commit direct, secrets, tests ciblés',
+			'Garde-fous déterministes par hooks : pas de DDL, pas de commit direct sur les branches principales, secrets, tests ciblés',
 			'Sur la plateforme IA : 13 sous-agents, 38 skills, 27 hooks ; 162 skills sur 5 dépôts au total',
-			'7 plugins publiés, dont 4 Cowork : copilote dirigeant, triage support, feedback, backlog',
+			'2 serveurs MCP maison (base de connaissances de 989 notes, PostgreSQL) au service des assistants IA de l’équipe',
 		],
-		tags: ['Claude Code', 'Cowork', 'Hooks', 'Plugins'],
+		tags: ['Claude Code', 'MCP', 'Hooks', 'Plugins'],
 		metric: '162 skills',
 	},
 	{
@@ -128,10 +130,10 @@ export const expertise: Expertise[] = [
 		title: 'LLMOps : évals & coûts',
 		pitch: 'Ce qui ne se mesure pas ne part pas en production.',
 		points: [
-			'Pyramide de tests : unitaires, intégration sur base réelle, fonctionnels LLM ; plus de 7 000 tests',
-			'DeepEval : Faithfulness, Answer Relevancy, G-Eval métier et contrôle des outils appelés',
-			'Golden set de 64 cas rejoué 5 fois : une vraie régression se distingue de la variance',
-			'Langfuse : traces lisibles par le métier, coûts et latences par agent ; context caching −33 %',
+			'Pyramide de tests : unitaires, intégration sur base réelle, fonctionnels LLM (DeepEval + juge) ; plus de 7 000 fonctions de test, CI sur chaque PR',
+			'Avant chaque release : Answer Relevancy, Faithfulness, critères métier G-Eval et contrôle déterministe des outils appelés',
+			'Golden set de 64 cas × 5 tirages : une vraie régression se distingue de la variance du modèle',
+			'Langfuse : étapes nommées pour le métier, coût et latence par application et par agent, retours utilisateurs ; context caching −33 %',
 		],
 		tags: ['Langfuse', 'DeepEval', 'Pytest', 'FinOps'],
 		metric: '−33 % de coûts',
@@ -141,9 +143,9 @@ export const expertise: Expertise[] = [
 		title: 'Backend & cloud',
 		pitch: 'Des fondations solides pour que l’IA ait des données fiables à manipuler.',
 		points: [
-			'Backend ERP de zéro : Bun, Hono, Zod, TypeScript strict, PostgreSQL avec une base par client',
-			'Passerelle IA en lecture seule par construction : vues autorisées, colonnes validées, paramètres liés',
+			'Couche de données de l’ERP réécrite de zéro en TypeScript (Bun, Hono, Zod, PostgreSQL), en remplacement de fonctions PostgreSQL historiques',
 			'Architecture hexagonale vérifiée en CI, mutation testing à 80 % sur chaque PR',
+			'Contrat partagé : le client HTTP de l’IA est généré depuis la spec OpenAPI du backend',
 			'41 endpoints OpenAPI, 496 schémas Zod ; 77 routes FastAPI sur GCP Cloud Run',
 		],
 		tags: ['TypeScript', 'Hono', 'PostgreSQL', 'GCP'],

@@ -1,11 +1,12 @@
 'use client';
 
 import { useFrame } from '@react-three/fiber';
-import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 
 import { projects } from '@/content/work';
 import { useGame } from '@/lib/game-store';
+import { player } from '@/lib/player-state';
 import { NEXUS_CENTER, landmark } from '@/lib/world';
 import { constellation, knot, mulberry32 } from '../shapes';
 import { Street } from './Street';
@@ -243,15 +244,15 @@ export function Nexus({ pixelRatio }: { pixelRatio: number; reflect?: boolean })
 	const back = landmark('portal-back');
 	const shapes = useMemo(() => ({ agents: constellation(5000, mulberry32(3)), core: knot(4500, mulberry32(4)) }), []);
 	const uniforms = useMemo(() => ({ uTime: { value: 0 }, uCenter: { value: new THREE.Vector2(NEXUS_CENTER.x, NEXUS_CENTER.z) } }), []);
-	const started = useGame((s) => s.started);
 	const zone = useGame((s) => s.zone);
-	const [prefetch, setPrefetch] = useState(false);
-	useEffect(() => {
-		if (!started) return;
-		const t = setTimeout(() => setPrefetch(true), 6000);
-		return () => clearTimeout(t);
-	}, [started]);
-	const loadCity = prefetch || zone === 'nexus';
+	const heading = useGame((s) => s.quests.portail === 'active' || s.quests.portail === 'ready');
+	const [near, setNear] = useState(false);
+	// the heavy city (6 MB, hundreds of meshes) is fetched only when the visitor heads for the portal,
+	// never during the first minute in the val where it froze the game
+	useFrame(() => {
+		if (!near && player.z < -55) setNear(true);
+	});
+	const loadCity = heading || near || zone === 'nexus';
 	useFrame((_, dt) => {
 		uniforms.uTime.value += dt;
 	});

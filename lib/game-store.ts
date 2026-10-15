@@ -13,6 +13,10 @@ export type RaceState = { status: 'idle' | 'countdown' | 'running' | 'finished';
 type GameState = {
 	mode: GameMode;
 	started: boolean;
+	/** The val is downloaded and its shaders compiled: the game can start without freezing. */
+	ready: boolean;
+	/** Download progress of the first scene, 0–100 (fed by the 3D chunk, so the start screen never imports three.js). */
+	loading: number;
 	/** Chosen character: fantasy knight or cyberpunk runner. */
 	hero: 'knight' | 'runner';
 	sound: boolean;
@@ -50,6 +54,8 @@ type GameState = {
 let state: GameState = {
 	mode: 'journey',
 	started: false,
+	ready: false,
+	loading: 0,
 	hero: 'knight',
 	sound: false,
 	zone: 'val',

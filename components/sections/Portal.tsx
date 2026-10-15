@@ -1,7 +1,7 @@
 import { Reveal } from '@/components/ui/Reveal';
 
 const steps = [
-	{ year: '2018', text: 'Première IA en production : Google Vision analyse des documents dans une PWA React.' },
+	{ year: '2018', text: 'Première intégration d’IA en production : l’API Google Vision analyse des documents dans une PWA React.' },
 	{ year: '2024', text: 'Agents autonomes, multi-agents et premier serveur MCP en indépendant.' },
 	{ year: '2025', text: 'Responsable IA chez Neoteem : le code devient le socle, les agents deviennent le métier.' },
 ];
@@ -17,7 +17,7 @@ export function Portal() {
 						Un pied dans le code, <span className="text-gradient">l’autre dans les agents</span>.
 					</h2>
 					<p className="text-mist mt-6 text-lg leading-relaxed">
-						Je n’ai pas quitté le développement pour l’IA : je l’ai emporté avec moi. Neuf ans d’architecture, de tests et de production, c’est exactement ce qui manque à la plupart
+						Je n’ai pas quitté le développement pour l’IA : je l’ai emporté avec moi. Plus de huit ans d’architecture, de tests et de production, c’est exactement ce qui manque à la plupart
 						des projets d’IA générative.
 					</p>
 				</Reveal>

@@ -1,8 +1,8 @@
 'use client';
 
 import { useGLTF } from '@react-three/drei';
-import { useFrame } from '@react-three/fiber';
-import { useMemo, useRef } from 'react';
+import { useFrame, useThree } from '@react-three/fiber';
+import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 
 import { NEXUS_CENTER, nexusWalkable } from '@/lib/world';
@@ -27,28 +27,41 @@ export const CITY_BLOCKS: { x: number; z: number; r: number }[] = [
 
 export function NexusCity() {
 	const { scene } = useGLTF(URL);
-	const blocks = useMemo(
-		() =>
-			CITY_BLOCKS.map(() => {
-				const clone = scene.clone(true);
-				clone.traverse((o) => {
-					const m = o as THREE.Mesh;
-					if (!m.isMesh) return;
-					m.castShadow = false;
-					m.receiveShadow = true;
-					// night city: every lit window and shop front glows from its own texture
-					const mat = (m.material as THREE.MeshStandardMaterial).clone();
-					if (mat.map) {
-						mat.emissiveMap = mat.map;
-						mat.emissive = new THREE.Color('#ffd9b0');
-						mat.emissiveIntensity = 0.32;
-					}
-					m.material = mat;
-				});
-				return clone;
-			}),
-		[scene],
-	);
+	const blocks = useMemo(() => {
+		// night city: every lit window and shop front glows from its own texture; one glowing material per source
+		// material, shared by the four blocks
+		const glow = new Map<THREE.Material, THREE.Material>();
+		const night = (src: THREE.MeshStandardMaterial) => {
+			let mat = glow.get(src);
+			if (!mat) {
+				const m = src.clone();
+				if (m.map) {
+					m.emissiveMap = m.map;
+					m.emissive = new THREE.Color('#ffd9b0');
+					m.emissiveIntensity = 0.32;
+				}
+				glow.set(src, (mat = m));
+			}
+			return mat;
+		};
+		return CITY_BLOCKS.map(() => {
+			const clone = scene.clone(true);
+			clone.traverse((o) => {
+				const m = o as THREE.Mesh;
+				if (!m.isMesh) return;
+				m.castShadow = false;
+				m.receiveShadow = true;
+				m.material = night(m.material as THREE.MeshStandardMaterial);
+			});
+			return clone;
+		});
+	}, [scene]);
+	// compile the city's shaders in parallel as soon as it arrives, long before the visitor walks in
+	const root = useRef<THREE.Group>(null);
+	const { gl, camera, scene: world } = useThree();
+	useEffect(() => {
+		if (root.current) gl.compileAsync(root.current, camera, world).catch(() => {});
+	}, [gl, camera, world]);
 	const refs = useRef<(THREE.Group | null)[]>([]);
 	useFrame(() => {
 		CITY_BLOCKS.forEach((b, i) => {
@@ -61,7 +74,7 @@ export function NexusCity() {
 	});
 	if (process.env.NODE_ENV !== 'production' && typeof window !== 'undefined') Object.assign(window, { __city: CITY_BLOCKS });
 	return (
-		<group>
+		<group ref={root}>
 			<NexusSigns />
 			{blocks.map((obj, i) => (
 				<group

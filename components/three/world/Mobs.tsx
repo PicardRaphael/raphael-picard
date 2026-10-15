@@ -108,7 +108,7 @@ function MobUnit({ mob }: { mob: Mob }) {
 	const actions = useMemo(() => Object.fromEntries(animations.map((a) => [a.name, mixer.clipAction(a)])), [animations, mixer]);
 	const label = useLabel(mob.name, nexus);
 	const sprite = useRef<THREE.Sprite>(null);
-	const v = useRef({ anim: '', hp: -1, flash: 0 });
+	const v = useRef({ anim: '', hp: -1, flash: 0, shadow: true });
 
 	useEffect(() => {
 		label.draw(mob.hp, mob.maxHp);
@@ -240,7 +240,15 @@ function MobUnit({ mob }: { mob: Mob }) {
 			v.current.hp = mob.hp;
 			label.draw(Math.max(mob.hp, 0), mob.maxHp);
 		}
-		mixer.update(dt);
+		// far bugs: no skinning update and no shadow (CPU and shadow-map cost on phones)
+		const close = dp < 45;
+		if (dp < 70) mixer.update(dt);
+		if (close !== v.current.shadow) {
+			v.current.shadow = close;
+			model.traverse((o) => {
+				if ((o as THREE.Mesh).isMesh) o.castShadow = close;
+			});
+		}
 		// corpses stay solid for 2 s, then sink into the ground before respawning later
 		const sink = mob.state === 'dead' && mob.t > 2 ? (mob.t - 2) * 0.9 : 0;
 		// a blow shoves the bug back and flashes it red for a moment
@@ -266,12 +274,14 @@ function MobUnit({ mob }: { mob: Mob }) {
 		if (mob.state === 'dead' && mob.t > 4.5) g.visible = false;
 		g.rotation.y = mob.yaw;
 		if (sprite.current) {
-			// name plates stay readable: drawn on top and scaled with the distance
+			// name plates: near bugs (or the one chasing the hero) only, hidden by walls, faded out from 25 to 35 m
 			const d = state.camera.position.distanceTo(g.position);
 			const k = THREE.MathUtils.clamp(d / 14, 1, 3.2);
 			sprite.current.scale.set(3.2 * k, 0.8 * k, 1);
 			sprite.current.position.y = 2.6 + 0.5 * k;
-			sprite.current.visible = d < 140 && (mob.state !== 'dead' || mob.t < 1.5);
+			const near = mob.state === 'chase' || mob.state === 'attack' ? 1 : THREE.MathUtils.clamp((35 - d) / 10, 0, 1);
+			(sprite.current.material as THREE.SpriteMaterial).opacity = near;
+			sprite.current.visible = near > 0 && (mob.state !== 'dead' || mob.t < 1.5);
 		}
 	});
 
@@ -279,7 +289,7 @@ function MobUnit({ mob }: { mob: Mob }) {
 		<group ref={group}>
 			<primitive object={model} />
 			<sprite ref={sprite} position={[0, 3.1, 0]} scale={[3.2, 0.8, 1]} renderOrder={20}>
-				<spriteMaterial map={label.tex} transparent depthWrite={false} depthTest={false} toneMapped={false} />
+				<spriteMaterial map={label.tex} transparent depthWrite={false} toneMapped={false} />
 			</sprite>
 		</group>
 	);

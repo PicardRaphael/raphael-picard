@@ -36,7 +36,11 @@ function halo() {
 	return haloTex;
 }
 
-export function Lanterns({ night }: { night: number }) {
+/**
+ * The light count never changes (a change recompiles every shader): lights are switched off by intensity,
+ * never unmounted or hidden — also when the hero is in the Nexus (`on` false).
+ */
+export function Lanterns({ night, on = true }: { night: number; on?: boolean }) {
 	const spots = useMemo(() => {
 		const list: { x: number; z: number; rot: number }[] = [];
 		for (const line of PATHS) {
@@ -104,9 +108,8 @@ export function Lanterns({ night }: { night: number }) {
 		pool.current.forEach((l, k) => {
 			if (!l) return;
 			const n = near[k];
-			if (!n) return (l.visible = false);
-			l.visible = true;
-			l.position.copy(bulbs[n.i]);
+			l.intensity = n && on ? 6 + night * 34 : 0;
+			if (n) l.position.copy(bulbs[n.i]);
 		});
 	});
 
@@ -130,13 +133,14 @@ export function Lanterns({ night }: { night: number }) {
 						pool.current[k] = l;
 					}}
 					color="#ffb45c"
-					intensity={6 + night * 34}
+					intensity={0}
 					distance={14}
 					decay={1.5}
 				/>
 			))}
-			{night > 0.2 &&
-				keyLights.map((p, i) => <pointLight key={i} position={[p.x, valHeight(p.x, p.z) + 4, p.z]} color="#ffb347" intensity={40 * night} distance={22} decay={1.6} />)}
+			{keyLights.map((p, i) => (
+				<pointLight key={i} position={[p.x, valHeight(p.x, p.z) + 4, p.z]} color="#ffb347" intensity={on && night > 0.2 ? 40 * night : 0} distance={22} decay={1.6} />
+			))}
 		</group>
 	);
 }

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
+import { hero as hero_ } from '@/content/profile';
 import { game, useGame } from '@/lib/game-store';
 import { ACTIONS, type Action, keyLabel, keymap } from '@/lib/keymap';
 import { music } from '@/lib/music';
@@ -102,18 +103,31 @@ export function StartScreen() {
 	const started = useGame((s) => s.started);
 	const hero = useGame((s) => s.hero);
 	const [keys, setKeys] = useState(false);
+	const ready = useGame((s) => s.ready);
+	const loading = useGame((s) => s.loading);
+	// a click before the world is ready is remembered: the game starts by itself once the shaders are warm
+	const [queued, setQueued] = useState(false);
+	useEffect(() => {
+		if (queued && ready) game.set({ started: true, sound: true });
+	}, [queued, ready]);
+	const play = () => {
+		// unlock audio inside the gesture itself (required by Safari / iOS)
+		void music.start();
+		if (ready) game.set({ started: true, sound: true });
+		else setQueued(true);
+	};
 
 	useEffect(() => {
 		if (started) return;
 		const on = (e: KeyboardEvent) => {
-			if (e.code === 'Enter' && !keys) {
-				void music.start();
-				game.set({ started: true, sound: true });
-			}
+			// Enter plays, unless it is pressing another button of the screen (hero cards, keys, links)
+			const el = document.activeElement;
+			if (e.code !== 'Enter' || keys || (el instanceof HTMLElement && el.closest('button, a') && !el.dataset.play)) return;
+			play();
 		};
 		window.addEventListener('keydown', on);
 		return () => window.removeEventListener('keydown', on);
-	}, [started, keys]);
+	});
 
 	return (
 		<>
@@ -123,11 +137,11 @@ export function StartScreen() {
 				}`}
 				aria-hidden={started}
 			>
-				<p className="mt-auto font-mono text-xs tracking-[0.35em] text-[#ffd9a0] uppercase">Senior AI Engineer & Responsable IA · Lyon</p>
+				<p className="mt-auto font-mono text-xs tracking-[0.35em] text-[#ffd9a0] uppercase">Senior AI Engineer & Responsable IA · Neoteem · Lyon</p>
 				<h1 className="font-display mt-3 text-5xl font-extrabold tracking-tight text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.6)] sm:text-7xl [@media(max-height:500px)]:text-4xl">
 					Raphaël Picard<span className="sr-only">, Senior AI Engineer &amp; Responsable IA à Lyon</span>
 				</h1>
-				<p className="mt-3 max-w-xl text-lg text-white/85 [@media(max-height:500px)]:hidden">Agents IA, RAG, MCP, Claude Code. Choisis ton héros et explore mon monde pour découvrir mon parcours.</p>
+				<p className="mt-3 max-w-xl text-lg text-white/85 [@media(max-height:500px)]:hidden">7 agents IA en production chez Neoteem. Un portfolio jouable : choisissez votre héros et explorez mon parcours, ou lisez la version classique en 2 minutes.</p>
 
 				<div className="mt-7 grid w-full max-w-xl grid-cols-2 gap-3 [@media(max-height:500px)]:mt-4" role="radiogroup" aria-label="Choix du personnage">
 					{HEROES.map((h) => (
@@ -150,26 +164,43 @@ export function StartScreen() {
 
 				<div className="mt-6 flex flex-wrap items-center justify-center gap-3">
 					<button
+						data-play
 						onClick={() => {
-							// unlock audio inside the gesture itself (required by Safari / iOS)
-							void music.start();
-							game.set({ started: true, sound: true });
-							// on phones the game is played sideways: full screen, then lock landscape where the browser allows it (Android)
-							if (window.matchMedia('(pointer: coarse)').matches) void playLandscape();
+							play();
+							// on phones (not tablets) the game is played sideways: full screen, then lock landscape where the browser allows it (Android)
+							if (window.matchMedia('(pointer: coarse)').matches && Math.min(screen.width, screen.height) < 600) void playLandscape();
 						}}
-						className="font-display rounded-full bg-gradient-to-r from-[#651fff] to-[#c50eff] px-9 py-3.5 text-lg font-bold text-white shadow-[0_0_40px_-6px_#c50eff] transition-transform hover:scale-105"
+						aria-busy={queued && !ready}
+						className="font-display relative overflow-hidden rounded-full bg-gradient-to-r from-[#651fff] to-[#c50eff] px-9 py-3.5 text-lg font-bold text-white shadow-[0_0_40px_-6px_#c50eff] transition-transform hover:scale-105"
 					>
-						Jouer
+						{/* the download fills the button from the left while the world loads */}
+						{!ready && <span className="absolute inset-y-0 left-0 bg-white/15 transition-[width] duration-300" style={{ width: `${loading}%` }} aria-hidden />}
+						<span className="relative">{ready || !queued ? 'Jouer' : `Le monde arrive… ${loading} %`}</span>
 					</button>
 					<button onClick={() => setKeys(true)} className="pointer-coarse:hidden rounded-full border border-white/30 bg-black/40 px-5 py-3 text-sm text-white hover:bg-black/60">
 						⌨ Touches
 					</button>
 				</div>
+				{!ready && (
+					<p className="mt-3 font-mono text-xs text-white/60" role="status">
+						Chargement du monde : {loading} %
+					</p>
+				)}
 				<KeyHints withMouse className="mt-5 max-w-xl justify-center pointer-coarse:hidden" />
-				<p className="mt-5 hidden text-sm text-white/75 pointer-coarse:block">Joystick pour bouger, ⚔ attaquer, ⤒ sauter, touche un lieu pour y aller ou parler. Glisse pour la caméra, pince pour zoomer.</p>
-				<Link href="/portfolio" className="mt-4 text-sm text-white/70 underline-offset-4 hover:text-white hover:underline">
-					Version classique du portfolio →
-				</Link>
+				<p className="mt-5 hidden text-sm text-white/75 pointer-coarse:block">Joystick pour bouger, ⚔ attaquer, ⤒ sauter, touchez un lieu pour y aller ou parler. Glissez pour la caméra, pincez pour zoomer.</p>
+				{/* the recruiter's way: CV, classic page and contact one click away, without playing */}
+				<nav aria-label="Accès rapide" className="mt-5 flex flex-wrap items-center justify-center gap-2 text-sm">
+					<span className="text-white/60">Pressé ?</span>
+					<a href={hero_.secondaryCta.href} download className="rounded-full border border-[#ffd9a0]/50 bg-black/45 px-4 py-2 text-[#ffd9a0] backdrop-blur-md hover:bg-black/70">
+						Télécharger le CV
+					</a>
+					<Link href="/portfolio" className="rounded-full border border-white/30 bg-black/45 px-4 py-2 text-white backdrop-blur-md hover:bg-black/70">
+						Version classique · 2 min
+					</Link>
+					<Link href="/portfolio#contact" className="rounded-full border border-white/30 bg-black/45 px-4 py-2 text-white backdrop-blur-md hover:bg-black/70">
+						Me contacter
+					</Link>
+				</nav>
 			</div>
 			{keys && <KeyConfig onClose={() => setKeys(false)} />}
 		</>

@@ -18,9 +18,9 @@ export function Expertise() {
 				<Reveal>
 					<p className="eyebrow">V — Arbre de talents</p>
 					<h2 id="expertise-title" className="font-display mt-4 max-w-3xl text-4xl leading-tight font-bold text-balance sm:text-5xl">
-						Expertise IA : agents, RAG, MCP et <span className="text-gradient">LLMOps</span>.
+						Expertise IA : agents, RAG, sécurité et <span className="text-gradient">LLMOps</span>.
 					</h2>
-					<p className="text-mist mt-4 max-w-2xl">Six talents montés au rang maximum, en production. Sélectionnez un talent pour afficher sa fiche.</p>
+					<p className="text-mist mt-4 max-w-2xl">Six domaines pratiqués en production, chacun prouvé par un chiffre. Sélectionnez-en un pour le détail.</p>
 				</Reveal>
 
 				<div className="mt-12 grid gap-6 lg:grid-cols-[1fr_1.1fr]">
@@ -48,7 +48,7 @@ export function Expertise() {
 										<Icon name={e.id} className="h-7 w-7" />
 									</span>
 									<span className="text-sm leading-tight font-semibold">{e.title}</span>
-									<span className="text-ok absolute top-2 right-2.5 font-mono text-[0.65rem]">5/5</span>
+									<span className="text-ok mt-auto font-mono text-[0.65rem] leading-tight">{e.metric}</span>
 									{i < expertise.length - 1 && <span className="sr-only">,</span>}
 								</button>
 							);
@@ -69,7 +69,7 @@ export function Expertise() {
 								<div className="flex items-start justify-between gap-4">
 									<div>
 										<p className="font-display text-2xl font-bold text-[#c77dff]">{current.title}</p>
-										<p className="text-dim mt-1 font-mono text-xs">Talent · rang 5/5 · Épique</p>
+										<p className="text-dim mt-1 font-mono text-xs">Pratiqué en production</p>
 									</div>
 									{current.metric && <span className="bg-ok/10 text-ok rounded-full px-3 py-1 font-mono text-xs whitespace-nowrap">{current.metric}</span>}
 								</div>

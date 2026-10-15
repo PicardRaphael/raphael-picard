@@ -8,34 +8,37 @@ import { Reveal } from '@/components/ui/Reveal';
 type Node = { id: string; label: string; sub: string; x: number; y: number; detail: string };
 
 const NODES: Node[] = [
-	{ id: 'user', label: 'Gestionnaire', sub: 'question métier', x: 76, y: 170, detail: 'Une question sur ses données, ses mails ou ses documents, posée comme à un collègue. L’identité vient du jeton vérifié, jamais de ce que le modèle envoie.' },
-	{ id: 'agent', label: 'Agent ReAct', sub: 'LangGraph · Gemini', x: 242, y: 170, detail: '5 outils de données génériques et 8 outils mail et documents, toujours chargés : un outil manquant fait échouer l’agent explicitement, sans dégradation silencieuse.' },
-	{ id: 'catalog', label: 'Catalogue sémantique', sub: 'pgvector · HNSW', x: 410, y: 70, detail: 'Les données sont un catalogue, pas une liste d’outils : l’agent cherche la vue ou le rapport pertinent par similarité. Couvrir un nouveau sujet = publier une vue documentée.' },
-	{ id: 'hitl', label: 'Validation humaine', sub: '5 interruptions', x: 410, y: 280, detail: 'Choix entre homonymes, destinataire, rédaction, aperçu avant envoi, confirmation de suppression : aucun mail ne part sans validation humaine.' },
-	{ id: 'gateway', label: 'Passerelle IA', sub: 'Hono · Zod · OpenAPI', x: 578, y: 170, detail: 'Seule porte d’accès aux données, en lecture seule par construction : vues autorisées par introspection, colonnes validées, opérateurs en liste fermée, paramètres liés, uniquement des SELECT.' },
-	{ id: 'data', label: 'Vues métier', sub: '42 vues SQL', x: 744, y: 90, detail: 'Un schéma de vues SQL dédié à l’IA, une base par client choisie par le déploiement. Résultats paginés par curseur opaque : jamais de liste tronquée présentée comme complète.' },
-	{ id: 'obs', label: 'Évals & traces', sub: 'DeepEval · Langfuse', x: 744, y: 260, detail: 'Chaque conversation est tracée de bout en bout ; golden set de 64 cas rejoué 5 fois, Faithfulness, Answer Relevancy, G-Eval métier et contrôle des outils appelés.' },
+	{ id: 'user', label: 'Gestionnaire', sub: 'question métier', x: 76, y: 170, detail: 'Une question sur ses données, ses mails ou ses documents, posée comme à un collègue ; la réponse arrive en streaming (SSE).' },
+	{ id: 'agent', label: 'Agent ReAct', sub: 'LangGraph · Gemini', x: 242, y: 170, detail: 'Un moteur déclaratif : l’agent est décrit (état, prompt, outils, interruptions), son graphe LangGraph en est dérivé. 5 outils de données et 8 outils mail et documents, toujours chargés ; des invariants sont vérifiés avant chaque appel d’outil, et un outil manquant fait échouer l’agent explicitement.' },
+	{ id: 'catalog', label: 'Catalogue sémantique', sub: 'outil · pgvector HNSW', x: 410, y: 70, detail: 'Recherche sémantique dans le catalogue, l’un des 5 outils génériques servis par la passerelle : l’agent y trouve la vue ou le rapport pertinent. Couvrir un nouveau sujet = publier une vue documentée, pas écrire un outil.' },
+	{ id: 'hitl', label: 'Contrôle humain', sub: '5 points de contrôle', x: 410, y: 280, detail: 'Interruptions LangGraph : choix entre homonymes, destinataire, rédaction, aperçu avant envoi, confirmation de suppression. Aucun mail ne part sans validation humaine.' },
+	{ id: 'gateway', label: 'Passerelle IA', sub: 'Hono · Zod · OpenAPI', x: 578, y: 170, detail: 'Seule porte d’accès aux données, en lecture seule par construction : identité tirée du jeton vérifié, vues découvertes par introspection d’un schéma dédié, colonnes validées, opérateurs en liste fermée, paramètres liés, SELECT uniquement, rapports en liste blanche. Délais bornés, erreurs RFC 9457 sans SQL, client HTTP généré depuis l’OpenAPI.' },
+	{ id: 'data', label: 'Vues métier', sub: '42 vues SQL', x: 744, y: 90, detail: 'Un schéma de vues SQL dédié à l’IA, une base par client choisie par le déploiement, jamais par la requête. Résultats paginés par curseur opaque : jamais de liste tronquée présentée comme complète.' },
+	{ id: 'obs', label: 'Traces & évals', sub: 'Langfuse · DeepEval', x: 744, y: 260, detail: 'En production : chaque étape tracée dans Langfuse sous un nom lisible par le métier, coût et latence par agent, retours utilisateurs. Avant chaque release : golden set de 64 cas × 5 tirages avec DeepEval — Answer Relevancy, Faithfulness (fidélité aux données récupérées), critères métier G-Eval, contrôle déterministe des outils appelés.' },
 ];
 
 const EDGES: [string, string][] = [
 	['user', 'agent'],
-	['agent', 'catalog'],
 	['agent', 'hitl'],
 	['agent', 'gateway'],
-	['catalog', 'gateway'],
+	['gateway', 'catalog'],
 	['gateway', 'data'],
 	['agent', 'obs'],
 ];
 
 const TRACE = [
-	{ t: '00.000', s: 'info', m: 'question="Quels sont les impayés de Mme Martin ?"' },
-	{ t: '00.118', s: 'tool', m: 'résoudre_nom("Mme Martin") → 2 homonymes' },
-	{ t: '00.120', s: 'hitl', m: 'interruption LangGraph → « Laquelle ? » (choix humain)' },
-	{ t: '03.402', s: 'hitl', m: 'reprise → Mme Martin, lot 12' },
-	{ t: '03.561', s: 'rag', m: 'catalogue (pgvector) → vue « impayés »' },
-	{ t: '03.744', s: 'tool', m: 'lire_vue(impayés, filtre=locataire) → 3 lignes  [lecture seule]' },
-	{ t: '04.390', s: 'llm', m: 'réponse rédigée, données citées, tableau structuré' },
-	{ t: '04.402', s: 'ok', m: 'stream SSE terminé · trace envoyée à Langfuse' },
+	{ t: '00.000', s: 'info', m: 'question="Quels sont les impayés de Mme Martin ?" · identité ← jeton vérifié' },
+	{ t: '00.940', s: 'llm', m: 'raisonnement → appel resoudre_nom("Martin")' },
+	{ t: '00.941', s: 'route', m: 'invariants vérifiés avant l’appel d’outil ✓' },
+	{ t: '01.180', s: 'tool', m: 'resoudre_nom → 2 homonymes' },
+	{ t: '01.182', s: 'hitl', m: 'interruption LangGraph → « Laquelle ? » [lot 12 · lot 31]' },
+	{ t: '07.905', s: 'hitl', m: 'reprise → Mme Martin, lot 12' },
+	{ t: '08.770', s: 'llm', m: 'appel rechercher_catalogue("impayés locataire")' },
+	{ t: '08.960', s: 'tool', m: 'catalogue (pgvector) → vue « impayés »' },
+	{ t: '09.880', s: 'llm', m: 'appel lire_vue(impayés, filtre=locataire, tri=échéance, limite=50)' },
+	{ t: '10.140', s: 'tool', m: 'lire_vue → 3 lignes · liste complète (aucun curseur suivant) [SELECT seul]' },
+	{ t: '11.020', s: 'llm', m: 'réponse en streaming SSE : montants lus dans la vue, aucun calcul par le modèle' },
+	{ t: '12.310', s: 'ok', m: 'trace Langfuse : 4 appels LLM, 3 outils · coût et latence par agent' },
 ];
 
 const tone: Record<string, string> = {
@@ -88,7 +91,7 @@ export function Architecture() {
 					<h2 id="archi-title" className="font-display mt-4 max-w-3xl text-4xl leading-tight font-bold text-balance sm:text-5xl">
 						Anatomie d’un agent IA <span className="text-gradient">en production</span>.
 					</h2>
-					<p className="text-mist mt-4 max-w-2xl">L’architecture de NeoChat, en production : cliquez sur un composant pour voir son rôle, et regardez une vraie question traverser le système.</p>
+					<p className="text-mist mt-4 max-w-2xl">L’architecture de NeoChat, en production : cliquez sur un composant pour voir son rôle, et suivez une question type traverser le système.</p>
 				</Reveal>
 
 				<div className="mt-12 grid gap-6 xl:grid-cols-[1.45fr_1fr] [&>*]:min-w-0">
@@ -160,7 +163,7 @@ export function Architecture() {
 								<span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
 								<span className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" />
 								<span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
-								<span className="text-dim ml-3 text-xs">trace · agent-chat · run #4812</span>
+								<span className="text-dim ml-3 text-xs">trace · NeoChat · exemple</span>
 							</div>
 							<ol className="space-y-1.5 p-4 leading-relaxed" aria-label="Exemple de trace d’exécution d’un agent">
 								{TRACE.map((l, i) => (

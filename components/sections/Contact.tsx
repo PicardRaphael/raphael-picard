@@ -11,7 +11,7 @@ const field = 'w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 te
 
 const channels = [
 	{ href: `mailto:${site.email}`, glyph: '@', label: site.email, external: false },
-	{ href: site.social.linkedin, glyph: 'in', label: 'LinkedIn · 4 000 abonnés', external: true },
+	{ href: site.social.linkedin, glyph: 'in', label: 'LinkedIn · Raphaël Picard', external: true },
 	{ href: site.social.github, glyph: 'gh', label: 'GitHub · PicardRaphael', external: true },
 ];
 

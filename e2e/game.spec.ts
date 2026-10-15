@@ -43,7 +43,10 @@ test.describe('/ (the game)', () => {
 		await heroes.nth(1).click();
 		await expect(heroes.nth(1)).toHaveAttribute('aria-checked', 'true');
 		await expect(page.getByRole('button', { name: 'Jouer' })).toBeVisible();
-		await expect(page.getByRole('link', { name: /Version classique du portfolio/ })).toHaveAttribute('href', '/portfolio');
+		await expect(page.getByRole('link', { name: /Version classique/ }).first()).toHaveAttribute('href', '/portfolio');
+		// the recruiter's shortcuts: CV and contact without playing
+		await expect(page.getByRole('link', { name: 'Télécharger le CV', exact: true })).toHaveAttribute('href', '/cv-RaphaelPICARD-IA.pdf');
+		await expect(page.getByRole('link', { name: 'Me contacter', exact: true })).toHaveAttribute('href', '/portfolio#contact');
 		// the world renders behind the start screen (intro orbit)
 		await expect(page.locator('canvas').first()).toBeAttached({ timeout: 60_000 });
 	});
@@ -96,7 +99,27 @@ test.describe('/ (the game)', () => {
 		expect(await page.evaluate(() => (window as unknown as Hooks).__game.get().quests.origines)).toBe('active');
 	});
 
-	test('landscape phone: touch controls after starting (the app has no rotate hint)', async ({ browser }) => {
+	test('portrait phone: the game asks to turn the phone', async ({ browser }) => {
+		const ctx = await browser.newContext({ viewport: { width: 375, height: 812 }, isMobile: true, hasTouch: true });
+		const page = await ctx.newPage();
+		await page.goto('/');
+		await page.getByRole('button', { name: 'Jouer' }).tap();
+		await expect(page.getByText('Tourne ton téléphone')).toBeVisible();
+		await expect(page.getByRole('link', { name: /version classique/i }).last()).toBeVisible();
+		await ctx.close();
+	});
+
+	test('portrait tablet: no rotate hint, the game is playable', async ({ browser }) => {
+		const ctx = await browser.newContext({ viewport: { width: 768, height: 1024 }, isMobile: true, hasTouch: true });
+		const page = await ctx.newPage();
+		await page.goto('/');
+		await page.getByRole('button', { name: 'Jouer' }).tap();
+		await expect(page.getByRole('application', { name: 'Joystick de déplacement' })).toBeVisible();
+		await expect(page.getByText('Tourne ton téléphone')).toBeHidden();
+		await ctx.close();
+	});
+
+	test('landscape phone: touch controls after starting, no rotate hint', async ({ browser }) => {
 		const ctx = await browser.newContext({ viewport: { width: 812, height: 375 }, isMobile: true, hasTouch: true });
 		const page = await ctx.newPage();
 		await page.goto('/');
@@ -107,6 +130,7 @@ test.describe('/ (the game)', () => {
 		await expect(page.getByRole('application', { name: 'Joystick de déplacement' })).toBeVisible();
 		await expect(page.getByRole('button', { name: '⚔' })).toBeVisible();
 		await expect(page.getByRole('button', { name: '⤒' })).toBeVisible();
+		await expect(page.getByText('Tourne ton téléphone')).toBeHidden();
 		const { scroll, inner } = await page.evaluate(() => ({ scroll: document.documentElement.scrollWidth, inner: window.innerWidth }));
 		expect(scroll).toBeLessThanOrEqual(inner);
 		await ctx.close();

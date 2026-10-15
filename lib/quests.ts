@@ -24,14 +24,14 @@ export const QUESTS: Quest[] = [
 		title: 'Les origines du développeur',
 		giver: 'raphy',
 		turnIn: 'raphy',
-		intro: 'Bienvenue, voyageur ! Raphaël forge du code depuis neuf ans, et met de l’IA en production depuis 2018. Visite la Forge, la Tour du Savoir et le Cercle du Manifeste : tu sauras d’où il vient et ce qu’il défend.',
+		intro: 'Bienvenue, voyageur ! Raphaël forge du code depuis plus de huit ans ; il a intégré sa première IA en production dès 2018. Visite la Forge, la Tour du Savoir et le Cercle du Manifeste : tu sauras d’où il vient et ce qu’il défend.',
 		objectives: [
 			{ id: 'forge', label: 'Examiner la Forge du Code' },
 			{ id: 'tower', label: 'Visiter la Tour du Savoir' },
 			{ id: 'stones', label: 'Lire le Cercle du Manifeste' },
 		],
 		outro: 'Tu as vu l’artisan. En novembre 2025, il a franchi une porte : Responsable IA chez Neoteem. Le Portail arcanique s’est éveillé au nord du val, il mène au Nexus : l’ère des agents.',
-		reward: { title: 'Artisan du code', text: '9 ans d’ingénierie logicielle découverts.' },
+		reward: { title: 'Artisan du code', text: '8+ ans d’ingénierie logicielle découverts.' },
 		next: 'portail',
 	},
 	{
@@ -40,13 +40,13 @@ export const QUESTS: Quest[] = [
 		// a side quest, open from the start: the garage hands it out
 		giver: 'leasys',
 		turnIn: 'raphy',
-		intro: 'Ce garage a vu naître la première IA de Raphaël, en 2018. Deux autres maisons du val gardent la suite de sa carrière : l’Atelier Schoolmouv et le Comptoir Royal Canin. Va les voir, puis raconte tout à Raphy.',
+		intro: 'Ce garage a vu la première intégration d’IA de Raphaël en production, en 2018. Deux autres maisons du val gardent la suite de sa carrière : l’Atelier Schoolmouv et le Comptoir Royal Canin. Va les voir, puis raconte tout à Raphy.',
 		objectives: [
 			{ id: 'leasys', label: 'Ouvrir le Garage Leasys' },
 			{ id: 'schoolmouv', label: 'Visiter l’Atelier Schoolmouv' },
 			{ id: 'royal', label: 'Entrer au Comptoir Royal Canin' },
 		],
-		outro: 'Une première IA en production dès 2018, un MVP construit de zéro, une plateforme déployée dans plus de 100 pays : tu connais l’artisan.',
+		outro: 'Une première intégration d’IA en production dès 2018, un MVP construit de zéro, une plateforme déployée dans plus de 100 pays : tu connais l’artisan.',
 		reward: { title: 'Compagnon du val', text: 'Le parcours de Raphaël est découvert.' },
 	},
 	{

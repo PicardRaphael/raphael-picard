@@ -1,10 +1,10 @@
 {
 	"origines-intro": {
-		"text": "a424be55",
-		"key": "2faf85c3a16b",
+		"text": "260616a3",
+		"key": "3c2353af1e41",
 		"voice": "val",
-		"seconds": 13.82,
-		"bytes": 86085
+		"seconds": 14.68,
+		"bytes": 94795
 	},
 	"origines-outro": {
 		"text": "16ab677c",
@@ -14,18 +14,18 @@
 		"bytes": 78662
 	},
 	"parcours-intro": {
-		"text": "33796de9",
-		"key": "d17fa3b36a11",
+		"text": "5c0d3272",
+		"key": "427cb68688aa",
 		"voice": "val",
-		"seconds": 14.24,
-		"bytes": 91934
+		"seconds": 14.92,
+		"bytes": 94135
 	},
 	"parcours-outro": {
-		"text": "5350712b",
-		"key": "12acbb9273f0",
+		"text": "c45c3c12",
+		"key": "30f77bd4bba4",
 		"voice": "val",
-		"seconds": 8.45,
-		"bytes": 56628
+		"seconds": 8.62,
+		"bytes": 58264
 	},
 	"portail-intro": {
 		"text": "7d10fffe",

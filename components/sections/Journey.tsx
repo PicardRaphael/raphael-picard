@@ -17,7 +17,7 @@ export function Journey() {
 				<Reveal>
 					<p className="eyebrow">III — Journal de quêtes</p>
 					<h2 id="journey-title" className="font-display mt-4 max-w-3xl text-4xl leading-tight font-bold text-balance sm:text-5xl">
-						Parcours : 9 ans d’ingénierie logicielle, <span className="text-gradient">dont l’IA en production depuis 2018</span>.
+						Parcours : 8+ ans d’ingénierie logicielle, <span className="text-gradient">dont une première intégration d’IA en production dès 2018</span>.
 					</h2>
 					<p className="text-mist mt-4 max-w-2xl">Chaque quête accomplie a laissé une compétence. Sélectionnez-en une pour lire son journal.</p>
 				</Reveal>

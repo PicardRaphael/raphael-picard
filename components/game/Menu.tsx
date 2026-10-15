@@ -191,16 +191,20 @@ function Body({ tab }: { tab: Tab }) {
 				<div className="space-y-3 leading-relaxed text-white/85">
 					<p>Bienvenue !</p>
 					<p>
-						Je m’appelle <b className="text-white">Raphaël Picard</b>, je suis <b className="text-white">Senior AI Engineer & Responsable IA</b> à Lyon : agents LangGraph en production, RAG, serveurs MCP et
-						outillage Claude Code.
+						Je m’appelle <b className="text-white">Raphaël Picard</b>, je suis <b className="text-white">Senior AI Engineer & Responsable IA</b> chez Neoteem, à Lyon : 7 agents IA en production,
+						RAG hybride, évaluations et traces, une équipe formée.
 					</p>
-					<p>Ceci est mon portfolio. Explore le monde, parle à Raphy, accomplis les quêtes et corrige les bugs pour découvrir mon parcours.</p>
+					<p>Ceci est mon portfolio. Explorez le monde, parlez à Raphy, accomplissez les quêtes et corrigez les bugs pour découvrir mon parcours.</p>
 					<p>
-						Pressé ? La <Link href="/portfolio" className="text-[#7dd3fc] underline-offset-4 hover:underline">version classique</Link> résume tout, et{' '}
+						Pressé ?{' '}
+						<a href="/cv-RaphaelPICARD-IA.pdf" download className="text-[#7dd3fc] underline-offset-4 hover:underline">
+							Téléchargez mon CV
+						</a>
+						, lisez la <Link href="/portfolio" className="text-[#7dd3fc] underline-offset-4 hover:underline">version classique</Link> ou{' '}
 						<a href={`mailto:${site.email}`} className="text-[#7dd3fc] underline-offset-4 hover:underline">
-							mon e-mail
-						</a>{' '}
-						reste ouvert.
+							écrivez-moi
+						</a>
+						.
 					</p>
 				</div>
 			);

@@ -5,11 +5,14 @@ export const site = {
 	name: 'Raphaël Picard',
 	role: 'Senior AI Engineer & Responsable IA',
 	jobTitle: 'Senior AI Engineer & Responsable IA',
+	/** Last content update (sitemap, structured data); the CV PDF has its own date. */
+	updatedAt: '2026-10-15',
+	cvUpdatedAt: '2026-05-26',
 	/** ≤ 60 characters: the search result title. */
 	title: 'Raphaël Picard · Senior AI Engineer & Responsable IA, Lyon',
 	/** ≤ 155 characters: the search result snippet. */
 	description:
-		'Senior AI Engineer & Responsable IA à Lyon : 7 agents LangGraph en production, RAG hybride, serveurs MCP, évals DeepEval et Langfuse. 9 ans d’ingénierie.',
+		'Senior AI Engineer & Responsable IA à Lyon : 7 agents LangGraph en production, RAG hybride, serveurs MCP, évals DeepEval et Langfuse. 8+ ans d’ingénierie.',
 	employer: { name: 'Neoteem', url: 'https://www.neoteem.fr' },
 	locale: 'fr_FR',
 	location: 'Lyon, France',
@@ -25,6 +28,15 @@ export const site = {
 		'ingénieur IA',
 		'AI engineer',
 		'lead IA',
+		'Lead AI Engineer',
+		'Head of AI',
+		'Senior AI Engineer',
+		'IA générative',
+		'GenAI',
+		'LLM',
+		'LLMOps',
+		'chatbot IA',
+		'agents conversationnels',
 		'responsable IA',
 		'agents IA',
 		'IA agentique',

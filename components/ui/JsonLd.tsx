@@ -32,9 +32,10 @@ export function SiteJsonLd() {
 		'@type': 'Person',
 		'@id': PERSON_ID,
 		name: site.name,
+		alternateName: ['Raphael Picard'],
 		givenName: 'Raphaël',
 		familyName: 'Picard',
-		jobTitle: site.jobTitle,
+		jobTitle: [site.jobTitle, 'Senior AI Engineer', 'Responsable IA', 'Ingénieur IA'],
 		description: site.description,
 		url: site.url,
 		email: `mailto:${site.email}`,
@@ -59,7 +60,7 @@ export function SiteJsonLd() {
 
 /** Page-level structured data: "/portfolio" is a ProfilePage about the Person; "/" a WebPage about them. */
 export function PageJsonLd({ type, path, name, description }: { type: 'ProfilePage' | 'WebPage'; path: string; name: string; description: string }) {
-	const url = `${site.url}${path === '/' ? '' : path}`;
+	const url = path === '/' ? `${site.url}/` : `${site.url}${path}`;
 	return (
 		<Script
 			data={{
@@ -70,6 +71,7 @@ export function PageJsonLd({ type, path, name, description }: { type: 'ProfilePa
 				name,
 				description,
 				inLanguage: 'fr-FR',
+				dateModified: site.updatedAt,
 				isPartOf: { '@id': WEBSITE_ID },
 				about: { '@id': PERSON_ID },
 				...(type === 'ProfilePage' ? { mainEntity: { '@id': PERSON_ID } } : {}),

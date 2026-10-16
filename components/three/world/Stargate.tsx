@@ -33,16 +33,23 @@ void main() {
 	float r = length(p) * 2.0;
 	if (r > 1.0) discard;
 	float t = uTime;
-	float w = waves(p * 3.0, t);
+	// a slow whirlpool: the water turns, faster toward the centre (atan guarded against the 0/0 centre pixel)
+	float a = atan(p.y, p.x + 1e-5);
+	float spin = a + t * 0.45 + (1.0 - r) * 2.2;
+	vec2 q = vec2(cos(spin), sin(spin)) * r * 0.5;
+	float w = waves(q * 3.0, t * 1.5);
 	float caustic = pow(1.0 - abs(sin(w * 1.6)), 6.0);
-	// concentric ripples spreading from the centre, like a vertical pool of water
-	float ripple = pow(0.5 + 0.5 * sin(r * 34.0 - t * 3.2), 3.0) * (1.0 - r);
+	// concentric ripples rushing to the rim, and spiral streaks of light drawn into the centre
+	float ripple = pow(0.5 + 0.5 * sin(r * 30.0 - t * 4.5), 3.0) * (1.0 - r);
+	float streak = pow(max(0.0, sin(a * 7.0 + r * 14.0 + t * 2.6)), 24.0) * smoothstep(0.05, 0.4, r) * (1.0 - r);
 	vec3 deep = vec3(0.03, 0.16, 0.42);
 	vec3 mid = vec3(0.12, 0.42, 0.85);
 	vec3 bright = vec3(0.62, 0.86, 1.0);
 	vec3 col = mix(deep, mid, smoothstep(1.0, 0.15, r));
-	col = mix(col, bright, caustic * 0.55 + ripple * 0.35);
-	col += vec3(0.5, 0.75, 1.0) * pow(max(0.0, 1.0 - r * 2.2), 2.0) * 0.35;
+	col = mix(col, bright, clamp(caustic * 0.55 + ripple * 0.35 + streak * 0.8, 0.0, 1.0));
+	// the heart breathes
+	float pulse = 0.85 + 0.15 * sin(t * 1.8);
+	col += vec3(0.5, 0.75, 1.0) * pow(max(0.0, 1.0 - r * 2.2), 2.0) * 0.45 * pulse;
 	// darker rim where the water meets the ring
 	col *= 0.55 + 0.45 * smoothstep(1.0, 0.82, r);
 	gl_FragColor = vec4(col, 1.0);

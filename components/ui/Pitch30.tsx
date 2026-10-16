@@ -44,7 +44,27 @@ function CopyEmail() {
 export function Pitch30Dialog() {
 	const [open, setOpen] = useState(false);
 	const [video, setVideo] = useState(true);
+	/** Full window: the fallback when the browser refuses true fullscreen (embedded browsers, some phones). */
+	const [big, setBig] = useState(false);
 	const close = useRef<HTMLButtonElement>(null);
+	const stage = useRef<HTMLDivElement>(null);
+	const film = useRef<HTMLVideoElement>(null);
+
+	const fullscreen = async () => {
+		const el = stage.current;
+		const v = film.current as (HTMLVideoElement & { webkitEnterFullscreen?: () => void }) | null;
+		try {
+			if (el?.requestFullscreen && document.fullscreenEnabled) await el.requestFullscreen();
+			// iPhone: only the video element itself can go fullscreen
+			else if (v?.webkitEnterFullscreen) v.webkitEnterFullscreen();
+			else setBig(true);
+		} catch {
+			setBig(true);
+		}
+		// leaving the muted preview for the real screening: sound on
+		if (v) v.muted = false;
+		void v?.play().catch(() => {});
+	};
 
 	useEffect(() => {
 		const on = () => setOpen(true);
@@ -63,7 +83,12 @@ export function Pitch30Dialog() {
 		const key = (e: KeyboardEvent) => {
 			if (e.key === 'Tab') return;
 			e.stopImmediatePropagation();
-			if (e.key === 'Escape') setOpen(false);
+			if (e.key !== 'Escape') return;
+			// Escape steps back once: full window first, then the window itself
+			setBig((b) => {
+				if (!b) setOpen(false);
+				return false;
+			});
 		};
 		window.addEventListener('keydown', key, true);
 		return () => {
@@ -88,8 +113,13 @@ export function Pitch30Dialog() {
 				</h2>
 				<div className="mt-3 grid gap-4 md:grid-cols-[1.35fr_1fr] md:gap-6">
 					{video && (
+						<div
+							ref={stage}
+							className={`group [&:fullscreen]:flex [&:fullscreen]:items-center [&:fullscreen]:bg-black ${big ? 'fixed inset-0 z-[90] flex items-center bg-black' : 'relative'}`}
+						>
 						<video
-							className="aspect-video w-full rounded-xl border border-white/10 bg-black"
+							ref={film}
+							className={`aspect-video w-full bg-black [:fullscreen_&]:h-full [:fullscreen_&]:rounded-none [:fullscreen_&]:border-0 ${big ? 'h-full' : 'rounded-xl border border-white/10'}`}
 							src={PITCH_VIDEO}
 							poster={PITCH_POSTER}
 							controls
@@ -101,6 +131,20 @@ export function Pitch30Dialog() {
 						>
 							<track kind="captions" src={PITCH_CAPTIONS} srcLang="fr" label="Français" default />
 						</video>
+						{big ? (
+							<button type="button" onClick={() => setBig(false)} className="absolute top-3 right-3 rounded-full bg-black/70 px-4 py-2 text-sm font-semibold text-white hover:bg-black">
+								Quitter le plein écran ✕
+							</button>
+						) : (
+							<button
+								type="button"
+								onClick={() => void fullscreen()}
+								className="absolute top-2 left-2 rounded-full bg-black/65 px-3 py-1.5 text-xs font-semibold text-white opacity-90 backdrop-blur-sm transition-opacity hover:bg-black/90 [:fullscreen_&]:hidden"
+							>
+								⛶ Plein écran avec le son
+							</button>
+						)}
+						</div>
 					)}
 					<dl className={`space-y-2.5 text-sm leading-snug ${video ? '' : 'md:col-span-2'}`}>
 						{pitch30.points.map((p) => (

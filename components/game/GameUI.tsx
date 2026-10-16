@@ -60,9 +60,15 @@ function Ticker() {
 	const ticker = useGame((s) => s.ticker);
 	// never over the zone banner or the portal whirl: it waits its turn
 	const free = useScreenFree(ticker?.id ?? null);
+	// the bug card bubble sits above the hero at the same height: the line steps down below it (still above the crosshair)
+	const card = useGame((s) => s.bugCard !== null);
 	if (!ticker || !free) return null;
 	return (
-		<div key={ticker.id} role="status" className="pointer-events-none fixed inset-x-0 top-[30vh] z-30 flex animate-[zone-in_3s_ease-out_forwards] justify-center px-4 [@media(max-height:500px)]:top-[34vh]">
+		<div
+			key={ticker.id}
+			role="status"
+			className={`pointer-events-none fixed inset-x-0 z-30 flex animate-[zone-in_3s_ease-out_forwards] justify-center px-4 ${card ? 'top-[40vh] [@media(max-height:500px)]:top-[41vh]' : 'top-[30vh] [@media(max-height:500px)]:top-[34vh]'}`}
+		>
 			<p className="rounded-full border border-[#ffd100]/40 bg-black/70 px-4 py-1.5 font-mono text-sm text-[#ffe9a3] backdrop-blur-md">{ticker.text}</p>
 		</div>
 	);
@@ -71,9 +77,16 @@ function Ticker() {
 function Toast() {
 	const toast = useGame((s) => s.toast);
 	const visible = toast;
+	useEffect(() => {
+		if (!visible) return;
+		const t = setTimeout(() => {
+			if (game.get().toast?.id === visible.id) game.set({ toast: null });
+		}, 4600);
+		return () => clearTimeout(t);
+	}, [visible]);
 	if (!visible) return null;
 	return (
-		<div key={visible.id} role="status" className="fixed inset-x-0 top-24 z-40 flex animate-[zone-in_4.5s_ease-out_forwards] justify-center px-4 [@media(max-height:500px)]:top-14">
+		<div key={visible.id} role="status" className="pointer-events-none fixed inset-x-0 top-24 z-40 flex animate-[zone-in_4.5s_ease-out_forwards] justify-center px-4 [@media(max-height:500px)]:top-14">
 			<div className="flex items-center gap-4 rounded-2xl border-2 border-[#ffd100]/70 bg-[#1b1206]/95 px-5 py-3 shadow-[0_0_40px_-10px_#ffd100]">
 				<span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-[#ffd100] bg-[#ffd100]/15 text-2xl text-[#ffd100] [@media(max-height:500px)]:h-9 [@media(max-height:500px)]:w-9 [@media(max-height:500px)]:text-lg">★</span>
 				<div>

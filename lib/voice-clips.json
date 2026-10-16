@@ -1,17 +1,17 @@
 {
 	"origines-intro": {
-		"text": "260616a3",
-		"key": "3c2353af1e41",
+		"text": "8d004d46",
+		"key": "f89d4af20c8b",
 		"voice": "val",
-		"seconds": 14.68,
-		"bytes": 94795
+		"seconds": 20.43,
+		"bytes": 128922
 	},
 	"origines-outro": {
-		"text": "16ab677c",
-		"key": "561814d99d59",
+		"text": "e9bfe993",
+		"key": "5b69d96e2a09",
 		"voice": "val",
-		"seconds": 12.29,
-		"bytes": 78662
+		"seconds": 12.12,
+		"bytes": 78359
 	},
 	"parcours-intro": {
 		"text": "5c0d3272",

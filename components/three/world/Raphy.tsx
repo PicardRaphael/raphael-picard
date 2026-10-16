@@ -1,6 +1,6 @@
 'use client';
 
-import { type ThreeElements, useLoader } from '@react-three/fiber';
+import { type ThreeElements, useFrame, useLoader } from '@react-three/fiber';
 import { useMemo } from 'react';
 import * as THREE from 'three';
 import { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader.js';
@@ -66,19 +66,64 @@ export function useRaphyGeometry() {
 	}, [svg]);
 }
 
+/**
+ * Hologram look: a faint body, a bright rim where the surface turns away from the eye, scanlines rolling upward and a
+ * light flicker. Additive, no lighting, guarded against NaN (zero-length vectors) because the bloom spreads them.
+ */
+const holoMaterial = new THREE.ShaderMaterial({
+	uniforms: { uTime: { value: 0 } },
+	vertexColors: true,
+	transparent: true,
+	depthWrite: false,
+	blending: THREE.AdditiveBlending,
+	toneMapped: false,
+	vertexShader: /* glsl */ `
+		varying vec3 vColor;
+		varying vec3 vNormalW;
+		varying vec3 vWorld;
+		void main() {
+			vColor = color;
+			vec4 w = modelMatrix * vec4(position, 1.0);
+			vWorld = w.xyz;
+			vNormalW = mat3(modelMatrix) * normal;
+			gl_Position = projectionMatrix * viewMatrix * w;
+		}
+	`,
+	fragmentShader: /* glsl */ `
+		uniform float uTime;
+		varying vec3 vColor;
+		varying vec3 vNormalW;
+		varying vec3 vWorld;
+		void main() {
+			vec3 toEye = cameraPosition - vWorld;
+			vec3 v = toEye / max(length(toEye), 1e-4);
+			vec3 n = vNormalW / max(length(vNormalW), 1e-4);
+			float rim = pow(1.0 - clamp(abs(dot(n, v)), 0.0, 1.0), 2.0);
+			float scan = 0.55 + 0.45 * sin(vWorld.y * 3.2 - uTime * 2.4);
+			float fine = 0.85 + 0.15 * sin(vWorld.y * 40.0 + uTime * 6.0);
+			float flicker = 0.92 + 0.08 * sin(uTime * 13.0) * sin(uTime * 7.3);
+			vec3 col = vColor * (0.22 * scan * fine + 1.4 * rim) * flicker;
+			gl_FragColor = vec4(col, clamp(0.25 + rim, 0.0, 1.0));
+		}
+	`,
+});
+
 type Props = { hologram?: boolean } & ThreeElements['group'];
 
 export function RaphyModel({ hologram = false, ...props }: Props) {
 	const g = useRaphyGeometry();
+	useFrame((_, dt) => {
+		if (hologram) holoMaterial.uniforms.uTime.value += Math.min(dt, 0.05);
+	});
 	return (
 		<group {...props}>
-			<mesh geometry={g.body} castShadow={!hologram}>
-				{hologram ? (
-					<meshBasicMaterial vertexColors transparent opacity={0.55} blending={THREE.AdditiveBlending} depthWrite={false} toneMapped={false} />
-				) : (
+			{hologram ? (
+				<mesh geometry={g.body} material={holoMaterial} />
+			) : (
+				<mesh geometry={g.body} castShadow>
 					<meshStandardMaterial vertexColors metalness={0.35} roughness={0.35} emissive="#3b0a66" emissiveIntensity={0.5} />
-				)}
-			</mesh>
+				</mesh>
+			)}
 			<mesh geometry={g.eyes}>
 				<meshBasicMaterial color="#ffffff" toneMapped={false} />
 			</mesh>

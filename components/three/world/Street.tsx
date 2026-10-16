@@ -92,7 +92,7 @@ function facadeTexture(seed: number) {
 		// pilasters every 4 bays, a lighter slab at each floor
 		ctx.fillStyle = '#20253a';
 		for (let x = 0; x < 512; x += 128) ctx.fillRect(x, 0, 8, 512);
-		const lit = ['#ffd49a', '#ffe6c2', '#ffd49a', '#d6e9ff', '#fff3de', '#ff9be8', '#8ff0ff'];
+		const lit = ['#ffd49a', '#ffe6c2', '#ffd49a', '#d6e9ff', '#fff3de', '#ffe0b0', '#cfe3ff'];
 		for (let y = 0; y < 512; y += 32) {
 			ctx.fillStyle = '#262b3d';
 			ctx.fillRect(0, y + 27, 512, 5);
@@ -101,7 +101,7 @@ function facadeTexture(seed: number) {
 				if (x % 128 < 10) continue;
 				const r = rnd();
 				// dark glass with a cold sheen, or a lit room
-				if (awake && r < 0.32) {
+				if (awake && r < 0.22) {
 					ctx.globalAlpha = 0.6 + rnd() * 0.4;
 					ctx.fillStyle = lit[Math.floor(rnd() * lit.length)];
 				} else {
@@ -144,7 +144,7 @@ function StreetEnds() {
 		return list.map((w) => {
 			const tex = facadeTexture(w.seed);
 			const wide = w.face === 'x' ? w.size[2] : w.size[0];
-			tex.repeat.set(Math.max(1, Math.round(wide / 14)), Math.max(1, Math.round(w.size[1] / 14)));
+			tex.repeat.set(Math.max(1, Math.round(wide / 8)), Math.max(1, Math.round(w.size[1] / 8)));
 			return { ...w, mat: new THREE.MeshBasicMaterial({ map: tex, color: new THREE.Color(1, 1, 1) }) };
 		});
 	}, []);

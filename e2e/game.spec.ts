@@ -45,7 +45,7 @@ test.describe('/ (the game)', () => {
 		await expect(page.getByRole('button', { name: 'Jouer' })).toBeVisible();
 		await expect(page.getByRole('link', { name: /Version classique/ }).first()).toHaveAttribute('href', '/portfolio');
 		// the recruiter's shortcuts: CV and contact without playing
-		await expect(page.getByRole('link', { name: 'Télécharger le CV', exact: true })).toHaveAttribute('href', '/cv-RaphaelPICARD-IA.pdf');
+		await expect(page.getByRole('link', { name: 'Télécharger le CV', exact: true })).toHaveAttribute('href', '/raphael-picard-cv-senior-ai-engineer-responsable-ia.pdf');
 		await expect(page.getByRole('link', { name: 'Me contacter', exact: true })).toHaveAttribute('href', '/portfolio#contact');
 		// the world renders behind the start screen (intro orbit)
 		await expect(page.locator('canvas').first()).toBeAttached({ timeout: 60_000 });

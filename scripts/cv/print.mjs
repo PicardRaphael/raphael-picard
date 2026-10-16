@@ -1,10 +1,10 @@
-// Prints the /cv page (generated from content/*) to public/cv-RaphaelPICARD-IA.pdf.
+// Prints the /cv page (generated from content/*) to public/raphael-picard-cv-senior-ai-engineer-responsable-ia.pdf.
 // usage: node scripts/cv/print.mjs [baseUrl=http://localhost:3000]
 import { chromium } from '@playwright/test';
 import path from 'node:path';
 
 const base = process.argv[2] ?? 'http://localhost:3000';
-const out = path.resolve('public/cv-RaphaelPICARD-IA.pdf');
+const out = path.resolve('public/raphael-picard-cv-senior-ai-engineer-responsable-ia.pdf');
 const browser = await chromium.launch();
 const page = await browser.newPage();
 await page.goto(`${base}/cv`, { waitUntil: 'networkidle' });
@@ -18,7 +18,7 @@ await page.pdf({
 	headerTemplate: '<span></span>',
 	// drawn in the bottom page margin set by the page's @page rule
 	footerTemplate:
-		'<div style="width:100%;padding:0 13mm;font:8px Inter,Arial,sans-serif;color:#8a84a3;display:flex;justify-content:space-between">' +
+		'<div style="width:100%;padding:0 13mm;font:9.5px Inter,Arial,sans-serif;color:#6f6889;display:flex;justify-content:space-between">' +
 		'<span>Raphaël Picard · Senior AI Engineer & Responsable IA</span>' +
 		'<span><span class="pageNumber"></span> / <span class="totalPages"></span></span></div>',
 });

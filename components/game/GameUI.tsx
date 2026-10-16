@@ -301,7 +301,7 @@ function Corner() {
 				<span className="hidden pointer-coarse:inline">Classique</span>
 			</Link>
 			<a
-				href="/cv-RaphaelPICARD-IA.pdf"
+				href="/raphael-picard-cv-senior-ai-engineer-responsable-ia.pdf"
 				download
 				aria-label="Télécharger le CV (PDF)"
 				className="rounded-full border border-[#ffd9a0]/50 bg-black/50 px-4 py-2 text-sm text-[#ffd9a0] backdrop-blur-md hover:bg-black/70 pointer-coarse:px-3"

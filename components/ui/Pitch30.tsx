@@ -112,7 +112,7 @@ export function Pitch30Dialog() {
 					</dl>
 				</div>
 				<div className="mt-4 flex flex-wrap gap-2 text-sm">
-					<a href="/cv-RaphaelPICARD-IA.pdf" download className="rounded-full bg-gradient-to-r from-[#651fff] to-[#c50eff] px-4 py-2 font-semibold">
+					<a href="/raphael-picard-cv-senior-ai-engineer-responsable-ia.pdf" download className="rounded-full bg-gradient-to-r from-[#651fff] to-[#c50eff] px-4 py-2 font-semibold">
 						Télécharger le CV
 					</a>
 					<a href="/portfolio#ecrire" target="_blank" rel="noopener" className="rounded-full border border-white/25 px-4 py-2 hover:bg-white/10">

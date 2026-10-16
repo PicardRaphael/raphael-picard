@@ -18,6 +18,8 @@ const nextConfig: NextConfig = {
 			// one canonical host: the bare domain answers with a permanent redirect to www
 			{ source: '/:path*', has: [{ type: 'host', value: 'raphaelpicard.com' }], destination: 'https://www.raphaelpicard.com/:path*', permanent: true },
 			...Object.entries(legacyRoutes).map(([source, destination]) => ({ source, destination, permanent: true })),
+			// the CV's old file name (links already shared) leads to the named one
+			{ source: '/cv-RaphaelPICARD-IA.pdf', destination: '/raphael-picard-cv-senior-ai-engineer-responsable-ia.pdf', permanent: true },
 		];
 	},
 	async headers() {

@@ -1,40 +1,69 @@
 import type { Metadata } from 'next';
 
-import { cvExperiences, cvExtraTraining, cvHeader, cvLanguages, cvProjectNotes, cvSkills, cvStats, cvSummary } from '@/content/cv';
+import { cvExperiences, cvHeader, cvLanguages, cvProjectNotes, cvSkills, cvStats, cvSummary } from '@/content/cv';
 import { certifications, education, projects } from '@/content/work';
 import { site } from '@/lib/site';
 
 /**
  * The CV, built from the site content (content/profile.ts, content/work.ts) plus the CV-only details of content/cv.ts:
- * printed to public/cv-RaphaelPICARD-IA.pdf by scripts/cv/print.mjs, so the PDF never contradicts the site.
+ * printed to public/raphael-picard-cv-senior-ai-engineer-responsable-ia.pdf by scripts/cv/print.mjs, so the PDF never contradicts the site.
+ *
+ * Built for applicant tracking systems as much as for people: real words in the titles (no letter-spacing that splits
+ * them), list markers drawn by the browser (no positioned pseudo-elements, which Chrome paints and extracts after the
+ * text), every link a real link.
  */
 export const metadata: Metadata = {
-	title: `CV — ${site.name}, ${site.role}`,
+	title: `${site.name} — CV Senior AI Engineer & Responsable IA`,
+	description: 'CV de Raphaël Picard : Senior AI Engineer & Responsable IA, agents LLM en production, RAG, LLMOps, Python, TypeScript.',
 	robots: { index: false, follow: false },
 };
 
 const accent = '#651fff';
-const muted = '#57506f';
+const muted = '#4b4466';
+const rule = '#c9bdfc';
 
 const display = (url: string) => url.replace(/^https:\/\/(www\.)?/, '').replace(/\/$/, '');
 
+/**
+ * French typography: no-break space before « : », thin no-break space before « ; % × → » and inside « 7 000 »,
+ * so a line never starts with a colon or splits a number from its unit.
+ */
+function typo(text: string) {
+	return text
+		.replace(/ :/g, ' :')
+		.replace(/ ([;%×→])/g, ' $1')
+		.replace(/([×→]) /g, '$1 ')
+		.replace(/(\d) (\d{3})\b/g, '$1 $2');
+}
+
 function Title({ children }: { children: React.ReactNode }) {
 	return (
-		<h2 className="cv-title mt-[14px] mb-[6px] flex items-center gap-2 text-[10.5px] font-bold tracking-[0.16em] uppercase" style={{ color: accent }}>
+		<h2 className="mt-[15px] mb-[6px] flex items-center gap-2 text-[11px] font-bold tracking-[0.06em] uppercase" style={{ color: accent }}>
 			{children}
-			<span aria-hidden className="h-px flex-1" style={{ background: '#ddd3ff' }} />
+			<span aria-hidden className="h-px flex-1" style={{ background: rule }} />
 		</h2>
 	);
 }
 
-/** Renders **bold** spans of a CV string. */
+/** Renders the **bold** spans and [links](url) of a CV string (links in bold accent), with French typography. */
 function Rich({ text }: { text: string }) {
-	return text.split('**').map((part, i) => (i % 2 ? <strong key={i}>{part}</strong> : part));
+	return typo(text)
+		.split(/(\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\))/)
+		.map((part, i) => {
+			const link = /^\[([^\]]+)\]\(([^)]+)\)$/.exec(part);
+			if (link)
+				return (
+					<a key={i} href={link[2]} className="font-bold" style={{ color: accent }}>
+						{link[1]}
+					</a>
+				);
+			return part.startsWith('**') ? <strong key={i}>{part.slice(2, -2)}</strong> : part;
+		});
 }
 
 function Bullets({ points }: { points: string[] }) {
 	return (
-		<ul className="cv-bullets mt-[2px] space-y-[1.5px]">
+		<ul className="cv-list mt-[2px] space-y-[2px]">
 			{points.map((p) => (
 				<li key={p}>
 					<Rich text={p} />
@@ -45,7 +74,8 @@ function Bullets({ points }: { points: string[] }) {
 }
 
 export default function CvPage() {
-	const openSource = projects.filter((p) => p.url && p.name in cvProjectNotes);
+	const order = Object.keys(cvProjectNotes);
+	const openSource = projects.filter((p) => p.url && p.name in cvProjectNotes).sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name));
 	const anthropic = certifications.filter((c) => c.issuer === 'Anthropic Academy');
 	const others = certifications.filter((c) => c.issuer !== 'Anthropic Academy' && !c.name.includes('RNCP'));
 	const contact = [
@@ -57,36 +87,34 @@ export default function CvPage() {
 	];
 
 	return (
-		<main className="cv mx-auto max-w-[210mm] bg-white px-[13mm] py-[12mm] text-[10.9px] leading-[1.42] text-[#1b1530]">
+		<main lang="fr" className="cv mx-auto max-w-[210mm] bg-white px-[13mm] py-[12mm] text-[11.5px] leading-[1.4] text-[#1b1530]">
 			<style>{`
-				@page { size: A4; margin: 11mm 13mm 12mm; }
+				@page { size: A4; margin: 11mm 13mm 13mm; }
 				html, body { background: #fff !important; color-scheme: light; }
 				body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 				nextjs-portal { display: none !important; }
 				@media print { .cv { padding: 0 !important; max-width: none !important; } }
 				.cv, .cv * { cursor: auto !important; }
 				.cv a { color: inherit; text-decoration: none; }
-				.cv h2, .cv h3, .cv h4 { break-after: avoid; }
+				.cv h2, .cv h3, .cv h4, .cv .keep { break-after: avoid; }
 				.cv li, .cv .avoid { break-inside: avoid; }
-				.cv-bullets { padding-left: 11px; }
-				.cv-bullets > li { position: relative; }
-				.cv-bullets > li::before { content: ''; position: absolute; left: -9px; top: 0.6em; width: 4px; height: 4px; border-radius: 9999px; background: ${accent}; }
+				.cv-list { list-style: disc; padding-left: 13px; }
+				.cv-list > li { padding-left: 1px; }
+				.cv-list > li::marker { color: ${accent}; font-size: 0.85em; }
 			`}</style>
 
 			<header className="flex items-start justify-between gap-6 border-b-2 pb-[10px]" style={{ borderColor: accent }}>
 				<div>
-					<h1 className="font-display text-[27px] leading-none font-extrabold tracking-tight">{site.name}</h1>
-					<p className="mt-[6px] text-[13.5px] font-semibold" style={{ color: accent }}>
+					<h1 className="font-display text-[27px] leading-none font-extrabold">{site.name}</h1>
+					<p className="mt-[6px] text-[14px] font-semibold" style={{ color: accent }}>
 						{site.role}
 					</p>
-					<p className="mt-[3px] text-[10px]" style={{ color: muted }}>
+					<p className="mt-[4px] text-[10.5px]" style={{ color: muted }}>
 						{cvHeader.keywords}
 					</p>
-					<p className="mt-[2px] text-[10px]" style={{ color: muted }}>
-						{cvHeader.location}
-					</p>
 				</div>
-				<ul className="shrink-0 space-y-[1px] text-right text-[10px]">
+				<ul className="shrink-0 space-y-[1px] text-right text-[10.5px]">
+					<li className="font-semibold">{cvHeader.location}</li>
 					{contact.map((c) => (
 						<li key={c.href}>
 							<a href={c.href}>{c.label}</a>
@@ -96,56 +124,58 @@ export default function CvPage() {
 			</header>
 
 			<Title>Profil</Title>
-			<p className="text-[10.8px]">{cvSummary}</p>
+			<p>{typo(cvSummary)}</p>
 
 			<ul className="avoid mt-[8px] grid grid-cols-4 gap-[6px]">
 				{cvStats.map((s) => (
-					<li key={s.label} className="rounded-[5px] border px-[8px] py-[5px]" style={{ borderColor: '#e4defc', background: '#f7f5ff' }}>
-						<span className="block text-[15px] leading-none font-extrabold" style={{ color: accent }}>
-							{s.value}
+					<li key={s.label} className="rounded-[5px] border px-[8px] py-[6px]" style={{ borderColor: '#cfc6f5', background: '#f7f5ff' }}>
+						<span className="block text-[17px] leading-none font-extrabold tabular-nums" style={{ color: accent }}>
+							{typo(s.value)}
 						</span>
-						<span className="text-[9px] leading-[1.25]" style={{ color: muted }}>
-							{s.label}
+						<span className="mt-[3px] block text-[10px] leading-[1.3]" style={{ color: muted }}>
+							{typo(s.label)}
 						</span>
 					</li>
 				))}
 			</ul>
 
 			<Title>Compétences clés</Title>
-			<ul className="cv-bullets space-y-[1.5px]">
+			<dl className="grid grid-cols-[132px_1fr] gap-x-3 gap-y-[2px]">
 				{cvSkills.map((s) => (
-					<li key={s.label}>
-						<strong>{s.label}</strong> : {s.items}
-					</li>
+					<div key={s.label} className="contents">
+						<dt className="font-semibold">{s.label}</dt>
+						<dd>{typo(s.items)}</dd>
+					</div>
 				))}
-			</ul>
+			</dl>
 
 			<Title>Expérience professionnelle</Title>
-			<div className="space-y-[9px]">
+			<div className="space-y-[11px]">
 				{cvExperiences.map((e) => (
-					<section key={e.company + e.period} className={e.blocks.length === 1 ? 'avoid' : undefined}>
-						<div className="flex items-baseline justify-between gap-4">
-							<h3 className="text-[11.6px] font-bold">
+					<section key={e.company + e.period}>
+						<div className="keep flex items-baseline justify-between gap-4">
+							<h3 className="text-[12.5px] font-bold">
 								{e.role} · <span style={{ color: accent }}>{e.company}</span>
 							</h3>
-							<span className="shrink-0 text-[10px] font-semibold" style={{ color: muted }}>
-								{e.period}
-							</span>
+							<span className="shrink-0 text-[10.5px] font-semibold tabular-nums">{e.period}</span>
 						</div>
-						<p className="text-[10px] italic" style={{ color: muted }}>
-							{e.context}
+						<p className="keep text-[10.5px] italic" style={{ color: muted }}>
+							{typo(e.context)}
 						</p>
-						{e.blocks.map((b, i) => (
-							<div key={b.title ?? e.company} className={b.title ? 'avoid mt-[4px]' : 'mt-[1px]'}>
-								{b.title && <h4 className="text-[10.6px] font-semibold">{b.title}</h4>}
-								<Bullets points={b.points} />
-								{/* the stack line stays with the last block, never alone at the top of a page */}
-								{i === e.blocks.length - 1 && (
-									<p className="mt-[2px] text-[9.5px]" style={{ color: muted }}>
-										<span className="font-semibold">Stack : </span>
-										{e.stack}
-									</p>
+						{e.blocks.map((b) => (
+							// a short group never splits across the page break (no lone bullet at the top of page 2)
+							<div key={b.title ?? e.company} className={`${b.title ? 'mt-[5px]' : 'mt-[2px]'} ${b.points.length <= 3 ? 'avoid' : ''}`}>
+								{b.title && (
+									<div className="keep flex items-baseline justify-between gap-4">
+										<h4 className="text-[11.5px] font-bold">{typo(b.title)}</h4>
+										{b.period && (
+											<span className="shrink-0 text-[10.5px] tabular-nums" style={{ color: muted }}>
+												{b.period}
+											</span>
+										)}
+									</div>
 								)}
+								<Bullets points={b.points} />
 							</div>
 						))}
 					</section>
@@ -153,46 +183,52 @@ export default function CvPage() {
 			</div>
 
 			<Title>Projets open source</Title>
-			<ul className="space-y-[3px]">
+			<ul className="cv-list space-y-[2px]">
 				{openSource.map((p) => (
 					<li key={p.name}>
-						<div className="flex items-baseline justify-between gap-4">
-							<a href={p.url} className="font-bold" style={{ color: accent }}>
-								{p.name}
-							</a>
-							<a href={p.url} className="shrink-0 text-[9.5px]" style={{ color: muted }}>
-								{p.url && display(p.url)}
-							</a>
-						</div>
-						<p>{cvProjectNotes[p.name]}</p>
+						<a href={p.url} className="font-bold" style={{ color: accent }}>
+							{p.name}
+						</a>{' '}
+						: {typo(cvProjectNotes[p.name])}
 					</li>
 				))}
 			</ul>
 
 			<div className="avoid">
-				<div>
-					<Title>Formation & certifications</Title>
-					<ul className="cv-bullets space-y-[1.5px]">
-						{education.map((d) => (
-							<li key={d.name}>
-								<span className="font-semibold">{d.name}</span> · {d.school}, <span className="whitespace-nowrap">{d.years}</span>
-							</li>
-						))}
-						<li>
-							<span className="font-semibold">Anthropic Academy</span> : {anthropic.map((c) => c.name).join(' · ')}
+				<Title>Formation et certifications</Title>
+				<ul className="cv-list space-y-[2px]">
+					{education.map((d) => (
+						<li key={d.name}>
+							<span className="font-semibold">{d.name}</span>, {d.title} · {d.school}, <span className="whitespace-nowrap">{d.years}</span>
 						</li>
-						{others.map((c) => (
-							<li key={c.name}>
-								<span className="font-semibold">{c.name}</span> · {c.issuer}
-							</li>
+					))}
+					<li>
+						<span className="font-semibold">Anthropic Academy</span>
+						{' '}:{' '}
+						{anthropic.map((c, i) => (
+							<span key={c.name}>
+								{i > 0 && ' · '}
+								<em className="whitespace-nowrap">{c.name}</em>
+							</span>
 						))}
-						<li>{cvExtraTraining}</li>
-					</ul>
-				</div>
-				<div>
-					<Title>Langues</Title>
-					<p>{cvLanguages.join(' · ')}</p>
-				</div>
+					</li>
+					{others.map((c) => (
+						<li key={c.name}>
+							<span className="font-semibold">{c.issuer}</span>
+							{' '}: <em>{c.name}</em>
+						</li>
+					))}
+				</ul>
+				<Title>Langues</Title>
+				<p>
+					{cvLanguages.map((l, i) => (
+						<span key={l.label}>
+							{i > 0 && ' · '}
+							<strong>{l.label}</strong>
+							{' '}: {l.level}
+						</span>
+					))}
+				</p>
 			</div>
 		</main>
 	);

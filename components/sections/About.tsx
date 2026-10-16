@@ -17,7 +17,7 @@ const attributes = [
 	{ k: 'RAG & données', v: 'RAG hybride (RRF), 42 vues métier en lecture seule' },
 	{ k: 'Architecture backend', v: '41 endpoints OpenAPI, 496 schémas Zod' },
 	{ k: 'Outillage Claude Code', v: '13 sous-agents, 38 skills, 27 hooks' },
-	{ k: 'Leadership & formation', v: 'Pôle IA de 2 à 3 personnes, 3 à 5 formations' },
+	{ k: 'Leadership & formation', v: 'Pôle IA de 3 à 4 personnes, équipes formées' },
 ];
 
 /** `principles` off in the game: there the stone circle carries the manifesto. */

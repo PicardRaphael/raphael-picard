@@ -10,7 +10,7 @@ export const hero = {
 	headline: 'J’industrialise l’IA agentique.',
 	lead: 'Je conçois et mets en production des assistants IA utiles au quotidien. Chez Neoteem, éditeur d’un ERP immobilier, 7 agents spécialisés assistent les gestionnaires : questions sur leurs données et sur l’aide du logiciel, comparaison de devis, rédaction. Ils lisent les données de l’ERP sans pouvoir les modifier, et aucun mail ne part, aucun document n’est supprimé sans validation humaine. Chaque version est testée avant sa mise en ligne, chaque coût est suivi : −33 % sur la facture des modèles. Et l’équipe est formée pour les faire vivre.',
 	primaryCta: { label: 'Voir les agents en production', href: '#projets' },
-	secondaryCta: { label: 'Télécharger le CV', href: '/cv-RaphaelPICARD-IA.pdf' },
+	secondaryCta: { label: 'Télécharger le CV', href: '/raphael-picard-cv-senior-ai-engineer-responsable-ia.pdf' },
 };
 
 /** « Raphaël en 30 secondes » : the summary a hurried reader gets everywhere (game start screen, menu, /portfolio). */
@@ -58,7 +58,7 @@ export const about = {
 	title: 'De développeur full-stack à ingénieur IA.',
 	paragraphs: [
 		'En plus de huit ans d’ingénierie logicielle, j’ai livré des produits web à grande échelle : une plateforme e-commerce déployée dans plus de 100 pays, un MVP EdTech conçu de zéro, des outils métier pour la mobilité, où j’ai intégré mon premier service d’IA en production dès 2018. J’y ai appris ce qui fait tenir un logiciel : l’architecture, les tests, la rigueur de livraison.',
-		'Depuis novembre 2025, je suis Senior AI Engineer & Responsable IA chez Neoteem, éditeur d’un ERP pour les professionnels de l’immobilier. J’y ai mis en production sept agents LangGraph répartis dans NeoChat, NeoSupport et NeoAgent, réécrit de zéro en TypeScript la couche de données qui les alimente et fait adopter par la direction une architecture multi-chatbots spécialisés. J’encadre le pôle IA (2 à 3 personnes) et je forme les équipes, tech et non-tech.',
+		'Depuis novembre 2025, je suis Senior AI Engineer & Responsable IA chez Neoteem, éditeur d’un ERP pour les professionnels de l’immobilier. J’y ai mis en production sept agents LangGraph répartis dans NeoChat, NeoSupport et NeoAgent, réécrit de zéro en TypeScript la couche de données qui les alimente et fait adopter par la direction une architecture multi-chatbots spécialisés. J’encadre le pôle IA (3 à 4 personnes) et je forme les équipes, tech et non-tech.',
 		'Mon avantage : un profil hybride. Je parle architecture aux développeurs, coûts et usages aux dirigeants (chaque agent a son coût suivi), et prompts aux modèles.',
 	],
 	principles: [
@@ -171,6 +171,6 @@ export const leadership = {
 	points: [
 		'Architecture multi-chatbots spécialisés proposée à la direction, puis adoptée en production',
 		'Plus de 6 notes de décision stratégiques : choix de langage, RAG ou base de connaissances, organisation du pôle IA',
-		'Encadrement direct de 2 à 3 personnes ; 3 à 5 sessions de formation tech et non-tech (Claude Code, Claude Desktop, Cowork)',
+		'Encadrement direct de 3 à 4 personnes ; formation des équipes tech et non-tech (Claude Code, Claude Desktop, Cowork)',
 	],
 };

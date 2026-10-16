@@ -145,7 +145,7 @@ export const experiences: Experience[] = [
 			'Couche de données de l’ERP réécrite de zéro en TypeScript (Bun, Hono, PostgreSQL), en remplacement de fonctions PostgreSQL historiques : 41 endpoints OpenAPI, 496 schémas Zod, mutation testing à 80 %',
 			'Base de connaissances de 989 notes branchée aux agents via 2 serveurs MCP maison',
 			'Architecture multi-chatbots spécialisés proposée à la direction et adoptée ; plus de 6 notes de décision stratégiques',
-			'Encadrement direct de 2 à 3 personnes ; 3 à 5 sessions de formation tech et non-tech',
+			'Encadrement direct de 3 à 4 personnes ; formation des équipes tech et non-tech',
 		],
 		stack: ['Python', 'FastAPI', 'LangGraph', 'Gemini', 'pgvector', 'Langfuse', 'GCP'],
 	},
@@ -210,8 +210,8 @@ export const certifications = [
 
 /** Degrees, with their years (CV). */
 export const education = [
-	{ name: 'Concepteur Développeur Web — titre RNCP niveau 6 (Bac+4)', school: 'O’clock', years: '2018 – 2019' },
-	{ name: 'Développeur Logiciel — titre RNCP niveau 5 (Bac+2)', school: 'O’clock', years: '2018' },
+	{ name: 'Concepteur développeur web', title: 'titre RNCP de niveau 6 (bac + 4)', school: 'O’clock', years: '2018-2019' },
+	{ name: 'Développeur logiciel', title: 'titre RNCP de niveau 5 (bac + 2)', school: 'O’clock', years: '2018' },
 ];
 
 export const testimonials = [

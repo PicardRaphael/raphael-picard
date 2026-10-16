@@ -187,7 +187,7 @@ function Body({ tab }: { tab: Tab }) {
 					<p>Ceci est mon portfolio. Explorez le monde, parlez à Raphy, accomplissez les quêtes et corrigez les bugs pour découvrir mon parcours.</p>
 					<p>
 						Pressé ? <Pitch30Button className="text-[#7dd3fc] underline-offset-4 hover:underline">Voir le résumé en 30 s</Pitch30Button>,{' '}
-						<a href="/cv-RaphaelPICARD-IA.pdf" download className="text-[#7dd3fc] underline-offset-4 hover:underline">
+						<a href="/raphael-picard-cv-senior-ai-engineer-responsable-ia.pdf" download className="text-[#7dd3fc] underline-offset-4 hover:underline">
 							Téléchargez mon CV
 						</a>
 						, lisez la <Link href="/portfolio" className="text-[#7dd3fc] underline-offset-4 hover:underline">version classique</Link> ou{' '}

@@ -67,7 +67,7 @@ export function EndCard() {
 					))}
 				</ul>
 				<div className="mt-5 flex flex-wrap justify-center gap-2 text-sm [@media(max-height:500px)]:mt-3">
-					<a ref={first} href="/cv-RaphaelPICARD-IA.pdf" download className="rounded-full bg-gradient-to-r from-[#651fff] to-[#c50eff] px-5 py-2.5 font-semibold">
+					<a ref={first} href="/raphael-picard-cv-senior-ai-engineer-responsable-ia.pdf" download className="rounded-full bg-gradient-to-r from-[#651fff] to-[#c50eff] px-5 py-2.5 font-semibold">
 						Télécharger le CV
 					</a>
 					<a href="/portfolio#ecrire" target="_blank" rel="noopener" className="rounded-full border border-white/25 px-4 py-2.5 hover:bg-white/10">

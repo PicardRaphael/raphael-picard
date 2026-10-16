@@ -11,7 +11,23 @@ import { mobs, nearestMob } from '@/lib/mobs';
 import { music } from '@/lib/music';
 import { player } from '@/lib/player-state';
 import { canopies, vegetationObstacles } from '@/lib/vegetation';
-import { HOUSES, LAKE, LANDMARKS, NEXUS_CENTER, NEXUS_LAMPS, NEXUS_RADIUS, NEXUS_SPAWN, NEXUS_STREET_END, SPAWN, VAL_RADIUS, groundAt, landmark, nexusWalkable, nexusWaypoint, valWaypoint } from '@/lib/world';
+import {
+	HOUSES,
+	LAKE,
+	LANDMARKS,
+	NEXUS_CENTER,
+	NEXUS_LAMPS,
+	NEXUS_RADIUS,
+	NEXUS_SPAWN,
+	NEXUS_STREET_END,
+	SPAWN,
+	VAL_RADIUS,
+	groundAt,
+	landmark,
+	nexusWalkable,
+	nexusWaypoint,
+	valWaypoint,
+} from '@/lib/world';
 import { FpsWeapon } from './FpsWeapon';
 import { STONES as STONE_RING } from './Landmarks';
 import { HeroModel } from './Hero';
@@ -203,7 +219,10 @@ export function attack() {
 	if (ranged) {
 		const fx = -Math.sin(player.yaw);
 		const fz = -Math.cos(player.yaw);
-		setTimeout(() => fireBolt({ x: player.x + fx * 0.8, y: player.y + 1.4, z: player.z + fz * 0.8 }, target, () => damage(target), { flash: true }), 120);
+		setTimeout(
+			() => fireBolt({ x: player.x + fx * 0.8, y: player.y + 1.4, z: player.z + fz * 0.8 }, target, () => damage(target), { flash: true }),
+			120,
+		);
 	} else
 		// the blade lands mid-swing: every bug in the arc in front of the knight takes the blow
 		setTimeout(() => {
@@ -353,6 +372,7 @@ function usePointerControls() {
 
 		const down = (e: PointerEvent) => {
 			if (!game.get().started || game.get().panel || game.get().overlay) return;
+			player.camera.hold = false;
 			if (isFps() && e.pointerType === 'mouse' && !player.camera.free) {
 				// first person: capture the mouse (unlimited turning) and shoot at the centre of the screen
 				if (document.pointerLockElement !== el) {
@@ -476,15 +496,47 @@ function usePointerControls() {
 				// remember where the cursor is: near an edge the view keeps turning on its own (no pointer lock);
 				// under the lock the cursor position is frozen and meaningless
 				if (document.pointerLockElement) return;
-				const rr = el.getBoundingClientRect();
-				player.camera.lookX = THREE.MathUtils.clamp(((e.clientX - rr.left) / rr.width) * 2 - 1, -1, 1);
-				player.camera.lookY = THREE.MathUtils.clamp(((e.clientY - rr.top) / rr.height) * 2 - 1, -1, 1);
+				aimAt(e);
 				return;
 			}
 			if (e.pointerType !== 'mouse' || pointers.size > 0) return;
+			aimAt(e);
+			hover(e);
+		};
+		/** The cursor says what a click will do: a sword over a bug, a hand over a place, the arrow elsewhere. */
+		let lastHover = 0;
+		const hp = new THREE.Vector3();
+		const hover = (e: PointerEvent) => {
+			const now = performance.now();
+			if (now - lastHover < 90) return;
+			lastHover = now;
+			const g = game.get();
+			let cursor = '';
+			if (g.started && !g.panel && !g.overlay) {
+				const r = el.getBoundingClientRect();
+				const near = (x: number, y: number, z: number, px: number) => {
+					hp.set(x, y, z).project(camera);
+					return (
+						hp.z <= 1 && Math.hypot(((hp.x + 1) / 2) * r.width + r.left - e.clientX, ((1 - hp.y) / 2) * r.height + r.top - e.clientY) < px
+					);
+				};
+				if (mobs.some((m) => m.state !== 'dead' && m.zone === g.zone && near(m.x, groundAt(m.x, m.z) + 1.2, m.z, 55))) cursor = 'crosshair';
+				else if (LANDMARKS.some((l) => l.zone === g.zone && near(l.x, groundAt(l.x, l.z) + 2.5, l.z, 80))) cursor = 'pointer';
+			}
+			if (el.style.cursor !== cursor) el.style.cursor = cursor;
+		};
+		/** Where the cursor sits on the canvas, from -1 to 1. Right after a window closes the cursor is still on its ✕, near
+		 * an edge: the look waits until it comes back toward the centre instead of spinning the view. */
+		const aimAt = (e: PointerEvent) => {
 			const r = el.getBoundingClientRect();
-			player.camera.lookX = THREE.MathUtils.clamp(((e.clientX - r.left) / r.width) * 2 - 1, -1, 1);
-			player.camera.lookY = THREE.MathUtils.clamp(((e.clientY - r.top) / r.height) * 2 - 1, -1, 1);
+			const x = THREE.MathUtils.clamp(((e.clientX - r.left) / r.width) * 2 - 1, -1, 1);
+			const y = THREE.MathUtils.clamp(((e.clientY - r.top) / r.height) * 2 - 1, -1, 1);
+			if (player.camera.hold) {
+				if (Math.abs(x) > 0.45 || Math.abs(y) > 0.45) return;
+				player.camera.hold = false;
+			}
+			player.camera.lookX = x;
+			player.camera.lookY = y;
 		};
 		const leave = () => {
 			// first person without pointer lock: a cursor that left the window by a side keeps turning the view
@@ -542,7 +594,9 @@ const OBSTACLES: { x: number; z: number; r: number }[] = [
 	{ x: landmark('tower').x + 8.5, z: landmark('tower').z + 4, r: 5.5 },
 	// the armchairs of the Nexus cinema (Cinema.tsx): two blocks per row, the central aisle stays free
 	...[0, 1, 2].flatMap((row) =>
-		[-1, 1].flatMap((side) => [1.75, 3.7].map((dz) => ({ x: -(NEXUS_STREET_END + 0.05) + 10 + row * 2.1, z: landmark('cinema').z + side * dz, r: 1.05 }))),
+		[-1, 1].flatMap((side) =>
+			[1.75, 3.7].map((dz) => ({ x: -(NEXUS_STREET_END + 0.05) + 10 + row * 2.1, z: landmark('cinema').z + side * dz, r: 1.05 })),
+		),
 	),
 	// the street lamp poles of the Nexus avenue
 	...NEXUS_LAMPS.map((l) => ({ x: l.x, z: l.z, r: 0.25 })),
@@ -580,7 +634,7 @@ function ClickMarker() {
 export function Player() {
 	useKeyboard();
 	usePointerControls();
-	const { camera, scene } = useThree();
+	const { camera, scene, gl } = useThree();
 	const hero = useGame((s) => s.hero);
 	const started = useGame((s) => s.started);
 	const [firstPerson, setFirstPerson] = useState(player.camera.firstPerson);
@@ -599,6 +653,7 @@ export function Player() {
 			tmp: new THREE.Vector3(),
 			time: 0,
 			lastRange: null as string | null,
+			paused: true,
 			intro: 0,
 			anim: 'Idle',
 			animSpeed: 1,
@@ -621,7 +676,20 @@ export function Player() {
 		// the touch buttons reach the combat through the shared player state (they never import three.js)
 		player.actions = { attack, jump };
 		// test hooks for the dev browser
-		if (process.env.NODE_ENV !== 'production') Object.assign(window, { __player: player, __game: game, __keymap: keymap, __scene: scene, __camera: camera, __THREE: THREE, __mobs: mobs, __attack: attack, __walk: nexusWalkable, __veg: vegetationObstacles, __obs: OBSTACLES });
+		if (process.env.NODE_ENV !== 'production')
+			Object.assign(window, {
+				__player: player,
+				__game: game,
+				__keymap: keymap,
+				__scene: scene,
+				__camera: camera,
+				__THREE: THREE,
+				__mobs: mobs,
+				__attack: attack,
+				__walk: nexusWalkable,
+				__veg: vegetationObstacles,
+				__obs: OBSTACLES,
+			});
 		player.x = SPAWN.x;
 		player.z = SPAWN.z;
 		player.yaw = SPAWN.yaw;
@@ -660,7 +728,11 @@ export function Player() {
 			player.speed = 0;
 			player.moveTarget = null;
 			player.teleport = null;
-			v.camPos.set(player.x, groundAt(player.x, player.z) + 8, player.z + 14);
+			// the camera lands behind the hero, along its heading (never on the far side of a portal it just left)
+			player.camera.distance = Math.min(player.camera.distance, 14);
+			player.camera.pitch = 0.42;
+			const back = Math.min(player.camera.distance, 12);
+			v.camPos.set(player.x + Math.sin(player.yaw) * back, groundAt(player.x, player.z) + 7, player.z + Math.cos(player.yaw) * back);
 		}
 
 		// keyboard: left/right turn the camera, up/down walk along it
@@ -669,7 +741,7 @@ export function Player() {
 		// free look: in first person the view keeps turning near the screen edges; in third person it barely leans
 		const fps = g.hero === 'runner' && player.camera.firstPerson && g.started;
 		if (fps && (g.panel || g.overlay || modal) && document.pointerLockElement) document.exitPointerLock();
-		if (fps && lockRefused && !g.panel && !g.overlay && !modal && !player.camera.free && !document.pointerLockElement) {
+		if (fps && lockRefused && !g.panel && !g.overlay && !modal && !player.camera.free && !player.camera.hold && !document.pointerLockElement) {
 			// edge relay: the cursor parked near a border keeps turning the view
 			const ax = player.camera.lookX;
 			const ay = player.camera.lookY;
@@ -678,6 +750,23 @@ export function Player() {
 			player.camera.yaw -= Math.sign(ax) * ex * 2.4 * dt;
 			player.camera.fpsPitch = THREE.MathUtils.clamp(player.camera.fpsPitch - Math.sign(ay) * ey * 1.2 * dt, -1.25, 1.25);
 		}
+		// back in play after a window, a map, the cinema or a portal: the view starts still, centred on the hero
+		const paused = !g.started || !!g.panel || !!g.overlay || modal || g.warp !== null;
+		if (v.paused && !paused) {
+			player.camera.lookX = 0;
+			player.camera.lookY = 0;
+			player.camera.hold = true;
+			// first person: the click that closed the window gives the mouse back to the view at once
+			const el = gl.domElement;
+			if (fps && !document.pointerLockElement && navigator.userActivation?.isActive && el.requestPointerLock) {
+				el.requestPointerLock()
+					?.then?.(() => {
+						lockRefused = false;
+					})
+					?.catch?.(() => {});
+			}
+		}
+		v.paused = paused;
 		const lx = !fps && g.started && !g.panel && !g.overlay && !player.camera.dragging ? player.camera.lookX : 0;
 		const ly = !fps && g.started && !g.panel && !g.overlay && !player.camera.dragging ? player.camera.lookY : 0;
 		// third person: only a slight lean toward the cursor, never a turn on its own (the HUD sits at the edges)
@@ -728,7 +817,10 @@ export function Player() {
 				if (lm) interact(lm);
 			} else {
 				// in the Nexus the route follows the streets instead of cutting through buildings
-				const w = player.z < -300 ? nexusWaypoint(player.x, player.z, player.moveTarget.x, player.moveTarget.z) : valWaypoint(player.x, player.z, player.moveTarget.x, player.moveTarget.z);
+				const w =
+					player.z < -300
+						? nexusWaypoint(player.x, player.z, player.moveTarget.x, player.moveTarget.z)
+						: valWaypoint(player.x, player.z, player.moveTarget.x, player.moveTarget.z);
 				const wd = Math.hypot(w.x - player.x, w.z - player.z) || 1;
 				dirX = (w.x - player.x) / wd;
 				dirZ = (w.z - player.z) / wd;
@@ -789,7 +881,8 @@ export function Player() {
 			}
 		}
 		// too steep (cliffs, mountain flanks): slide along the slope when one axis is walkable, else stop
-		const steep = (x: number, z: number) => groundAt(x, z) - groundAt(player.x, player.z) > Math.max(0.35, Math.hypot(x - player.x, z - player.z) * 1.1);
+		const steep = (x: number, z: number) =>
+			groundAt(x, z) - groundAt(player.x, player.z) > Math.max(0.35, Math.hypot(x - player.x, z - player.z) * 1.1);
 		if (!inNexus && steep(nx, nz)) {
 			if (!steep(nx, player.z)) nz = player.z;
 			else if (!steep(player.x, nz)) nx = player.x;
@@ -844,7 +937,19 @@ export function Player() {
 		}
 
 		const nextAnim =
-			player.attack > 0 ? (g.hero === 'runner' ? '1H_Ranged_Shoot' : '1H_Melee_Attack_Slice_Diagonal') : player.jump.h > 0.05 ? 'Jump_Full_Short' : v.hurt > 0 ? 'Hit_A' : player.speed > 6.5 ? 'Running_A' : player.speed > 0.6 ? 'Walking_A' : 'Idle';
+			player.attack > 0
+				? g.hero === 'runner'
+					? '1H_Ranged_Shoot'
+					: '1H_Melee_Attack_Slice_Diagonal'
+				: player.jump.h > 0.05
+					? 'Jump_Full_Short'
+					: v.hurt > 0
+						? 'Hit_A'
+						: player.speed > 6.5
+							? 'Running_A'
+							: player.speed > 0.6
+								? 'Walking_A'
+								: 'Idle';
 		v.hurt = Math.max(0, v.hurt - dt);
 		if (player.attack > 0 && !v.swinging) v.swing++;
 		v.swinging = player.attack > 0;
@@ -881,7 +986,10 @@ export function Player() {
 				const sx = player.x + Math.sin(viewYaw) * Math.cos(pitch) * t;
 				const sz = player.z + Math.cos(viewYaw) * Math.cos(pitch) * t;
 				const sy = player.y + 1.6 + Math.sin(pitch) * t;
-				if (g.zone === 'val' && v.crowns.some((k) => sy < k.top && Math.abs(sx - k.x) < k.r && Math.abs(sz - k.z) < k.r && Math.hypot(sx - k.x, sz - k.z) < k.r)) {
+				if (
+					g.zone === 'val' &&
+					v.crowns.some((k) => sy < k.top && Math.abs(sx - k.x) < k.r && Math.abs(sz - k.z) < k.r && Math.hypot(sx - k.x, sz - k.z) < k.r)
+				) {
 					dist = Math.max(3.5, t - 1);
 					break;
 				}
@@ -905,7 +1013,11 @@ export function Player() {
 				const sy = player.y + 1.6 + (v.tmp.y - player.y - 1.6) * t;
 				if (sy < groundAt(sx, sz) + 0.6) {
 					const k = Math.max(0.25, t - 0.1);
-					v.tmp.set(player.x + (v.tmp.x - player.x) * k, player.y + 1.6 + (v.tmp.y - player.y - 1.6) * k, player.z + (v.tmp.z - player.z) * k);
+					v.tmp.set(
+						player.x + (v.tmp.x - player.x) * k,
+						player.y + 1.6 + (v.tmp.y - player.y - 1.6) * k,
+						player.z + (v.tmp.z - player.z) * k,
+					);
 					break;
 				}
 			}
@@ -929,7 +1041,11 @@ export function Player() {
 			camera.position.set(player.x, player.y + 1.65 + bob, player.z);
 			v.camPos.copy(camera.position);
 			const pt = player.camera.fpsPitch;
-			camera.lookAt(player.x - Math.sin(player.camera.yaw) * Math.cos(pt) * 10, player.y + 1.65 + Math.sin(pt) * 10, player.z - Math.cos(player.camera.yaw) * Math.cos(pt) * 10);
+			camera.lookAt(
+				player.x - Math.sin(player.camera.yaw) * Math.cos(pt) * 10,
+				player.y + 1.65 + Math.sin(pt) * 10,
+				player.z - Math.cos(player.camera.yaw) * Math.cos(pt) * 10,
+			);
 			v.look.set(player.x, player.y + 1.8, player.z);
 			camera.updateMatrixWorld();
 			v.ray.setFromCamera(v.ndc.set(0, 0), camera);
@@ -984,7 +1100,7 @@ export function Player() {
 			}
 			if (g.warp === null && Math.hypot(player.x - back.x, player.z - back.z) < 2.4) {
 				cross(() => {
-					player.teleport = { x: portal.x, z: portal.z + 10, yaw: Math.PI };
+					player.teleport = { x: portal.x, z: portal.z + 20, yaw: Math.PI };
 					game.set({ zone: 'val' });
 					game.banner('Val des Origines', 'L’ère du code');
 				});
@@ -996,7 +1112,11 @@ export function Player() {
 		<>
 			<Suspense fallback={null}>
 				{/* the rifle is glued to the camera: only in play, never under the start screen's orbiting intro camera */}
-				{hero === 'runner' && firstPerson && started ? <FpsWeapon /> : <HeroModel key={hero} ref={body} kind={hero} animation={anim} speed={animSpeed} />}
+				{hero === 'runner' && firstPerson && started ? (
+					<FpsWeapon />
+				) : (
+					<HeroModel key={hero} ref={body} kind={hero} animation={anim} speed={animSpeed} />
+				)}
 			</Suspense>
 			<ClickMarker />
 		</>

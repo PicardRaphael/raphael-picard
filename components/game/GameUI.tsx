@@ -16,7 +16,7 @@ import { Soundtrack } from './Soundtrack';
 import { BugCard } from './BugCard';
 import { EndCard } from './EndCard';
 import { Crosshair } from './Crosshair';
-import { KeyHints } from './KeyHints';
+import { ControlsCard, KeyHints } from './KeyHints';
 import { StartScreen } from './StartScreen';
 import { HurtFlash, TouchControls, ZoomButtons } from './TouchControls';
 import { WorldMap } from './WorldMap';
@@ -36,9 +36,16 @@ function ZoneBanner() {
 	}, [started]);
 	if (!visible) return null;
 	return (
-		<div key={visible.id} className="pointer-events-none fixed inset-x-0 top-[16vh] z-20 [@media(max-height:500px)]:top-[22vh] animate-[zone-in_3.8s_ease-out_forwards] text-center">
-			<p className="font-display text-4xl font-extrabold tracking-wide text-[#ffd100] drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] sm:text-6xl [@media(max-height:500px)]:text-3xl">{visible.title}</p>
-			<p className="mt-2 font-mono text-sm tracking-[0.3em] text-white/85 uppercase drop-shadow [@media(max-height:500px)]:mt-1 [@media(max-height:500px)]:text-xs">{visible.subtitle}</p>
+		<div
+			key={visible.id}
+			className="pointer-events-none fixed inset-x-0 top-[16vh] z-20 animate-[zone-in_3.8s_ease-out_forwards] text-center [@media(max-height:500px)]:top-[22vh]"
+		>
+			<p className="font-display text-4xl font-extrabold tracking-wide text-[#ffd100] drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] sm:text-6xl [@media(max-height:500px)]:text-3xl">
+				{visible.title}
+			</p>
+			<p className="mt-2 font-mono text-sm tracking-[0.3em] text-white/85 uppercase drop-shadow [@media(max-height:500px)]:mt-1 [@media(max-height:500px)]:text-xs">
+				{visible.subtitle}
+			</p>
 		</div>
 	);
 }
@@ -69,7 +76,9 @@ function Ticker() {
 			role="status"
 			className={`pointer-events-none fixed inset-x-0 z-30 flex animate-[zone-in_3s_ease-out_forwards] justify-center px-4 ${card ? 'top-[44vh] [@media(max-height:500px)]:top-[56vh]' : 'top-[30vh] [@media(max-height:500px)]:top-[34vh]'}`}
 		>
-			<p className="rounded-full border border-[#ffd100]/40 bg-black/70 px-4 py-1.5 font-mono text-sm text-[#ffe9a3] backdrop-blur-md">{ticker.text}</p>
+			<p className="rounded-full border border-[#ffd100]/40 bg-black/70 px-4 py-1.5 font-mono text-sm text-[#ffe9a3] backdrop-blur-md">
+				{ticker.text}
+			</p>
 		</div>
 	);
 }
@@ -86,9 +95,15 @@ function Toast() {
 	}, [visible]);
 	if (!visible) return null;
 	return (
-		<div key={visible.id} role="status" className="pointer-events-none fixed inset-x-0 top-24 z-40 flex animate-[zone-in_4.5s_ease-out_forwards] justify-center px-4 [@media(max-height:500px)]:top-14">
+		<div
+			key={visible.id}
+			role="status"
+			className="pointer-events-none fixed inset-x-0 top-24 z-40 flex animate-[zone-in_4.5s_ease-out_forwards] justify-center px-4 [@media(max-height:500px)]:top-14"
+		>
 			<div className="flex items-center gap-4 rounded-2xl border-2 border-[#ffd100]/70 bg-[#1b1206]/95 px-5 py-3 shadow-[0_0_40px_-10px_#ffd100]">
-				<span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-[#ffd100] bg-[#ffd100]/15 text-2xl text-[#ffd100] [@media(max-height:500px)]:h-9 [@media(max-height:500px)]:w-9 [@media(max-height:500px)]:text-lg">★</span>
+				<span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-[#ffd100] bg-[#ffd100]/15 text-2xl text-[#ffd100] [@media(max-height:500px)]:h-9 [@media(max-height:500px)]:w-9 [@media(max-height:500px)]:text-lg">
+					★
+				</span>
 				<div>
 					<p className="font-display font-bold text-[#ffd100]">{visible.title}</p>
 					<p className="text-sm text-[#efe4c8]">{visible.text}</p>
@@ -151,11 +166,17 @@ function QuestTracker() {
 			aria-label="Suivi des quêtes"
 		>
 			{coarse && (
-				<button onClick={() => setOpen(false)} className="pointer-events-auto mb-2 block w-full text-right font-mono text-white/70" aria-label="Replier le suivi des quêtes">
+				<button
+					onClick={() => setOpen(false)}
+					className="pointer-events-auto mb-2 block w-full text-right font-mono text-white/70"
+					aria-label="Replier le suivi des quêtes"
+				>
 					Replier ▴
 				</button>
 			)}
-			<p className="mb-3 font-mono text-xs text-[#ffb4ac] drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">☠ Bugs corrigés : {kills} / {mobs.length}</p>
+			<p className="mb-3 font-mono text-xs text-[#ffb4ac] drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">
+				☠ Bugs corrigés : {kills} / {mobs.length}
+			</p>
 			{sorted.map((q) => {
 				const followed = q.id === tracked || (!tracked && q === sorted[0]);
 				return (
@@ -214,7 +235,9 @@ function Prompt() {
 			}}
 			className="fixed top-[58%] left-1/2 z-20 -translate-x-1/2 rounded-xl border border-[#f5c451]/50 bg-black/75 px-4 py-2 text-white shadow-[0_0_18px_rgba(245,196,81,0.25)] backdrop-blur-md transition-transform hover:scale-105"
 		>
-			<span className="mr-2 inline-grid h-7 w-7 place-items-center rounded-md border border-[#f5c451]/70 font-mono text-sm text-[#f5c451]">E</span>
+			<span className="mr-2 inline-grid h-7 w-7 place-items-center rounded-md border border-[#f5c451]/70 font-mono text-sm text-[#f5c451]">
+				E
+			</span>
 			{l.hint}
 		</button>
 	);
@@ -289,16 +312,32 @@ function Minimap() {
 		draw();
 		return () => cancelAnimationFrame(raf);
 	}, [zone, quests, visited]);
-	return <canvas ref={ref} width={150} height={150} className="fixed bottom-4 left-4 z-20 h-[150px] w-[150px] pointer-coarse:top-14 pointer-coarse:bottom-auto pointer-coarse:left-3 pointer-coarse:h-[84px] pointer-coarse:w-[84px]" aria-hidden />;
+	return (
+		<canvas
+			ref={ref}
+			width={150}
+			height={150}
+			className="fixed bottom-4 left-4 z-20 h-[150px] w-[150px] pointer-coarse:top-14 pointer-coarse:bottom-auto pointer-coarse:left-3 pointer-coarse:h-[84px] pointer-coarse:w-[84px]"
+			aria-hidden
+		/>
+	);
 }
 
 function MenuButtons() {
 	return (
 		<div className="fixed top-4 right-4 z-30 flex flex-col gap-2">
-			<button onClick={() => game.set({ overlay: 'menu' })} aria-label="Menu" className="grid h-11 w-11 place-items-center rounded-xl border border-white/25 bg-[#5b1a3a]/85 text-xl text-white backdrop-blur-md hover:brightness-125">
+			<button
+				onClick={() => game.set({ overlay: 'menu' })}
+				aria-label="Menu"
+				className="grid h-11 w-11 place-items-center rounded-xl border border-white/25 bg-[#5b1a3a]/85 text-xl text-white backdrop-blur-md hover:brightness-125"
+			>
 				☰
 			</button>
-			<button onClick={() => game.set({ overlay: 'map' })} aria-label="Carte" className="grid h-11 w-11 place-items-center rounded-xl border border-white/25 bg-[#5b1a3a]/85 text-xl text-white backdrop-blur-md hover:brightness-125">
+			<button
+				onClick={() => game.set({ overlay: 'map' })}
+				aria-label="Carte"
+				className="grid h-11 w-11 place-items-center rounded-xl border border-white/25 bg-[#5b1a3a]/85 text-xl text-white backdrop-blur-md hover:brightness-125"
+			>
 				⌖
 			</button>
 		</div>
@@ -309,7 +348,11 @@ function Corner() {
 	const sound = useGame((s) => s.sound);
 	return (
 		<div className="fixed top-4 left-4 z-20 flex items-center gap-2 pointer-coarse:top-3 pointer-coarse:left-3">
-			<Link href="/portfolio" aria-label="Version classique du portfolio" className="rounded-full border border-white/20 bg-black/50 px-4 py-2 text-sm text-white backdrop-blur-md hover:bg-black/70 pointer-coarse:px-3">
+			<Link
+				href="/portfolio"
+				aria-label="Version classique du portfolio"
+				className="rounded-full border border-white/20 bg-black/50 px-4 py-2 text-sm text-white backdrop-blur-md hover:bg-black/70 pointer-coarse:px-3"
+			>
 				<span className="pointer-coarse:hidden">Version classique</span>
 				<span className="hidden pointer-coarse:inline">Classique</span>
 			</Link>
@@ -340,7 +383,10 @@ function Corner() {
 /** The game is played sideways on phones (not tablets): in portrait, a full-screen hint asks to turn the device. */
 function RotateHint() {
 	return (
-		<div className="fixed inset-0 z-[70] hidden flex-col items-center justify-center gap-5 bg-[#07050f]/95 px-8 text-center pointer-coarse:portrait:max-sm:flex" role="alert">
+		<div
+			className="fixed inset-0 z-[70] hidden flex-col items-center justify-center gap-5 bg-[#07050f]/95 px-8 text-center pointer-coarse:portrait:max-sm:flex"
+			role="alert"
+		>
 			<span className="animate-[spin_2.4s_ease-in-out_infinite] text-6xl text-[#ffd100]" aria-hidden>
 				⟳
 			</span>
@@ -353,8 +399,10 @@ function RotateHint() {
 	);
 }
 
-/** Compact key hints, bottom-right, desktop only. */
+/** Key hints, bottom-right, desktop only: a large card for the first steps, then a compact row. */
 function Controls() {
+	const learnt = useGame((s) => s.flags.includes('left_spawn') && s.visited.length > 0);
+	if (!learnt) return <ControlsCard className="pointer-events-none fixed right-4 bottom-4 z-20 hidden pointer-fine:sm:block" />;
 	return <KeyHints className="pointer-events-none fixed right-4 bottom-4 z-20 hidden justify-end pointer-fine:sm:flex" />;
 }
 

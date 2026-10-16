@@ -19,7 +19,7 @@ function detectQuality(): Quality {
 	const coarse = window.matchMedia('(pointer: coarse)').matches;
 	const wide = window.innerWidth >= 1024;
 	const cores = navigator.hardwareConcurrency ?? 4;
-	if (coarse || window.innerWidth < 768) return { density: 0.5, stars: 2500, dpr: [1, 1.5], post: false, reducedMotion, wide };
+	if (coarse || window.innerWidth < 768) return { density: 0.5, stars: 2000, dpr: [1, 1.25], post: false, reducedMotion, wide };
 	if (cores <= 4) return { density: 0.7, stars: 3500, dpr: [1, 1.25], post: true, reducedMotion, wide };
 	return { density: 1, stars: 5000, dpr: [1, 1.5], post: true, reducedMotion, wide };
 }

@@ -94,10 +94,13 @@ function crossfadeTo(track: string, fromStart: boolean) {
 	fade(to, 1);
 	fade(from, 0);
 	if (from.stopTimer) clearTimeout(from.stopTimer);
-	from.stopTimer = setTimeout(() => {
-		from.el.pause();
-		from.stopTimer = null;
-	}, FADE * 1000 + 100);
+	from.stopTimer = setTimeout(
+		() => {
+			from.el.pause();
+			from.stopTimer = null;
+		},
+		FADE * 1000 + 100,
+	);
 	active = toIndex;
 	advancing = false;
 }
@@ -145,11 +148,25 @@ function onVisibility() {
 	}
 }
 
+/** A film is playing with its own sound: the music goes silent until it stops. */
+let hushed = false;
+let ducked = false;
+function level() {
+	if (!ctx || !bus) return;
+	const to = hushed ? 0 : ducked ? MUSIC_LEVEL * 0.3 : MUSIC_LEVEL;
+	bus.gain.setTargetAtTime(to, ctx.currentTime, to < bus.gain.value ? 0.15 : 0.6);
+}
+
 export const music = {
 	/** Lowers the music under a voice line, then brings it back. */
 	duck(on: boolean) {
-		if (!ctx || !bus) return;
-		bus.gain.setTargetAtTime(on ? MUSIC_LEVEL * 0.3 : MUSIC_LEVEL, ctx.currentTime, on ? 0.15 : 0.6);
+		ducked = on;
+		level();
+	},
+	/** Silences the music while a video plays with sound (two soundtracks at once drown each other). */
+	hush(on: boolean) {
+		hushed = on;
+		level();
 	},
 	/** Must be called from a user gesture the first time (click / key). */
 	async start() {
@@ -167,8 +184,7 @@ export const music = {
 			// unlock the idle element inside this gesture so later crossfades may start it (iOS)
 			const idle = slots[1].el;
 			idle.src = silentWav();
-			idle
-				.play()
+			idle.play()
 				.then(() => {
 					if (!slots[1].track) idle.pause();
 				})

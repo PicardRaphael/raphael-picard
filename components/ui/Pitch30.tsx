@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { pitch30 } from '@/content/profile';
+import { music } from '@/lib/music';
 import { site } from '@/lib/site';
 
 const OPEN = 'pitch30:open';
@@ -50,21 +51,58 @@ export function Pitch30Dialog() {
 	const stage = useRef<HTMLDivElement>(null);
 	const film = useRef<HTMLVideoElement>(null);
 
-	const fullscreen = async () => {
+	const fullscreen = () => {
 		const el = stage.current;
 		const v = film.current as (HTMLVideoElement & { webkitEnterFullscreen?: () => void }) | null;
-		try {
-			if (el?.requestFullscreen && document.fullscreenEnabled) await el.requestFullscreen();
-			// iPhone: only the video element itself can go fullscreen
-			else if (v?.webkitEnterFullscreen) v.webkitEnterFullscreen();
-			else setBig(true);
-		} catch {
-			setBig(true);
+		if (v) {
+			v.muted = false;
+			void v.play().catch(() => {});
 		}
-		// leaving the muted preview for the real screening: sound on
-		if (v) v.muted = false;
-		void v?.play().catch(() => {});
+		try {
+			if (el?.requestFullscreen && document.fullscreenEnabled) {
+				// some browsers (embedded views, a few phones) neither grant nor refuse: the full window takes over
+				el.requestFullscreen().catch(() => setBig(true));
+				setTimeout(() => {
+					if (!document.fullscreenElement) setBig(true);
+				}, 600);
+				return;
+			}
+			// iPhone: only the video element itself can go fullscreen
+			if (v?.webkitEnterFullscreen) {
+				v.webkitEnterFullscreen();
+				return;
+			}
+		} catch {
+			// refused synchronously: the full window below
+		}
+		setBig(true);
 	};
+
+	// the window is opened by a click or a key: the film starts with its sound, whatever the game's sound setting.
+	// Only a browser that still refuses gets the muted start (the sound then comes back with a tap on the video).
+	useEffect(() => {
+		const v = film.current;
+		if (!open || !v) return;
+		v.muted = false;
+		v.play().catch(() => {
+			v.muted = true;
+			void v.play().catch(() => {});
+		});
+	}, [open, video]);
+
+	// the music steps aside while the film is heard, and comes back when it pauses, ends or the window closes
+	useEffect(() => {
+		const v = film.current;
+		if (!open || !v) return;
+		const sync = () => music.hush(!v.paused && !v.ended && !v.muted && v.volume > 0);
+		const events = ['play', 'playing', 'pause', 'ended', 'volumechange'] as const;
+		events.forEach((e) => v.addEventListener(e, sync));
+		sync();
+		return () => {
+			events.forEach((e) => v.removeEventListener(e, sync));
+			music.hush(false);
+		};
+	}, [open, video]);
 
 	useEffect(() => {
 		const on = () => setOpen(true);
@@ -100,12 +138,24 @@ export function Pitch30Dialog() {
 
 	if (!open) return null;
 	return (
-		<div role="dialog" aria-modal="true" aria-labelledby="pitch30-title" className="fixed inset-0 z-[80] flex items-center justify-center bg-black/75 p-3 backdrop-blur-sm sm:p-6" onClick={() => setOpen(false)}>
+		<div
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby="pitch30-title"
+			className="fixed inset-0 z-[80] flex items-center justify-center bg-black/75 p-3 backdrop-blur-sm sm:p-6"
+			onClick={() => setOpen(false)}
+		>
 			<div
 				className="relative max-h-full w-full max-w-4xl overflow-y-auto rounded-2xl border border-white/15 bg-[#0b0920]/95 p-4 text-left text-white shadow-[0_0_80px_-20px_rgb(197_14_255_/_0.7)] sm:p-6"
 				onClick={(e) => e.stopPropagation()}
 			>
-				<button ref={close} type="button" onClick={() => setOpen(false)} aria-label="Fermer" className="absolute top-2 right-2 z-10 grid h-10 w-10 place-items-center rounded-full bg-black/60 text-xl text-white hover:bg-black/90">
+				<button
+					ref={close}
+					type="button"
+					onClick={() => setOpen(false)}
+					aria-label="Fermer"
+					className="absolute top-2 right-2 z-10 grid h-10 w-10 place-items-center rounded-full bg-black/60 text-xl text-white hover:bg-black/90"
+				>
 					×
 				</button>
 				<h2 id="pitch30-title" className="font-display pr-10 text-xl font-extrabold sm:text-2xl">
@@ -117,33 +167,35 @@ export function Pitch30Dialog() {
 							ref={stage}
 							className={`group [&:fullscreen]:flex [&:fullscreen]:items-center [&:fullscreen]:bg-black ${big ? 'fixed inset-0 z-[90] flex items-center bg-black' : 'relative'}`}
 						>
-						<video
-							ref={film}
-							className={`aspect-video w-full bg-black [:fullscreen_&]:h-full [:fullscreen_&]:rounded-none [:fullscreen_&]:border-0 ${big ? 'h-full' : 'rounded-xl border border-white/10'}`}
-							src={PITCH_VIDEO}
-							poster={PITCH_POSTER}
-							controls
-							autoPlay
-							muted
-							playsInline
-							preload="metadata"
-							onError={() => setVideo(false)}
-						>
-							<track kind="captions" src={PITCH_CAPTIONS} srcLang="fr" label="Français" />
-						</video>
-						{big ? (
-							<button type="button" onClick={() => setBig(false)} className="absolute top-3 right-3 rounded-full bg-black/70 px-4 py-2 text-sm font-semibold text-white hover:bg-black">
-								Quitter le plein écran ✕
-							</button>
-						) : (
-							<button
-								type="button"
-								onClick={() => void fullscreen()}
-								className="absolute top-2 left-2 rounded-full bg-black/65 px-3 py-1.5 text-xs font-semibold text-white opacity-90 backdrop-blur-sm transition-opacity hover:bg-black/90 [:fullscreen_&]:hidden"
+							<video
+								ref={film}
+								className={`aspect-video w-full bg-black [:fullscreen_&]:h-full [:fullscreen_&]:rounded-none [:fullscreen_&]:border-0 ${big ? 'h-full' : 'rounded-xl border border-white/10'}`}
+								src={PITCH_VIDEO}
+								poster={PITCH_POSTER}
+								controls
+								playsInline
+								preload="metadata"
+								onError={() => setVideo(false)}
 							>
-								⛶ Plein écran avec le son
-							</button>
-						)}
+								<track kind="captions" src={PITCH_CAPTIONS} srcLang="fr" label="Français" />
+							</video>
+							{big ? (
+								<button
+									type="button"
+									onClick={() => setBig(false)}
+									className="absolute top-3 right-3 rounded-full bg-black/70 px-4 py-2 text-sm font-semibold text-white hover:bg-black"
+								>
+									Quitter le plein écran ✕
+								</button>
+							) : (
+								<button
+									type="button"
+									onClick={fullscreen}
+									className="absolute top-2 left-2 rounded-full bg-black/65 px-3 py-1.5 text-xs font-semibold text-white opacity-90 backdrop-blur-sm transition-opacity hover:bg-black/90 [:fullscreen_&]:hidden"
+								>
+									⛶ Plein écran
+								</button>
+							)}
 						</div>
 					)}
 					<dl className={`space-y-2.5 text-sm leading-snug ${video ? '' : 'md:col-span-2'}`}>
@@ -156,13 +208,27 @@ export function Pitch30Dialog() {
 					</dl>
 				</div>
 				<div className="mt-4 flex flex-wrap gap-2 text-sm">
-					<a href="/raphael-picard-cv-senior-ai-engineer-responsable-ia.pdf" download className="rounded-full bg-gradient-to-r from-[#651fff] to-[#c50eff] px-4 py-2 font-semibold">
+					<a
+						href="/raphael-picard-cv-senior-ai-engineer-responsable-ia.pdf"
+						download
+						className="rounded-full bg-gradient-to-r from-[#651fff] to-[#c50eff] px-4 py-2 font-semibold"
+					>
 						Télécharger le CV
 					</a>
-					<a href="/portfolio#ecrire" target="_blank" rel="noopener" className="rounded-full border border-white/25 px-4 py-2 hover:bg-white/10">
+					<a
+						href="/portfolio#ecrire"
+						target="_blank"
+						rel="noopener"
+						className="rounded-full border border-white/25 px-4 py-2 hover:bg-white/10"
+					>
 						Écrire à Raphaël
 					</a>
-					<a href={site.social.linkedin} target="_blank" rel="noopener noreferrer" className="rounded-full border border-white/25 px-4 py-2 hover:bg-white/10">
+					<a
+						href={site.social.linkedin}
+						target="_blank"
+						rel="noopener noreferrer"
+						className="rounded-full border border-white/25 px-4 py-2 hover:bg-white/10"
+					>
 						LinkedIn
 					</a>
 					<CopyEmail />

@@ -23,7 +23,10 @@ export function Projects() {
 					<h2 id="projects-title" className="font-display mt-4 max-w-3xl text-4xl leading-tight font-bold text-balance sm:text-5xl">
 						Agents en <span className="text-gradient">production</span> et labo open source.
 					</h2>
-					<p className="text-mist mt-4 max-w-2xl">D’abord les agents qui tournent chaque jour chez Neoteem, puis mon labo personnel, open source sur GitHub. Ouvrez un objet pour l’inspecter.</p>
+					<p className="text-mist mt-4 max-w-2xl">
+						D’abord les agents qui tournent chaque jour chez Neoteem, puis mon labo personnel, open source sur GitHub. Ouvrez un objet
+						pour l’inspecter.
+					</p>
 				</Reveal>
 
 				<ul className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
@@ -35,7 +38,7 @@ export function Projects() {
 									className="spotlight group relative h-full rounded-3xl border bg-[#0b0718]/80 p-6 backdrop-blur-xl transition-transform duration-500 hover:-translate-y-1"
 									style={{ borderColor: `${r.color}55`, boxShadow: `0 0 50px -28px ${r.color}` }}
 								>
-									<div className="flex items-start justify-between gap-3">
+									<div className="flex flex-wrap items-start justify-between gap-3">
 										<div>
 											<p className="font-mono text-[0.7rem] tracking-widest uppercase" style={{ color: r.color }}>
 												{r.label} · {p.kind}
@@ -44,7 +47,11 @@ export function Projects() {
 												{p.name}
 											</h3>
 										</div>
-										{p.badge && <span className="text-mist shrink-0 rounded-full border border-white/10 bg-white/5 px-3 py-1 font-mono text-xs">{p.badge}</span>}
+										{p.badge && (
+											<span className="text-mist shrink-0 rounded-full border border-white/10 bg-white/5 px-3 py-1 font-mono text-xs">
+												{p.badge}
+											</span>
+										)}
 									</div>
 									<p className="text-ink/85 mt-4 leading-relaxed">{p.pitch}</p>
 
@@ -70,7 +77,13 @@ export function Projects() {
 											))}
 										</p>
 										{p.url ? (
-											<a href={p.url} target="_blank" rel="noopener" className="text-ink text-sm font-semibold underline-offset-4 hover:underline" aria-label={`Voir ${p.name} sur GitHub`}>
+											<a
+												href={p.url}
+												target="_blank"
+												rel="noopener"
+												className="text-ink text-sm font-semibold underline-offset-4 hover:underline"
+												aria-label={`Voir ${p.name} sur GitHub`}
+											>
 												GitHub ↗
 											</a>
 										) : (

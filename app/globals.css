@@ -101,6 +101,10 @@
 	.lenis.lenis-smooth [data-lenis-prevent] {
 		overscroll-behavior: contain;
 	}
+	/* nothing may widen the page on a phone (a sideways swipe would slide the whole site) */
+	html {
+		overflow-x: clip;
+	}
 	body {
 		background: transparent;
 		color: var(--color-ink);
@@ -186,7 +190,9 @@
 /* Film grain + blueprint grid on top of the WebGL canvas. */
 .atmosphere {
 	position: fixed;
-	inset: 0;
+	/* the largest viewport: the layer never resizes while a phone's address bar slides in and out */
+	inset: 0 0 auto 0;
+	height: 100lvh;
 	z-index: -5;
 	pointer-events: none;
 	background:

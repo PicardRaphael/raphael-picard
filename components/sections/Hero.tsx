@@ -1,42 +1,79 @@
+import Image from 'next/image';
+
 import { Counter } from '@/components/ui/Counter';
-import { Pitch30Button } from '@/components/ui/Pitch30';
+import { PITCH_POSTER, Pitch30Button } from '@/components/ui/Pitch30';
 import { PilotButton } from '@/components/ui/PilotButton';
 import { ScrambleText } from '@/components/ui/ScrambleText';
 import { hero, stack, stats } from '@/content/profile';
 
 export function Hero() {
 	return (
-		<section id="accueil" data-station="0" aria-labelledby="hero-title" className="relative flex min-h-[100svh] flex-col justify-center pt-24 pb-10">
+		<section
+			id="accueil"
+			data-station="0"
+			aria-labelledby="hero-title"
+			className="relative flex min-h-[100svh] flex-col justify-center pt-24 pb-10"
+		>
 			<div className="mx-auto w-full max-w-7xl px-4 sm:px-6">
-				<div className="max-w-2xl">
-					<p className="eyebrow flex items-center gap-3">
-						<span className="relative flex h-2 w-2">
-							<span className="bg-ok absolute inline-flex h-full w-full animate-ping rounded-full opacity-60" />
-							<span className="bg-ok relative inline-flex h-2 w-2 rounded-full" />
-						</span>
-						{hero.eyebrow}
-					</p>
-					<h1 id="hero-title" className="font-display mt-6 text-5xl leading-[0.95] font-extrabold tracking-tight text-balance sm:text-7xl lg:text-8xl">
-						Raphaël <span className="text-gradient">Picard</span>
-						<span className="sr-only">, Senior AI Engineer &amp; Responsable IA à Lyon :</span>{' '}
-						<span className="text-ink/90 mt-4 block text-2xl font-semibold tracking-normal sm:text-3xl lg:text-4xl">
-							<ScrambleText text={hero.headline} delay={350} />
-						</span>
-					</h1>
-					<p className="text-mist mt-6 max-w-xl text-base leading-relaxed sm:text-lg">{hero.lead}</p>
-					<div className="mt-9 flex flex-wrap items-center gap-3">
-						<a
-							href={hero.primaryCta.href}
-							className="from-violet via-magenta to-violet rounded-full bg-gradient-to-r bg-[length:200%_auto] px-6 py-3 font-semibold text-white shadow-[0_0_40px_-8px_rgb(197_14_255_/_0.8)] transition-all duration-500 hover:bg-right"
+				<div className="lg:grid lg:grid-cols-[minmax(0,42rem)_minmax(0,1fr)] lg:items-center lg:gap-12">
+					<div className="max-w-2xl">
+						<p className="eyebrow flex items-center gap-3">
+							<span className="relative flex h-2 w-2">
+								<span className="bg-ok absolute inline-flex h-full w-full animate-ping rounded-full opacity-60" />
+								<span className="bg-ok relative inline-flex h-2 w-2 rounded-full" />
+							</span>
+							{hero.eyebrow}
+						</p>
+						<h1
+							id="hero-title"
+							className="font-display mt-6 text-5xl leading-[0.95] font-extrabold tracking-tight text-balance sm:text-7xl lg:text-8xl"
 						>
-							{hero.primaryCta.label}
-						</a>
-						<a href={hero.secondaryCta.href} download className="glass hover:border-signal/50 rounded-full px-6 py-3 font-semibold transition-colors">
-							{hero.secondaryCta.label}
-						</a>
-						<Pitch30Button className="glass hover:border-signal/50 text-signal rounded-full px-6 py-3 font-semibold transition-colors" />
-						<PilotButton />
+							Raphaël <span className="text-gradient">Picard</span>
+							<span className="sr-only">, Senior AI Engineer &amp; Responsable IA à Lyon :</span>{' '}
+							<span className="text-ink/90 mt-4 block text-2xl font-semibold tracking-normal sm:text-3xl lg:text-4xl">
+								<ScrambleText text={hero.headline} delay={350} />
+							</span>
+						</h1>
+						<p className="text-mist mt-6 max-w-xl text-base leading-relaxed sm:text-lg">{hero.lead}</p>
+						<div className="mt-9 flex flex-wrap items-center gap-3">
+							<a
+								href={hero.primaryCta.href}
+								className="from-violet via-magenta to-violet rounded-full bg-gradient-to-r bg-[length:200%_auto] px-6 py-3 font-semibold text-white shadow-[0_0_40px_-8px_rgb(197_14_255_/_0.8)] transition-all duration-500 hover:bg-right"
+							>
+								{hero.primaryCta.label}
+							</a>
+							<a
+								href={hero.secondaryCta.href}
+								download
+								className="glass hover:border-signal/50 rounded-full px-6 py-3 font-semibold transition-colors"
+							>
+								{hero.secondaryCta.label}
+							</a>
+							<PilotButton />
+						</div>
 					</div>
+
+					{/* the 30-second film, the same as in the game's cinema: one click, with the sound */}
+					<Pitch30Button className="group border-signal/30 hover:border-signal/70 relative mt-10 block w-full max-w-xl overflow-hidden rounded-2xl border text-left shadow-[0_0_60px_-20px_rgb(56_189_248_/_0.6)] transition-colors lg:mt-0">
+						<Image
+							src={PITCH_POSTER}
+							alt=""
+							width={1280}
+							height={720}
+							sizes="(min-width: 1024px) 34rem, 100vw"
+							className="block aspect-video w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+						/>
+						<span
+							className="bg-signal/90 absolute top-[calc(50%-1.6rem)] left-1/2 grid h-16 w-16 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full pl-1 text-2xl text-black shadow-[0_0_30px_rgb(56_189_248_/_0.7)] transition-transform group-hover:scale-110"
+							aria-hidden
+						>
+							▶
+						</span>
+						<span className="flex items-baseline justify-between gap-3 bg-black/70 px-4 py-3">
+							<span className="font-display font-bold text-white sm:text-lg">▶ Raphaël en 30 secondes</span>
+							<span className="font-mono text-xs whitespace-nowrap text-white/70">avec le son</span>
+						</span>
+					</Pitch30Button>
 				</div>
 
 				<dl className="mt-14 grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4">
@@ -51,7 +88,7 @@ export function Hero() {
 				</dl>
 			</div>
 
-			<div className="mt-14 overflow-hidden border-y border-white/5 bg-black/20 py-3 [mask-image:linear-gradient(90deg,transparent,#000_12%,#000_88%,transparent)]">
+			<div className="mt-14 overflow-hidden border-y border-white/5 bg-black/20 [mask-image:linear-gradient(90deg,transparent,#000_12%,#000_88%,transparent)] py-3">
 				<ul className="animate-marquee flex w-max gap-10 font-mono text-sm text-white/65" aria-label="Technologies">
 					{[...stack, ...stack].map((t, i) => (
 						<li key={`${t}-${i}`} aria-hidden={i >= stack.length} className="flex items-center gap-10">

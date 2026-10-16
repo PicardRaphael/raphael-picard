@@ -29,7 +29,7 @@ export const cvSkills: CvSkill[] = [
 	{ label: 'Évaluation et LLMOps', items: 'DeepEval (LLM-as-judge), golden sets, observabilité Langfuse (traces, coûts, latence)' },
 	{ label: 'Qualité logicielle', items: 'Pytest, Vitest, Jest, mutation testing, architecture hexagonale, CI/CD' },
 	{ label: 'Back-end et cloud', items: 'Python (FastAPI, Pydantic), TypeScript (Bun, Hono, Zod, Node.js), PostgreSQL, OpenAPI, GraphQL, Google Cloud (Cloud Run), Docker' },
-	{ label: 'Outillage et front-end', items: 'Claude Code, serveurs MCP (FastMCP), n8n ; React, Next.js, Storybook' },
+	{ label: 'Outillage et front-end', items: 'Claude Code, serveurs MCP (FastMCP), n8n, React, Next.js, Storybook' },
 ];
 
 /** A group of bullets inside a job; a sub-mission carries its own period. */
@@ -57,31 +57,31 @@ export const cvExperiences: CvExperience[] = [
 				points: [
 					'Architecture en assistants spécialisés plutôt qu’en assistant unique : proposée à la direction et adoptée en production',
 					'Notes de décision pour la direction : organisation du pôle IA, choix d’architecture (recherche documentaire ou base de connaissances structurée), langage de programmation du pôle',
-					'Encadrement du pôle IA (3 à 4 personnes) ; formation des équipes techniques et métier aux outils IA et à leurs bonnes pratiques',
+					'Encadrement du pôle IA (3 à 4 personnes) et formation des équipes techniques et métier aux outils IA et à leurs bonnes pratiques',
 				],
 			},
 			{
 				title: '3 assistants IA en production (7 agents)',
 				points: [
-					'**NeoChat** : répond aux gestionnaires à partir de leurs données, courriels et documents ; un agent ReAct couvre 42 vues métier avec seulement 5 outils génériques',
-					'**NeoSupport** : répond aux questions sur le logiciel à partir de sa documentation (RAG hybride) ; demande une précision si la question est ambiguë et signale les sujets non documentés plutôt que d’inventer une réponse',
-					'**NeoAgent** : compare les devis PDF et signale leurs incohérences (extraction multimodale) ; rédige annonces immobilières et documents',
-					'Gouvernance dès la conception : données métier en lecture seule ; envoi de courriel et suppression de document soumis à 5 points de validation humaine (interruptions LangGraph)',
+					'**NeoChat** : répond aux gestionnaires à partir de leurs données, courriels et documents. Un agent ReAct couvre 42 vues métier avec seulement 5 outils génériques',
+					'**NeoSupport** : répond aux questions sur le logiciel à partir de sa documentation (RAG hybride). Il demande une précision si la question est ambiguë et signale les sujets non documentés plutôt que d’inventer une réponse',
+					'**NeoAgent** : compare les devis PDF et signale leurs incohérences (extraction multimodale), et rédige des annonces immobilières et des documents',
+					'Gouvernance dès la conception : données métier en lecture seule, envoi de courriel et suppression de document soumis à 5 points de validation humaine (interruptions LangGraph)',
 				],
 			},
 			{
 				title: 'Qualité et coûts sous contrôle',
 				points: [
-					'Coût d’inférence réduit de 33 % par le context caching ; chaque conversation tracée dans Langfuse, coût et latence suivis par agent',
-					'Aucune version livrée sans évaluation : golden set de 64 cas rejoués 5 fois (DeepEval, LLM-as-judge) ; plus de 7 000 tests automatisés',
+					'Coût d’inférence réduit de 33 % par le context caching. Chaque conversation tracée dans Langfuse, coût et latence suivis par agent',
+					'Aucune version livrée sans évaluation : golden set de 64 cas rejoués 5 fois (DeepEval, LLM-as-judge) et plus de 7 000 tests automatisés',
 				],
 			},
 			{
 				title: 'Ingénierie et outillage',
 				points: [
-					'Couche de données des agents réécrite en TypeScript (Bun, Hono, Zod, PostgreSQL) à la place de fonctions SQL historiques ; architecture hexagonale vérifiée en CI',
+					'Couche de données des agents réécrite en TypeScript (Bun, Hono, Zod, PostgreSQL) à la place de fonctions SQL historiques, en architecture hexagonale vérifiée en CI',
 					'Score de mutation minimal de 80 % exigé avant chaque fusion, pour mesurer la capacité des tests à détecter les régressions',
-					'Claude Code déployé pour l’équipe (règles, sous-agents et garde-fous communs sur 5 dépôts) ; 2 serveurs MCP développés en interne relient les agents à la base de connaissances',
+					'Claude Code déployé pour l’équipe (règles, sous-agents et garde-fous communs sur 5 dépôts). 2 serveurs MCP développés en interne relient les agents à la base de connaissances',
 				],
 			},
 		],
@@ -106,8 +106,8 @@ export const cvExperiences: CvExperience[] = [
 				period: 'Mars 2025 – nov. 2025',
 				points: [
 					'[mcp-server-documentation](https://github.com/PicardRaphael/mcp-server-documentation) : serveur MCP (FastMCP) qui donne aux agents un accès unifié et actualisé à la documentation de LangChain, LangGraph, Next.js et Tailwind CSS',
-					'[coder-crew](https://github.com/PicardRaphael/coder-crew) : 4 agents CrewAI (lead, back-end, front-end, tests) qui conçoivent, codent et testent ensemble une application ; un LLM par rôle, coûts suivis avec AgentOps',
-					'[job-booster](https://github.com/PicardRaphael/job-booster) : application RAG (FastAPI, Next.js, LangChain, Qdrant, reranker BGE) qui rédige des courriels et des lettres de motivation à partir d’une offre d’emploi ; plusieurs LLM au choix, traces Langfuse',
+					'[coder-crew](https://github.com/PicardRaphael/coder-crew) : 4 agents CrewAI (lead, back-end, front-end, tests) qui conçoivent, codent et testent ensemble une application, avec un LLM par rôle et des coûts suivis avec AgentOps',
+					'[job-booster](https://github.com/PicardRaphael/job-booster) : application RAG (FastAPI, Next.js, LangChain, Qdrant, reranker BGE) qui rédige des courriels et des lettres de motivation à partir d’une offre d’emploi, avec plusieurs LLM au choix et des traces Langfuse',
 					'Autres projets : agents LangGraph et OpenAI Agents SDK, API FastAPI et Node.js en Clean Architecture, automatisations n8n',
 				],
 			},
@@ -123,7 +123,7 @@ export const cvExperiences: CvExperience[] = [
 				points: [
 					'Conception et développement du MVP de zéro (React, Next.js, TypeScript), en architecture hexagonale',
 					'Bibliothèque de composants Storybook, API REST Express documentée avec Swagger',
-					'Encadrement technique de développeurs juniors ; coordination avec le PMO et l’équipe produit (priorités du MVP, jalons, livrables)',
+					'Encadrement technique de développeurs juniors et coordination avec le PMO et l’équipe produit (priorités du MVP, jalons, livrables)',
 				],
 			},
 		],
@@ -139,7 +139,7 @@ export const cvExperiences: CvExperience[] = [
 				points: [
 					'Création, dès 2018, d’une PWA React (MUI) d’analyse automatique de documents avec l’API Google Vision',
 					'Refonte complète du front-end et création d’un BFF GraphQL (Node.js, Apollo) devant les microservices',
-					'Mise en place d’un monorepo Lerna et de la CI/CD GitLab pour une équipe de 7 développeurs ; migration des API de Symfony 3 à Symfony 5 et sécurisation',
+					'Mise en place d’un monorepo Lerna et de la CI/CD GitLab pour une équipe de 7 développeurs, puis migration des API de Symfony 3 à Symfony 5 et sécurisation',
 				],
 			},
 		],

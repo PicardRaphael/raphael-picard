@@ -210,7 +210,7 @@ export const certifications = [
 
 /** Degrees, with their years (CV). */
 export const education = [
-	{ name: 'Concepteur développeur web', title: 'titre RNCP de niveau 6 (bac + 4)', school: 'O’clock', years: '2018-2019' },
+	{ name: 'Concepteur développeur web', title: 'titre RNCP de niveau 6 (bac + 4)', school: 'O’clock', years: '2018–2019' },
 	{ name: 'Développeur logiciel', title: 'titre RNCP de niveau 5 (bac + 2)', school: 'O’clock', years: '2018' },
 ];
 

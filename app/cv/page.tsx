@@ -164,7 +164,7 @@ export default function CvPage() {
 				{cvSkills.map((s) => (
 					<li key={s.label}>
 						<strong>{s.label}</strong>
-						{'\u00a0'}: {typo(s.items)}
+						{'\u00a0'}: {typo(sentence(s.items))}
 					</li>
 				))}
 			</ul>
@@ -181,7 +181,7 @@ export default function CvPage() {
 							<span className="shrink-0 text-[10.5px] font-semibold tabular-nums">{typo(e.period)}</span>
 						</div>
 						<p className="keep text-[10.5px] italic" style={{ color: muted }}>
-							{typo(e.context)}
+							{typo(sentence(e.context))}
 						</p>
 						{e.blocks.map((b) => (
 							// a short group never splits across the page break (no lone bullet at the top of page 2)
@@ -203,7 +203,7 @@ export default function CvPage() {
 				))}
 			</div>
 
-			<Title>Projets personnels open source, en parallèle du poste (2026)</Title>
+			<Title>Veille et open source (2026)</Title>
 			<ul className="cv-list space-y-[2px]">
 				{openSource.map((p) => (
 					<li key={p.name}>
@@ -220,7 +220,7 @@ export default function CvPage() {
 				<ul className="cv-list space-y-[2px]">
 					{education.map((d) => (
 						<li key={d.name}>
-							<span className="font-semibold">{d.name}</span>, {d.title} · {typo(d.school)}, <span className="whitespace-nowrap">{d.years}</span>
+							<span className="font-semibold">{d.name}</span>, {d.title} · {typo(d.school)}, <span className="whitespace-nowrap">{d.years}</span>.
 						</li>
 					))}
 					<li>
@@ -232,24 +232,24 @@ export default function CvPage() {
 								<em className="whitespace-nowrap">{typo(c.name)}</em>
 							</span>
 						))}
+						.
 					</li>
 					{others.map((c) => (
 						<li key={c.name}>
 							<span className="font-semibold">{c.issuer}</span>
-							{' '}: <em>{typo(c.name)}</em>
+							{' '}: <em>{typo(c.name)}</em>.
 						</li>
 					))}
 				</ul>
 				<Title>Langues</Title>
-				<p>
-					{cvLanguages.map((l, i) => (
-						<span key={l.label}>
-							{i > 0 && ' · '}
+				<ul className="cv-list space-y-[2px]">
+					{cvLanguages.map((l) => (
+						<li key={l.label}>
 							<strong>{l.label}</strong>
-							{' '}: {typo(l.level)}
-						</span>
+							{'\u00a0'}: {typo(sentence(l.level))}
+						</li>
 					))}
-				</p>
+				</ul>
 			</div>
 		</main>
 	);

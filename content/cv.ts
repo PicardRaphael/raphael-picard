@@ -1,34 +1,35 @@
 /**
  * Content specific to the CV (app/cv → public/raphael-picard-cv-senior-ai-engineer-responsable-ia.pdf): richer than the site, never contradicting it.
  * Facts shared with the site (projects, degrees, certifications, contact) are read from content/work.ts and lib/site.ts.
- * Only real figures: nothing here is rounded up or estimated.
+ * Only real figures: nothing here is rounded up or estimated. One word per thing: an « assistant » is the product a
+ * user talks to, an « agent » the LangGraph building block inside it.
  */
 
 export const cvHeader = {
 	location: 'Lyon · télétravail',
-	keywords: 'Agents LLM en production · RAG · LLMOps · MCP · Python · TypeScript · GCP',
+	keywords: 'Agents LLM en production · LangGraph · RAG · LLMOps · MCP · Python · TypeScript · GCP',
 };
 
 export const cvSummary =
-	'Plus de huit ans d’ingénierie logicielle, dont la mise en production d’agents IA. Depuis novembre 2025, Senior AI Engineer et responsable IA chez Neoteem, éditeur d’un ERP immobilier : je conçois et déploie des assistants IA utilisés au quotidien par les gestionnaires, en lecture seule sur leurs données, sous contrôle humain et évalués avant chaque version. Je porte la stratégie IA auprès de la direction, j’encadre le pôle IA et je forme les équipes.';
+	'Ingénieur logiciel depuis plus de 8 ans, Senior AI Engineer et responsable IA chez Neoteem (éditeur d’un ERP immobilier) depuis novembre 2025. Je conçois et mets en production des assistants IA utilisés au quotidien par les gestionnaires, avec une gouvernance stricte : données métier en lecture seule, validation humaine avant toute action engageante, évaluation systématique avant livraison. Je porte la stratégie IA auprès de la direction, j’encadre le pôle IA et je forme les équipes techniques et métier.';
 
 /** Key figures of the CV header: the site's figures (content/profile.ts), worded for a standalone page. */
 export const cvStats = [
 	{ value: '7', label: 'agents IA en production' },
 	{ value: '−33 %', label: 'de coût d’inférence' },
-	{ value: '64', label: 'cas rejoués 5 fois par version' },
+	{ value: '0', label: 'action engageante sans validation humaine' },
 	{ value: '3 à 4', label: 'personnes encadrées' },
 ];
 
 export type CvSkill = { label: string; items: string };
 
 export const cvSkills: CvSkill[] = [
-	{ label: 'IA générative (GenAI) et agents', items: 'LangGraph, agents ReAct, multi-agents, human-in-the-loop, Gemini (Vertex AI), Claude, prompt engineering' },
-	{ label: 'RAG et données', items: 'RAG hybride (plein texte + pgvector, fusion RRF), reranking, embeddings, Unstructured' },
-	{ label: 'LLMOps et évaluation des LLM', items: 'DeepEval (LLM-as-judge), golden sets, observabilité Langfuse (traces, coûts, latence), Pytest, Vitest, mutation testing' },
-	{ label: 'Outillage agentique', items: 'Claude Code (skills, sous-agents, hooks), serveurs MCP (FastMCP), n8n' },
-	{ label: 'Back-end et cloud', items: 'Python (FastAPI, Pydantic), TypeScript (Bun, Hono, Zod), PostgreSQL, OpenAPI, Google Cloud (GCP : Cloud Run), Docker, CI/CD' },
-	{ label: 'Front-end', items: 'React, Next.js, TypeScript, Storybook' },
+	{ label: 'Agents et IA générative', items: 'LangGraph, agents ReAct, systèmes multi-agents, human-in-the-loop, Gemini (Vertex AI), Claude, prompt engineering' },
+	{ label: 'RAG et données', items: 'RAG hybride (plein texte et pgvector, fusion RRF), reranking, embeddings, ingestion de documents (Unstructured)' },
+	{ label: 'Évaluation et LLMOps', items: 'DeepEval (LLM-as-judge), golden sets, observabilité Langfuse (traces, coûts, latence)' },
+	{ label: 'Qualité logicielle', items: 'Pytest, Vitest, mutation testing, architecture hexagonale, CI/CD' },
+	{ label: 'Back-end et cloud', items: 'Python (FastAPI, Pydantic), TypeScript (Bun, Hono, Zod), PostgreSQL, OpenAPI, Google Cloud (Cloud Run), Docker' },
+	{ label: 'Outillage et front-end', items: 'Claude Code, serveurs MCP (FastMCP), n8n ; React, Next.js, Storybook' },
 ];
 
 /** A group of bullets inside a job; a sub-mission carries its own period. */
@@ -54,39 +55,33 @@ export const cvExperiences: CvExperience[] = [
 			{
 				title: 'Stratégie et leadership',
 				points: [
-					'Architecture de chatbots spécialisés plutôt qu’un chatbot unique : proposée à la direction, adoptée en production',
-					'Notes de décision pour la direction : organisation du pôle IA, arbitrages d’architecture (RAG ou base de connaissances, langage du pôle)',
-					'Encadrement du pôle IA (3 à 4 personnes) ; formation des équipes techniques et métier (Claude Code, Claude Desktop, Claude Cowork, bonnes pratiques IA)',
+					'Architecture en assistants spécialisés plutôt qu’en assistant unique : proposée à la direction et adoptée en production',
+					'Notes de décision pour la direction : organisation du pôle IA, choix d’architecture (recherche documentaire ou base de connaissances structurée), langage de programmation du pôle',
+					'Encadrement du pôle IA (3 à 4 personnes) ; formation des équipes techniques et métier aux outils IA et à leurs bonnes pratiques',
 				],
 			},
 			{
-				title: 'Sept agents IA en production, réunis dans trois assistants',
+				title: '3 assistants IA en production (7 agents)',
 				points: [
-					'**NeoChat** : assistant des gestionnaires sur leurs données, courriels et documents ; moteur ReAct, 42 vues métier servies par 5 outils génériques',
-					'**NeoSupport** : RAG hybride sur la documentation du logiciel ; demande une précision si la question est ambiguë, signale les manques de la documentation plutôt que d’inventer',
-					'**NeoAgent** : comparaison de devis PDF (extraction multimodale, détection d’incohérences), rédaction d’annonces immobilières et de documents',
-					'Sécurité dès la conception : données en lecture seule, 5 points de contrôle humain (interruptions LangGraph) ; aucun courriel envoyé ni document supprimé sans validation humaine',
+					'**NeoChat** : répond aux gestionnaires à partir de leurs données, courriels et documents ; un agent ReAct couvre 42 vues métier avec seulement 5 outils génériques',
+					'**NeoSupport** : répond aux questions sur le logiciel à partir de sa documentation (RAG hybride) ; demande une précision si la question est ambiguë et signale les manques de la documentation plutôt que d’inventer',
+					'**NeoAgent** : compare les devis PDF et signale leurs incohérences (extraction multimodale) ; rédige annonces immobilières et documents',
+					'Gouvernance dès la conception : données métier en lecture seule ; envoi de courriel et suppression de document soumis à 5 points de validation humaine (interruptions LangGraph)',
 				],
 			},
 			{
-				title: 'Qualité, évaluation et coûts (LLMOps)',
+				title: 'Qualité et coûts sous contrôle',
 				points: [
-					'Golden set de 64 cas rejoués 5 fois (DeepEval) avant chaque version ; plus de 7 000 tests, CI à chaque PR',
-					'Chaque conversation tracée dans Langfuse, coût et latence suivis par agent ; context caching : −33 % de coût d’inférence',
+					'Coût d’inférence réduit de 33 % par le context caching ; chaque conversation tracée dans Langfuse, coût et latence suivis par agent',
+					'Aucune version livrée sans évaluation : golden set de 64 cas rejoués 5 fois (DeepEval, LLM-as-judge) ; plus de 7 000 tests automatisés',
 				],
 			},
 			{
-				title: 'Outillage agentique',
+				title: 'Ingénierie et outillage',
 				points: [
-					'Claude Code déployé pour l’équipe : skills, sous-agents et hooks partagés sur 5 dépôts (TDD délégué, garde-fous)',
-					'Base de connaissances interne reliée aux agents par 2 serveurs MCP maison',
-				],
-			},
-			{
-				title: 'Back-end TypeScript',
-				points: [
-					'Couche de données des agents entièrement réécrite en TypeScript (Bun, Hono, Zod, PostgreSQL), architecture hexagonale vérifiée en CI',
-					'Score de mutation de 80 % exigé à chaque PR : les tests prouvent qu’ils détectent les régressions',
+					'Couche de données des agents réécrite en TypeScript (Bun, Hono, Zod, PostgreSQL) à la place de fonctions SQL historiques ; architecture hexagonale vérifiée en CI',
+					'Score de mutation minimal de 80 % exigé avant chaque fusion, pour mesurer la capacité des tests à détecter les régressions',
+					'Claude Code déployé pour l’équipe (règles, sous-agents et garde-fous communs sur 5 dépôts) ; 2 serveurs MCP développés en interne relient les agents à la base de connaissances',
 				],
 			},
 		],
@@ -95,14 +90,14 @@ export const cvExperiences: CvExperience[] = [
 		role: 'Développeur full-stack et IA',
 		company: 'Indépendant (EI)',
 		period: 'Déc. 2022 – nov. 2025',
-		context: 'Une mission longue pour Royal Canin, puis des projets d’IA appliquée publiés en open source',
+		context: 'Mission longue chez Royal Canin, puis projets d’IA appliquée publiés en open source',
 		blocks: [
 			{
 				title: 'Développeur front-end senior · Royal Canin (via Ekino)',
 				period: 'Déc. 2022 – avr. 2025',
 				points: [
-					'Commerce en ligne dans plus de 100 pays : optimisation des parcours (B2B, B2C) et des performances',
-					'Migration complète du code de JavaScript vers TypeScript, refonte en React Hooks, tests Jest et Testing Library',
+					'Site de commerce en ligne déployé dans plus de 100 pays : optimisation des parcours B2B et B2C et des performances',
+					'Migration complète du code de JavaScript vers TypeScript, passage aux React Hooks, tests Jest et Testing Library',
 					'Alignement de la refonte technique sur la feuille de route avec le PMO et les product owners',
 				],
 			},
@@ -110,10 +105,10 @@ export const cvExperiences: CvExperience[] = [
 				title: 'Projets d’IA appliquée, en open source sur GitHub',
 				period: 'Mars 2025 – nov. 2025',
 				points: [
-					'[mcp-server-documentation](https://github.com/PicardRaphael/mcp-server-documentation) : serveur MCP (FastMCP) qui donne aux agents un accès unifié et à jour à la documentation de LangChain, LangGraph, Next.js et Tailwind',
-					'[coder-crew](https://github.com/PicardRaphael/coder-crew) : quatre agents CrewAI (lead, back-end, front-end, tests) qui conçoivent, codent et testent une application ensemble ; un LLM par rôle, coûts suivis avec AgentOps',
-					'[job-booster](https://github.com/PicardRaphael/job-booster) : application RAG (FastAPI, Next.js, LangChain, Qdrant et reranker BGE) qui rédige courriels et lettres de motivation à partir d’une offre ; multi-LLM, traces Langfuse',
-					'Agents LangGraph et OpenAI Agents SDK, API en Clean Architecture (FastAPI, Node.js), automatisations n8n',
+					'[mcp-server-documentation](https://github.com/PicardRaphael/mcp-server-documentation) : serveur MCP (FastMCP) qui donne aux agents un accès unifié et à jour à la documentation de LangChain, LangGraph, Next.js et Tailwind CSS',
+					'[coder-crew](https://github.com/PicardRaphael/coder-crew) : 4 agents CrewAI (lead, back-end, front-end, tests) qui conçoivent, codent et testent une application ensemble ; un LLM par rôle, coûts suivis avec AgentOps',
+					'[job-booster](https://github.com/PicardRaphael/job-booster) : application RAG (FastAPI, Next.js, LangChain, Qdrant et reranker BGE) qui rédige des courriels et des lettres de motivation à partir d’une offre d’emploi ; plusieurs LLM au choix, traces Langfuse',
+					'Autres projets : agents LangGraph et OpenAI Agents SDK, API FastAPI et Node.js en Clean Architecture, automatisations n8n',
 				],
 			},
 		],
@@ -126,9 +121,9 @@ export const cvExperiences: CvExperience[] = [
 		blocks: [
 			{
 				points: [
-					'Conception et développement du MVP à partir de zéro (React, Next.js, TypeScript) : R&D technique, architecture hexagonale',
-					'Bibliothèque Storybook de composants ; API REST Express documentée avec Swagger ; tests Jest et Testing Library',
-					'Encadrement technique de développeurs juniors ; coordination avec le PMO et le produit (priorités du MVP, jalons, livrables)',
+					'Conception et développement du MVP de zéro (React, Next.js, TypeScript), en architecture hexagonale',
+					'Bibliothèque Storybook de composants ; API REST Express documentée avec Swagger',
+					'Encadrement technique de développeurs juniors ; coordination avec le PMO et le produit (priorités du MVP, jalons, livrables)',
 				],
 			},
 		],
@@ -142,9 +137,9 @@ export const cvExperiences: CvExperience[] = [
 		blocks: [
 			{
 				points: [
-					'PWA React (MUI) d’analyse automatique de documents (API Google Vision, 2018)',
+					'Dès 2018, PWA React (MUI) d’analyse automatique de documents avec l’API Google Vision',
 					'Refonte complète du front-end et création d’un BFF GraphQL (Node.js, Apollo) devant les microservices',
-					'Monorepo Lerna et CI/CD GitLab pour une équipe de 7 développeurs ; migration et sécurisation des API Symfony 3 → 5',
+					'Monorepo Lerna et CI/CD GitLab pour une équipe de 7 développeurs ; migration des API de Symfony 3 à Symfony 5 et sécurisation',
 				],
 			},
 		],
@@ -153,12 +148,12 @@ export const cvExperiences: CvExperience[] = [
 
 /** Open-source repos on the CV, in this order, with a short description (the site's pitches are longer). */
 export const cvProjectNotes: Record<string, string> = {
-	'claude-forge': 'méta-framework qui génère une configuration Claude Code validée, avec des hooks bloquants et un serveur MCP de 22 outils (FastMCP)',
-	agentsdir: 'outil en ligne de commande TypeScript (licence MIT) qui unifie l’architecture AGENTS.md de Codex, Cursor et opencode, la convertit pour Claude Code et la vérifie en CI',
-	'wow-forever': 'assistant expert où l’IA ne calcule jamais, chaque chiffre venant d’un outil déterministe (serveur MCP de 8 outils, plugin Claude Code, plus de 400 fichiers de tests)',
+	'claude-forge': 'générateur de configurations Claude Code vérifiées automatiquement, avec des hooks bloquants et un serveur MCP de 22 outils (FastMCP)',
+	agentsdir: 'outil en ligne de commande TypeScript (licence MIT) qui unifie les fichiers d’instructions AGENTS.md de Codex, Cursor et opencode, les convertit pour Claude Code et les vérifie en CI',
+	'wow-forever': 'assistant expert d’un jeu vidéo où le LLM ne calcule jamais, chaque chiffre venant d’un outil déterministe (serveur MCP de 8 outils, plugin Claude Code)',
 };
 
 export const cvLanguages = [
 	{ label: 'Français', level: 'langue maternelle' },
-	{ label: 'Anglais', level: 'B1, technique et opérationnel ; documentation et formations suivies en anglais' },
+	{ label: 'Anglais', level: 'B1, lecture technique courante (documentation et formations suivies en anglais)' },
 ];

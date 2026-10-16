@@ -25,6 +25,21 @@ export const CITY_BLOCKS: { x: number; z: number; r: number }[] = [
 	{ x: 18.5, z: -42, r: (3 * Math.PI) / 2 },
 ];
 
+/**
+ * Night facades: only the bright parts of the daylight photo texture (windows, shop fronts, signs) glow;
+ * walls stay dark instead of the whole facade being lit like a lightbox.
+ */
+function litWindowsOnly(shader: { fragmentShader: string }) {
+	shader.fragmentShader = shader.fragmentShader.replace(
+		'#include <emissivemap_fragment>',
+		`#ifdef USE_EMISSIVEMAP
+			vec4 emissiveColor = texture2D( emissiveMap, vEmissiveMapUv );
+			float lit = mix( 0.45, 1.3, smoothstep( 0.4, 0.7, dot( emissiveColor.rgb, vec3( 0.299, 0.587, 0.114 ) ) ) );
+			totalEmissiveRadiance *= emissiveColor.rgb * lit;
+		#endif`,
+	);
+}
+
 export function NexusCity() {
 	const { scene } = useGLTF(URL);
 	const blocks = useMemo(() => {
@@ -41,7 +56,9 @@ export function NexusCity() {
 				if (m.map) {
 					m.emissiveMap = m.map;
 					m.emissive = new THREE.Color('#ffd9b0');
-					m.emissiveIntensity = 0.32;
+					m.emissiveIntensity = 0.8;
+					m.onBeforeCompile = litWindowsOnly;
+					m.customProgramCacheKey = () => 'nexus-lit-windows';
 				}
 				glow.set(src, (mat = m));
 			}
@@ -121,11 +138,14 @@ const SIGNS = (() => {
 	return list;
 })();
 
+/** The same sign model repeats along the avenue: each copy glows in its own colour. */
+const SIGN_TINTS = ['#ff2bd6', '#22d3ee', '#ffb45c', '#a855f7', '#ffffff'];
+
 export function NexusSigns() {
 	return (
 		<>
 			{SIGNS.map((g, i) => (
-				<SfModel key={i} file={g.file} height={g.h} glow={4} shadows={false} position={[g.x, g.y, g.z]} rotation={[0, g.r, 0]} />
+				<SfModel key={i} file={g.file} height={g.h} glow={4} tint={SIGN_TINTS[i % SIGN_TINTS.length]} shadows={false} position={[g.x, g.y, g.z]} rotation={[0, g.r, 0]} />
 			))}
 		</>
 	);

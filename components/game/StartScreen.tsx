@@ -138,11 +138,17 @@ export function StartScreen() {
 				}`}
 				aria-hidden={started}
 			>
-				<p className="mt-auto font-mono text-xs tracking-[0.35em] text-[#ffd9a0] uppercase">Senior AI Engineer & Responsable IA · Neoteem · Lyon</p>
-				<h1 className="font-display mt-3 text-5xl font-extrabold tracking-tight text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.6)] sm:text-7xl [@media(max-height:500px)]:text-4xl">
-					Raphaël Picard<span className="sr-only">, Senior AI Engineer &amp; Responsable IA à Lyon</span>
-				</h1>
-				<p className="mt-3 max-w-xl text-lg text-white/85 [@media(max-height:500px)]:hidden">7 agents IA en production chez Neoteem. Un portfolio jouable : choisissez votre héros et explorez mon parcours, ou lisez la version classique en 2 minutes.</p>
+				<div className="mt-auto rounded-3xl bg-black/45 px-6 py-5 shadow-[0_0_60px_30px_rgba(0,0,0,0.35)] backdrop-blur-[3px] [@media(max-height:500px)]:py-3">
+					<p className="font-mono text-sm tracking-[0.22em] text-[#ffd9a0] uppercase [@media(max-height:500px)]:text-xs">Senior AI Engineer & Responsable IA · Neoteem · Lyon</p>
+					<h1 className="font-display mt-2 text-5xl font-extrabold tracking-tight text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.6)] sm:text-7xl [@media(max-height:500px)]:text-4xl">
+						Raphaël Picard<span className="sr-only">, Senior AI Engineer &amp; Responsable IA à Lyon</span>
+					</h1>
+					<p className="mx-auto mt-3 max-w-xl text-lg leading-snug text-white [@media(max-height:500px)]:hidden">
+						<strong className="font-semibold text-[#ffe9a3]">7 agents IA en production chez Neoteem.</strong>
+						<br />
+						Choisissez un héros et explorez mon parcours en jouant, ou lisez la version classique en 2 minutes.
+					</p>
+				</div>
 
 				<div className="mt-7 grid w-full max-w-xl grid-cols-2 gap-3 [@media(max-height:500px)]:mt-4" role="radiogroup" aria-label="Choix du personnage">
 					{HEROES.map((h) => (
@@ -184,6 +190,15 @@ export function StartScreen() {
 							Nouvelle partie
 						</button>
 					)}
+					<button
+						onClick={() => {
+							window.dispatchEvent(new CustomEvent('menu:tab', { detail: 'options' }));
+							game.set({ overlay: 'menu' });
+						}}
+						className="rounded-full border border-white/30 bg-black/40 px-5 py-3 text-sm text-white hover:bg-black/60"
+					>
+						⚙ Réglages
+					</button>
 					<button onClick={() => setKeys(true)} className="pointer-coarse:hidden rounded-full border border-white/30 bg-black/40 px-5 py-3 text-sm text-white hover:bg-black/60">
 						⌨ Touches
 					</button>

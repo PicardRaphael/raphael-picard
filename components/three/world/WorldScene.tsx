@@ -36,7 +36,7 @@ function detect(): Quality {
 
 const LIGHT = {
 	day: { hemi: ['#d6ebff', '#55752f', 1.25], sun: ['#fff1d6', 2.8], fog: '#b9d2ea', near: 140, far: 420 },
-	dusk: { hemi: ['#ffe2b8', '#4a6b2a', 1.1], sun: ['#ffc58a', 2.6], fog: '#e8bf98', near: 120, far: 380 },
+	dusk: { hemi: ['#ffe2b8', '#4a6b2a', 1.1], sun: ['#ffc58a', 2.6], fog: '#d9b48f', near: 150, far: 400 },
 	// a moonlit night, not a black one: the hand-painted val stays readable after 21 h
 	night: { hemi: ['#5a6ac0', '#141a30', 0.85], sun: ['#a9bcff', 1.1], fog: '#1a2142', near: 60, far: 280 },
 } as const;
@@ -85,11 +85,11 @@ function Atmosphere({ shadows }: { shadows: boolean }) {
 	return (
 		<>
 			{val && <SkyDome night={weather === 'rain' ? Math.max(night, 0.35) : night} />}
-			<hemisphereLight args={[val ? L.hemi[0] : '#41507f', val ? L.hemi[1] : '#05060a', (val ? L.hemi[2] : 0.55) * dim]} />
+			<hemisphereLight args={[val ? L.hemi[0] : '#41507f', val ? L.hemi[1] : '#05060a', (val ? L.hemi[2] : 0.8) * dim]} />
 			<directionalLight
 				ref={sun}
 				color={val ? L.sun[0] : '#8fb3ff'}
-				intensity={(val ? L.sun[1] : 0.9) * dim}
+				intensity={(val ? L.sun[1] : 1.1) * dim}
 				castShadow={shadows}
 				shadow-mapSize={[2048, 2048]}
 				shadow-camera-left={-60}

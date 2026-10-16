@@ -10,7 +10,7 @@ import { mobs, nearestMob } from '@/lib/mobs';
 import { music } from '@/lib/music';
 import { player } from '@/lib/player-state';
 import { canopies, vegetationObstacles } from '@/lib/vegetation';
-import { HOUSES, LAKE, LANDMARKS, NEXUS_CENTER, NEXUS_RADIUS, NEXUS_SPAWN, SPAWN, VAL_RADIUS, groundAt, landmark, nexusWalkable, nexusWaypoint, valWaypoint } from '@/lib/world';
+import { HOUSES, LAKE, LANDMARKS, NEXUS_CENTER, NEXUS_LAMPS, NEXUS_RADIUS, NEXUS_SPAWN, SPAWN, VAL_RADIUS, groundAt, landmark, nexusWalkable, nexusWaypoint, valWaypoint } from '@/lib/world';
 import { FpsWeapon } from './FpsWeapon';
 import { STONES as STONE_RING } from './Landmarks';
 import { HeroModel } from './Hero';
@@ -417,6 +417,8 @@ const OBSTACLES: { x: number; z: number; r: number }[] = [
 	{ x: LAKE.x, z: LAKE.z, r: LAKE.r + 1.8 },
 	// the pedestals under the wings of the Nexus return gate (Nexus.tsx)
 	...[-9.6, 9.6].map((dx) => ({ x: landmark('portal-back').x + dx, z: landmark('portal-back').z, r: 2.7 })),
+	// the street lamp poles of the Nexus avenue
+	...NEXUS_LAMPS.map((l) => ({ x: l.x, z: l.z, r: 0.25 })),
 ];
 
 /** Ring that flashes where the player clicked. */

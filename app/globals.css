@@ -190,7 +190,7 @@
 	z-index: -5;
 	pointer-events: none;
 	background:
-		linear-gradient(90deg, rgb(5 4 12 / 0.72) 0%, rgb(5 4 12 / 0.45) 38%, transparent 62%),
+		linear-gradient(90deg, rgb(5 4 12 / 0.82) 0%, rgb(5 4 12 / 0.58) 45%, transparent 72%),
 		radial-gradient(ellipse 60% 50% at 15% 10%, rgb(101 31 255 / 0.14), transparent 70%);
 }
 .atmosphere::before {

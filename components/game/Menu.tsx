@@ -299,7 +299,14 @@ export function Menu() {
 	const open = useGame((s) => s.overlay === 'menu');
 	const [tab, setTab] = useState<Tab>('home');
 	useEffect(() => {
+		// the start screen opens the menu straight on a tab (Réglages)
+		const onTab = (e: Event) => setTab((e as CustomEvent<Tab>).detail);
+		window.addEventListener('menu:tab', onTab);
 		const on = (e: KeyboardEvent) => {
+			if (e.code === 'Escape' && game.get().overlay === 'menu' && !game.get().started) {
+				game.set({ overlay: null });
+				return;
+			}
 			if (!game.get().started) return;
 			if (e.target instanceof Element && e.target.closest('input, textarea, select')) return;
 			const isMap = keymap.is('map', e.code) || e.key.toLowerCase() === 'm';
@@ -315,7 +322,10 @@ export function Menu() {
 			if (keymap.is('menu', e.code) && !game.get().panel) game.set({ overlay: game.get().overlay === 'menu' ? null : 'menu' });
 		};
 		window.addEventListener('keydown', on);
-		return () => window.removeEventListener('keydown', on);
+		return () => {
+			window.removeEventListener('keydown', on);
+			window.removeEventListener('menu:tab', onTab);
+		};
 	}, []);
 	if (!open) return null;
 	return (

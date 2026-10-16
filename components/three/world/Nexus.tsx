@@ -171,15 +171,20 @@ function Gallery() {
 				const tex = new THREE.CanvasTexture(c);
 				tex.colorSpace = THREE.SRGBColorSpace;
 				// a tight arc that fits the side street
-				const a = -0.75 + (i / (projects.length - 1)) * 1.5;
-				return { tex, x: Math.sin(a) * 9, z: -Math.cos(a) * 9 + 4, rot: -a };
+				// three stacked rows on a tight arc: every card readable, none overlapping, all inside the side street
+				// read like a page: the production agents first, top row, left to right
+				const perRow = Math.ceil(projects.length / 3);
+				const row = Math.floor(i / perRow);
+				const inRow = Math.min(perRow, projects.length - row * perRow);
+				const a = ((i % perRow) - (inRow - 1) / 2) * 0.42;
+				return { tex, x: Math.sin(a) * 9, y: 7.2 - row * 2.5, z: -Math.cos(a) * 9 + 4, rot: -a };
 			}),
 		[],
 	);
 	const ref = useRef<THREE.Group>(null);
 	useFrame(({ clock }) => {
 		ref.current?.children.forEach((c, i) => {
-			c.position.y = 4.2 + Math.sin(clock.elapsedTime * 1.2 + i) * 0.25;
+			c.position.y = cards[i].y + Math.sin(clock.elapsedTime * 1.2 + i) * 0.12;
 		});
 	});
 	return (
@@ -188,8 +193,8 @@ function Gallery() {
 			<HoloPad r={6} color="#e879f9" color2="#f5d0fe" label="GALERIE // PROJETS" beam={2.2} />
 			<group ref={ref}>
 				{cards.map((c, i) => (
-					<mesh key={i} position={[c.x, 4.2, c.z]} rotation={[0, c.rot, 0]}>
-						<planeGeometry args={[4.8, 3]} />
+					<mesh key={i} position={[c.x, c.y, c.z]} rotation={[0, c.rot, 0]}>
+						<planeGeometry args={[3.5, 2.19]} />
 						<meshBasicMaterial map={c.tex} transparent opacity={0.92} side={THREE.DoubleSide} toneMapped={false} />
 					</mesh>
 				))}

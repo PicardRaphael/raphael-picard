@@ -18,6 +18,8 @@ type Props = {
 	shadows?: boolean;
 	/** Extra emissive boost for neon-like assets. */
 	glow?: number;
+	/** Colour of that glow (neon signs of one model told apart by colour). */
+	tint?: string;
 	/** Nodes to hide (e.g. a baked ground plate), matched by name prefix. */
 	hide?: string[];
 	/** Rotation applied to the model itself before normalising (fix Z-up exports). */
@@ -35,7 +37,7 @@ function visibleBox(root: THREE.Object3D) {
 	return box;
 }
 
-export function SfModel({ file, height, animate, shadows = true, glow, hide, fix, ...props }: Props) {
+export function SfModel({ file, height, animate, shadows = true, glow, tint, hide, fix, ...props }: Props) {
 	const url = `/models/sf/${file}.glb`;
 	const { scene, animations } = useGLTF(url);
 	const model = useMemo(() => {
@@ -71,12 +73,15 @@ export function SfModel({ file, height, animate, shadows = true, glow, hide, fix
 			}
 			if (glow && m.material) {
 				const mat = (m.material as THREE.MeshStandardMaterial).clone();
-				if (mat.emissiveMap || mat.emissive.getHex() !== 0) mat.emissiveIntensity = glow;
+				if (mat.emissiveMap || mat.emissive.getHex() !== 0) {
+					mat.emissiveIntensity = glow;
+					if (tint) mat.emissive.set(tint);
+				}
 				m.material = mat;
 			}
 		});
 		return clone;
-	}, [scene, height, shadows, glow, hide, fix]);
+	}, [scene, height, shadows, glow, tint, hide, fix]);
 
 	const group = useRef<THREE.Group>(null);
 	const { actions, names } = useAnimations(animations, group);

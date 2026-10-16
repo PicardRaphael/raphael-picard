@@ -119,7 +119,7 @@ function QuestTracker() {
 	}
 	return (
 		<aside
-			className="pointer-events-none fixed top-4 right-20 z-20 w-72 max-w-[calc(100vw-2rem)] text-right pointer-coarse:top-3 pointer-coarse:right-16 pointer-coarse:max-h-[70vh] pointer-coarse:w-60 pointer-coarse:overflow-y-auto pointer-coarse:rounded-xl pointer-coarse:bg-black/70 pointer-coarse:p-3 pointer-coarse:text-xs pointer-coarse:backdrop-blur-md"
+			className="pointer-events-none fixed top-4 right-20 z-20 w-72 max-w-[calc(100vw-2rem)] rounded-xl border border-white/10 bg-[#07050f]/70 p-3 text-right backdrop-blur-md pointer-coarse:top-3 pointer-coarse:right-16 pointer-coarse:max-h-[70vh] pointer-coarse:w-60 pointer-coarse:overflow-y-auto pointer-coarse:rounded-xl pointer-coarse:bg-black/70 pointer-coarse:p-3 pointer-coarse:text-xs pointer-coarse:backdrop-blur-md"
 			aria-label="Suivi des quêtes"
 		>
 			{coarse && (
@@ -127,7 +127,7 @@ function QuestTracker() {
 					Replier ▴
 				</button>
 			)}
-			<p className="mb-3 font-mono text-xs text-[#ff8a80] drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">☠ Bugs corrigés : {kills} / {mobs.length}</p>
+			<p className="mb-3 font-mono text-xs text-[#ffb4ac] drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">☠ Bugs corrigés : {kills} / {mobs.length}</p>
 			{sorted.map((q) => {
 				const followed = q.id === tracked || (!tracked && q === sorted[0]);
 				return (
@@ -135,7 +135,7 @@ function QuestTracker() {
 						key={q.id}
 						onClick={() => game.set({ tracked: q.id })}
 						title="Suivre cette quête"
-						className={`pointer-events-auto mb-3 block w-full text-right drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] ${followed ? '' : 'opacity-70 hover:opacity-100'}`}
+						className={`pointer-events-auto mb-3 block w-full text-right drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] ${followed ? '' : 'opacity-85 hover:opacity-100'}`}
 					>
 						<span className="font-display font-bold text-[#ffd100]">
 							{followed && <span className="mr-1 text-xs">➤</span>}
@@ -162,7 +162,7 @@ function QuestTracker() {
 					key={q.id}
 					onClick={() => game.set({ tracked: q.id })}
 					title="Suivre : le chemin mène à celui qui donne la quête"
-					className={`pointer-events-auto mb-1.5 block w-full text-right text-sm drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] ${q.id === tracked ? 'text-[#ffd100]' : 'text-[#ffd100]/75 hover:text-[#ffd100]'}`}
+					className={`pointer-events-auto mb-1.5 block w-full text-right text-sm drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] ${q.id === tracked ? 'text-[#ffd100]' : 'text-[#ffe9a3] hover:text-[#ffd100]'}`}
 				>
 					<span className="font-bold">!</span> {q.title} — {who(q.giver)}
 				</button>

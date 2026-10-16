@@ -102,6 +102,24 @@ export const VAL_RADIUS = 112;
 export const NEXUS_RADIUS = 150;
 export const NEXUS_CENTER = { x: 0, z: NEXUS_Z - 60 };
 
+/**
+ * Street lamps on both pavements of the Nexus avenue: irregular spacing, slight offsets and heights,
+ * so the street does not read as a ruler line (deterministic, the same on every visit).
+ */
+export const NEXUS_LAMPS: { x: number; z: number; side: 1 | -1; h: number }[] = (() => {
+	const list: { x: number; z: number; side: 1 | -1; h: number }[] = [];
+	let seed = 7;
+	const rnd = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
+	for (const side of [-1, 1] as const) {
+		let z = NEXUS_Z - 8 - (side > 0 ? 14 : 0);
+		while (z > NEXUS_Z - 140) {
+			list.push({ x: side * (12.1 + rnd() * 1.2), z, side, h: 0.88 + rnd() * 0.28 });
+			z -= 20 + rnd() * 14;
+		}
+	}
+	return list;
+})();
+
 function segDist(px: number, pz: number, ax: number, az: number, bx: number, bz: number) {
 	const dx = bx - ax;
 	const dz = bz - az;

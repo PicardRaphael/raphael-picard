@@ -1,43 +1,47 @@
 WEBVTT
 
-NOTE Raphaël Picard en 30 secondes — voix off (synthèse vocale), sous-titres français
+NOTE Raphaël Picard en 30 secondes, voix off (synthèse vocale), sous-titres français
 
 1
-00:00:00.250 --> 00:00:02.950
-Huit ans à forger du logiciel…
+00:00:00.300 --> 00:00:02.950 line:88%
+Ce portfolio est un jeu vidéo.
 
 2
-00:00:03.250 --> 00:00:05.350
-…puis l’ère des agents.
+00:00:03.200 --> 00:00:05.450 line:88%
+Derrière le portail, l’ère des agents.
 
 3
-00:00:05.600 --> 00:00:09.050
-Raphaël Picard. Responsable IA chez Neoteem, à Lyon.
+00:00:05.500 --> 00:00:08.450 line:88%
+Raphaël Picard, Responsable IA chez Neoteem.
 
 4
-00:00:09.100 --> 00:00:11.350
+00:00:08.500 --> 00:00:10.750 line:88%
 Sept agents IA en production.
 
 5
-00:00:11.500 --> 00:00:13.800
-Cinq contrôles humains avant toute action.
+00:00:10.900 --> 00:00:13.150 line:88%
+Cinq points de contrôle humain.
 
 6
-00:00:13.850 --> 00:00:16.350
-−33 % de coûts d’inférence.
+00:00:13.300 --> 00:00:15.650 line:88%
+−33 % de coût d’inférence.
 
 7
-00:00:16.400 --> 00:00:18.550
+00:00:15.700 --> 00:00:17.950 line:88%
 Plus de 7 000 tests.
 
 8
-00:00:18.800 --> 00:00:25.750
-Agents ReAct, RAG, MCP, garde-fous, LLMOps. L’agent propose, l’humain décide.
+00:00:18.100 --> 00:00:20.550 line:88%
+Chaque risque de l’IA a sa parade.
 
 9
-00:00:26.000 --> 00:00:30.550
-Et ce portfolio ? C’est un jeu.
+00:00:20.600 --> 00:00:22.750 line:88%
+L’agent propose, l’humain décide.
 
 10
-00:00:30.900 --> 00:00:36.950
+00:00:22.800 --> 00:00:25.150 line:88%
+Jouable même sur téléphone.
+
+11
+00:00:25.400 --> 00:00:29.950 line:88%
 Venez jouer. Et discutons.

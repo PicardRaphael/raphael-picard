@@ -57,7 +57,7 @@ export function SiteJsonLd() {
 			name: c.name,
 			recognizedBy: { '@type': 'Organization', name: c.issuer },
 		})),
-		sameAs: [site.social.linkedin, site.social.github, site.social.x],
+		sameAs: [site.social.linkedin, site.social.github, site.social.x, site.social.youtube],
 	};
 	const website = {
 		'@type': 'WebSite',

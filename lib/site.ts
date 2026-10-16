@@ -23,6 +23,7 @@ export const site = {
 		linkedin: 'https://www.linkedin.com/in/raphael-picard/',
 		github: 'https://github.com/PicardRaphael',
 		x: 'https://x.com/RPRaphaelPicard',
+		youtube: 'https://www.youtube.com/channel/UC0CCPnM-ft5SSLM1dHSAymQ',
 	},
 	/** The 30-second summary, hosted on the site and mirrored on YouTube (plus the vertical Short). */
 	video: {

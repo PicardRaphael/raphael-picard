@@ -73,6 +73,11 @@ function WorldSummary() {
 						GitHub
 					</a>
 				</li>
+				<li>
+					<a href={site.social.youtube} rel="me noopener">
+						YouTube
+					</a>
+				</li>
 			</ul>
 		</section>
 	);

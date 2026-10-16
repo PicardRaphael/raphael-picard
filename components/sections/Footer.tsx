@@ -7,7 +7,10 @@ export function Footer() {
 				<p>
 					© {new Date().getFullYear()} {site.name} — {site.role} à Lyon.
 				</p>
-				<p className="font-mono text-xs">Next.js · React Three Fiber · shaders GLSL · modèles 3D Sketchfab (CC BY), Quaternius & KayKit (CC0) · musiques OpenGameArt · crédits complets dans le menu du jeu</p>
+				<p className="font-mono text-xs">
+					Next.js · React Three Fiber · shaders GLSL · modèles 3D Sketchfab (CC BY), Quaternius & KayKit (CC0) · musiques OpenGameArt ·
+					crédits complets dans le menu du jeu
+				</p>
 				<ul className="flex gap-4">
 					<li>
 						<a className="hover:text-ink transition-colors" href={site.social.linkedin} rel="me noopener" target="_blank">
@@ -17,6 +20,16 @@ export function Footer() {
 					<li>
 						<a className="hover:text-ink transition-colors" href={site.social.github} rel="me noopener" target="_blank">
 							GitHub
+						</a>
+					</li>
+					<li>
+						<a className="hover:text-ink transition-colors" href={site.social.youtube} rel="me noopener" target="_blank">
+							YouTube
+						</a>
+					</li>
+					<li>
+						<a className="hover:text-ink transition-colors" href={site.social.x} rel="me noopener" target="_blank">
+							X
 						</a>
 					</li>
 					<li>

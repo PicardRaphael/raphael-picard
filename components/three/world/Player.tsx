@@ -11,7 +11,7 @@ import { mobs, nearestMob } from '@/lib/mobs';
 import { music } from '@/lib/music';
 import { player } from '@/lib/player-state';
 import { canopies, vegetationObstacles } from '@/lib/vegetation';
-import { HOUSES, LAKE, LANDMARKS, NEXUS_CENTER, NEXUS_LAMPS, NEXUS_RADIUS, NEXUS_SPAWN, SPAWN, VAL_RADIUS, groundAt, landmark, nexusWalkable, nexusWaypoint, valWaypoint } from '@/lib/world';
+import { HOUSES, LAKE, LANDMARKS, NEXUS_CENTER, NEXUS_LAMPS, NEXUS_RADIUS, NEXUS_SPAWN, NEXUS_STREET_END, SPAWN, VAL_RADIUS, groundAt, landmark, nexusWalkable, nexusWaypoint, valWaypoint } from '@/lib/world';
 import { FpsWeapon } from './FpsWeapon';
 import { STONES as STONE_RING } from './Landmarks';
 import { HeroModel } from './Hero';
@@ -451,6 +451,10 @@ const OBSTACLES: { x: number; z: number; r: number }[] = [
 	...[-9.6, 9.6].map((dx) => ({ x: landmark('portal-back').x + dx, z: landmark('portal-back').z, r: 2.7 })),
 	// the house part of the Tower of Knowledge (the landmark circle only covers the tower itself)
 	{ x: landmark('tower').x + 8.5, z: landmark('tower').z + 4, r: 5.5 },
+	// the armchairs of the Nexus cinema (Cinema.tsx): two blocks per row, the central aisle stays free
+	...[0, 1, 2].flatMap((row) =>
+		[-1, 1].flatMap((side) => [1.75, 3.7].map((dz) => ({ x: -(NEXUS_STREET_END + 0.05) + 10 + row * 2.1, z: landmark('cinema').z + side * dz, r: 1.05 }))),
+	),
 	// the street lamp poles of the Nexus avenue
 	...NEXUS_LAMPS.map((l) => ({ x: l.x, z: l.z, r: 0.25 })),
 ];

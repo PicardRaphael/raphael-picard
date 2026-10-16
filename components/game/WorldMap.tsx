@@ -132,7 +132,7 @@ export function WorldMap() {
 				const [x, y] = toPx(l.x, l.z);
 				const marker = markerFor(l.id, quests, visited);
 				const label = k > 1.4 ? l.name.split(',')[0].replace(/^(La |Le |Les )/, '') : l.name;
-				const w = ctx.measureText(label).width + 6 * k;
+				const w = ctx.measureText(label).width + 14 * k;
 				const h = 18 * k;
 				const spots = [
 					[x, y - 19 * k],

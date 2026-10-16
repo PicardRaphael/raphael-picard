@@ -82,27 +82,43 @@ function facadeTexture(seed: number) {
 	if (ctx) {
 		let n = seed;
 		const rnd = () => ((n = (n * 16807) % 2147483647) - 1) / 2147483646;
-		ctx.fillStyle = '#06070b';
+		// a concrete wall caught by the street glow from below
+		const wall = ctx.createLinearGradient(0, 0, 0, 512);
+		wall.addColorStop(0, '#0d1018');
+		wall.addColorStop(1, '#1a1e2b');
+		ctx.fillStyle = wall;
 		ctx.fillRect(0, 0, 512, 512);
-		// mostly warm and cold whites, a rare coloured room; whole floors asleep
+		// pilasters every 4 bays, a lighter slab at each floor
+		ctx.fillStyle = '#20253a';
+		for (let x = 0; x < 512; x += 128) ctx.fillRect(x, 0, 8, 512);
 		const lit = ['#ffd49a', '#ffe6c2', '#ffd49a', '#d6e9ff', '#fff3de', '#ff9be8', '#8ff0ff'];
-		for (let y = 6; y < 512; y += 20) {
-			const awake = rnd() < 0.75;
-			ctx.fillStyle = '#0c0e15';
-			ctx.fillRect(0, y + 13, 512, 3);
-			for (let x = 5; x < 512; x += 12) {
+		for (let y = 0; y < 512; y += 32) {
+			ctx.fillStyle = '#262b3d';
+			ctx.fillRect(0, y + 27, 512, 5);
+			const awake = rnd() < 0.8;
+			for (let x = 14; x < 512; x += 30) {
+				if (x % 128 < 10) continue;
 				const r = rnd();
-				if (awake && r < 0.2) {
+				// dark glass with a cold sheen, or a lit room
+				if (awake && r < 0.32) {
+					ctx.globalAlpha = 0.6 + rnd() * 0.4;
 					ctx.fillStyle = lit[Math.floor(rnd() * lit.length)];
-					ctx.globalAlpha = 0.45 + rnd() * 0.5;
 				} else {
-					ctx.fillStyle = r < 0.6 ? '#10131c' : '#0a0c12';
 					ctx.globalAlpha = 1;
+					ctx.fillStyle = r < 0.7 ? '#1b2335' : '#141a29';
 				}
-				ctx.fillRect(x, y, 7, 10);
+				ctx.fillRect(x, y + 6, 20, 18);
+				ctx.globalAlpha = 1;
+				// window frame and the odd air-conditioner box under it
+				ctx.strokeStyle = '#2c3247';
+				ctx.lineWidth = 2;
+				ctx.strokeRect(x, y + 6, 20, 18);
+				if (rnd() < 0.12) {
+					ctx.fillStyle = '#353b4f';
+					ctx.fillRect(x + 4, y + 24, 12, 4);
+				}
 			}
 		}
-		ctx.globalAlpha = 1;
 		// one vertical neon sign
 		const neon = ['#ff4fd8', '#5ef2ff', '#b18cff'][seed % 3];
 		ctx.fillStyle = neon;
@@ -127,7 +143,7 @@ function StreetEnds() {
 		return list.map((w) => {
 			const tex = facadeTexture(w.seed);
 			const wide = w.face === 'x' ? w.size[2] : w.size[0];
-			tex.repeat.set(Math.max(1, Math.round(wide / 24)), Math.max(1, Math.round(w.size[1] / 24)));
+			tex.repeat.set(Math.max(1, Math.round(wide / 14)), Math.max(1, Math.round(w.size[1] / 14)));
 			return { ...w, mat: new THREE.MeshBasicMaterial({ map: tex, color: new THREE.Color(1, 1, 1) }) };
 		});
 	}, []);

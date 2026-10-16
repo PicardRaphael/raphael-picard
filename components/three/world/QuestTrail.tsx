@@ -13,7 +13,7 @@ import { groundAt } from './Player';
 
 /**
  * Where the visitor should go next: the quest they chose to follow, else the story order. For a quest that is
- * running, its nearest unmet objective (a place, or the nearest bug of the realm for a hunt), then its turn-in;
+ * running, its next unmet objective in the listed order (a place, or the nearest bug of the realm for a hunt), then its turn-in;
  * for a quest on offer, its giver. When the goal is in the other realm, the portal leads there.
  */
 function nextTarget(): { x: number; z: number } | null {
@@ -39,7 +39,8 @@ function nextTarget(): { x: number; z: number } | null {
 			const alive = mobs.filter((m) => m.zone === here && m.state !== 'dead');
 			return alive.length ? near(alive) : null;
 		}
-		return left.length ? pick(left.map((o) => o.id)) : pick([q.turnIn]);
+		// places in the order the quest lists them (laid out along the road), not the nearest one
+		return left.length ? pick([left[0].id]) : pick([q.turnIn]);
 	};
 	const tracked = g.tracked ? QUESTS.find((q) => q.id === g.tracked) : undefined;
 	const order = [

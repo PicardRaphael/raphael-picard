@@ -60,7 +60,7 @@ const SPECS: { name: string; lesson: string; zone: Zone; x: number; z: number }[
 	{ name: 'Dette technique', lesson: 'Contenue : architecture hexagonale aux frontières vérifiées en CI, détection de duplication et de code mort, mutation testing à 80 % sur chaque PR.', zone: 'val', x: -30, z: -40 },
 	{ name: 'Contexte obèse', lesson: 'Dégonflé : context caching (−33 % de coûts d’inférence) et condensés courts des résultats d’outils pour les tours suivants.', zone: 'val', x: 14, z: 28 },
 	{ name: 'Golden set biaisé', lesson: 'Évité : les traces de production et les retours utilisateurs révèlent ce que le golden set ne couvre pas.', zone: 'val', x: -44, z: -10 },
-	{ name: 'Boucle infinie', lesson: 'Cassée : jeu d’outils fixe, invariants vérifiés avant chaque appel d’outil, délais bornés ; DeepEval vérifie que l’agent appelle les bons outils.', zone: 'val', x: 34, z: -50 },
+	{ name: 'Boucle infinie', lesson: 'Cassée : jeu d’outils fixe, invariants vérifiés avant chaque appel d’outil, délais bornés ; DeepEval vérifie que l’agent appelle les bons outils.', zone: 'val', x: 30, z: -28 },
 	{ name: 'Test LLM instable', lesson: 'Apprivoisé : chaque cas du golden set est rejoué 5 fois pour séparer une vraie régression de la variance ; le contrôle des outils appelés reste déterministe.', zone: 'val', x: -12, z: -74 },
 	{ name: 'Liste tronquée', lesson: 'Corrigée : pagination par curseur opaque que le modèle ne voit jamais ; une liste incomplète n’est jamais présentée comme complète.', zone: 'val', x: 44, z: 30 },
 	{ name: 'Échec silencieux', lesson: 'Démasqué : une panne n’est jamais déguisée en « rien trouvé », et un outil manquant fait échouer l’agent explicitement.', zone: 'val', x: -58, z: 14 },
@@ -71,7 +71,7 @@ const SPECS: { name: string; lesson: string; zone: Zone; x: number; z: number }[
 	{ name: 'Dérive du modèle', lesson: 'Surveillée : chaque changement de prompt ou de modèle rejoue le golden set (64 cas × 5) avec DeepEval ; en production, traces Langfuse et retours utilisateurs révèlent ce que les tests n’ont pas vu.', zone: 'nexus', x: -9, z: NEXUS_Z - 72 },
 	{ name: 'Fuite de clé API', lesson: 'Colmatée : détection de secrets en CI sur chaque PR et hooks qui bloquent avant le commit.', zone: 'nexus', x: 15, z: NEXUS_Z - 116 },
 	{ name: 'Action irréversible', lesson: 'Bloquée : choix du destinataire, aperçu avant envoi, confirmation avant suppression — l’agent propose, l’humain décide.', zone: 'nexus', x: 6, z: NEXUS_Z - 50 },
-	{ name: 'Token perdu', lesson: 'Retrouvé : prompt système, résumé de la conversation et condensés des résultats d’outils gardent l’essentiel dans la fenêtre.', zone: 'nexus', x: -6, z: NEXUS_Z - 135 },
+	{ name: 'Token perdu', lesson: 'Retrouvé : prompt système, résumé de la conversation et condensés des résultats d’outils gardent l’essentiel dans la fenêtre.', zone: 'nexus', x: 5, z: NEXUS_Z - 90 },
 	{ name: 'Agent perdu', lesson: 'Retrouvé : des agents spécialisés, chacun avec son graphe LangGraph et ses outils — l’architecture multi-chatbots proposée à la direction et adoptée en production.', zone: 'nexus', x: -17, z: NEXUS_Z - 86 },
 ];
 

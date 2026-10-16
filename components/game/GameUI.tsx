@@ -60,14 +60,14 @@ function Ticker() {
 	const ticker = useGame((s) => s.ticker);
 	// never over the zone banner or the portal whirl: it waits its turn
 	const free = useScreenFree(ticker?.id ?? null);
-	// the bug card bubble sits above the hero at the same height: the line steps down below it (still above the crosshair)
+	// the bug card bubble sits above the hero at the same height: the line steps down below it (on a short screen, under the crosshair)
 	const card = useGame((s) => s.bugCard !== null);
 	if (!ticker || !free) return null;
 	return (
 		<div
 			key={ticker.id}
 			role="status"
-			className={`pointer-events-none fixed inset-x-0 z-30 flex animate-[zone-in_3s_ease-out_forwards] justify-center px-4 ${card ? 'top-[40vh] [@media(max-height:500px)]:top-[41vh]' : 'top-[30vh] [@media(max-height:500px)]:top-[34vh]'}`}
+			className={`pointer-events-none fixed inset-x-0 z-30 flex animate-[zone-in_3s_ease-out_forwards] justify-center px-4 ${card ? 'top-[44vh] [@media(max-height:500px)]:top-[56vh]' : 'top-[30vh] [@media(max-height:500px)]:top-[34vh]'}`}
 		>
 			<p className="rounded-full border border-[#ffd100]/40 bg-black/70 px-4 py-1.5 font-mono text-sm text-[#ffe9a3] backdrop-blur-md">{ticker.text}</p>
 		</div>

@@ -24,7 +24,7 @@ export const QUESTS: Quest[] = [
 		title: 'Les origines du développeur',
 		giver: 'raphy',
 		turnIn: 'raphy',
-		intro: 'Bienvenue, voyageur ! Raphaël forge du code depuis plus de huit ans ; il a intégré sa première IA en production dès 2018. Visite la Forge, la Tour du Savoir et le Cercle du Manifeste : tu sauras d’où il vient et ce qu’il défend. Pressé ? Le portail, au bout du chemin, mène tout droit à ses agents en production.',
+		intro: 'Bienvenue, voyageur ! Raphaël forge du code depuis plus de huit ans. Il a intégré sa première IA en production dès 2018. Visite la Forge, la Tour du Savoir et le Cercle du Manifeste : tu sauras d’où il vient et ce qu’il défend. Pressé ? Le portail, au bout du chemin, mène tout droit à ses agents en production.',
 		objectives: [
 			{ id: 'forge', label: 'Examiner la Forge du Code' },
 			{ id: 'tower', label: 'Visiter la Tour du Savoir' },

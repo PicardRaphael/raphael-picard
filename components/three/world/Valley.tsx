@@ -19,21 +19,42 @@ import { mulberry32 } from '../shapes';
  * ("Texture pack 2 (Ground)", Sketchfab, CC BY 4.0), the same artist as the trees, so grass, paths,
  * cliffs and peaks share one brush.
  */
-function useTerrainGeometry() {
-	return useMemo(() => {
-		const size = 300;
-		const seg = 220;
-		const g = new THREE.PlaneGeometry(size, size, seg, seg);
-		g.rotateX(-Math.PI / 2);
-		g.translate(0, 0, -20);
-		const pos = g.attributes.position;
-		const splatA = new Float32Array(pos.count * 3); // dry grass, dirt path, sand
-		const splatB = new Float32Array(pos.count * 2); // rock, snow
-		for (let i = 0; i < pos.count; i++) {
-			const x = pos.getX(i);
-			const z = pos.getZ(i);
+function terrainPlane() {
+	const g = new THREE.PlaneGeometry(300, 300, 220, 220);
+	g.rotateX(-Math.PI / 2);
+	g.translate(0, 0, -20);
+	return g;
+}
+
+/**
+ * Heights and splat weights of the 48 841 vertices: ~0.5 s of noise on a desktop CPU, 2 s on a phone. Computed once
+ * (the val's render is retried while its models load, a memo would start over each time) and ahead of time, in short
+ * slices while the models download, so the val no longer waits for it once they are in.
+ */
+const terrain = (() => {
+	let data: { x: Float32Array; z: Float32Array; y: Float32Array; splatA: Float32Array; splatB: Float32Array } | null = null;
+	let next = 0;
+	const prepare = () => {
+		if (data) return data;
+		const pos = terrainPlane().attributes.position;
+		data = {
+			x: new Float32Array(pos.count).map((_, i) => pos.getX(i)),
+			z: new Float32Array(pos.count).map((_, i) => pos.getZ(i)),
+			y: new Float32Array(pos.count),
+			splatA: new Float32Array(pos.count * 3), // dry grass, dirt path, sand
+			splatB: new Float32Array(pos.count * 2), // rock, snow
+		};
+		return data;
+	};
+	/** Computes the vertices up to `end`. */
+	const run = (end: number) => {
+		const { x: xs, z: zs, y, splatA, splatB } = prepare();
+		for (end = Math.min(end, y.length); next < end; next++) {
+			const i = next;
+			const x = xs[i];
+			const z = zs[i];
 			const h = valHeight(x, z);
-			pos.setY(i, h);
+			y[i] = h;
 			const sx = valHeight(x + 1, z) - h;
 			const sz = valHeight(x, z + 1) - h;
 			const slope = Math.sqrt(sx * sx + sz * sz);
@@ -49,6 +70,30 @@ function useTerrainGeometry() {
 			splatA.set([dry, path, sand], i * 3);
 			splatB.set([rock, snow], i * 2);
 		}
+		return next >= y.length;
+	};
+	/** Background slices of ~6 ms, leaving the main thread to the start screen and the downloads in between. */
+	const slice = () => {
+		const until = performance.now() + 6;
+		while (performance.now() < until) if (run(next + 400)) return;
+		setTimeout(slice, 0);
+	};
+	if (typeof window !== 'undefined') setTimeout(slice, 0);
+	return {
+		/** Everything, finishing at once what the slices have not done yet. */
+		get() {
+			run(Infinity);
+			return prepare();
+		},
+	};
+})();
+
+function useTerrainGeometry() {
+	return useMemo(() => {
+		const { y, splatA, splatB } = terrain.get();
+		const g = terrainPlane();
+		const pos = g.attributes.position;
+		for (let i = 0; i < pos.count; i++) pos.setY(i, y[i]);
 		g.setAttribute('splatA', new THREE.BufferAttribute(splatA, 3));
 		g.setAttribute('splatB', new THREE.BufferAttribute(splatB, 2));
 		g.computeVertexNormals();

@@ -6,6 +6,8 @@ import { forwardRef, useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
 
+import { RigLight } from './LightRig';
+
 /**
  * Animated characters from KayKit Adventurers (CC0).
  * Knight = fantasy hero. Runner = the hooded rogue with a neon recolour (cyberpunk).
@@ -157,7 +159,8 @@ export const HeroModel = forwardRef<THREE.Group, Props>(function HeroModel({ kin
 			<group ref={group} rotation={[0, FACING[kind] ?? 0, 0]}>
 				<primitive object={model} />
 			</group>
-			{kind === 'runner' && <pointLight position={[0, 1.6, 0.6]} color="#e879f9" intensity={6} distance={6} />}
+			{/* a light of the shared pool: the runner's glow no longer changes the light count (and recompiles every shader) */}
+			{kind === 'runner' && <RigLight position={[0, 1.6, 0.6]} color="#e879f9" intensity={6} distance={6} />}
 		</group>
 	);
 });

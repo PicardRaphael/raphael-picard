@@ -4,6 +4,8 @@ import { useFrame } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 
+import { RigLight } from './LightRig';
+
 /**
  * A ring gate in the spirit of the classic sci-fi stargates: brushed metal ring, rotating inner glyph
  * track, nine glowing chevrons and a rippling "event horizon" like a vertical pool of water.
@@ -68,7 +70,7 @@ export function EventHorizon({ radius, ...props }: { radius: number } & Record<s
 				<circleGeometry args={[radius, 96]} />
 				<shaderMaterial vertexShader={vertex} fragmentShader={fragment} uniforms={uniforms} transparent side={THREE.DoubleSide} depthWrite={false} toneMapped={false} />
 			</mesh>
-			<pointLight position={[0, 0, 3]} color="#4fb4ff" intensity={70} distance={28} />
+			<RigLight position={[0, 0, 3]} color="#4fb4ff" intensity={70} distance={28} />
 		</group>
 	);
 }
@@ -149,7 +151,7 @@ export function Stargate({ x, z, y = 0, rotation = 0 }: { x: number; z: number; 
 			<mesh position={[0, -R - 0.75, 0]} material={metalDark} receiveShadow castShadow>
 				<boxGeometry args={[R * 2.4, 0.5, 3]} />
 			</mesh>
-			<pointLight position={[0, 0, 3]} color="#4fb4ff" intensity={60} distance={26} />
+			<RigLight position={[0, 0, 3]} color="#4fb4ff" intensity={60} distance={26} />
 		</group>
 	);
 }

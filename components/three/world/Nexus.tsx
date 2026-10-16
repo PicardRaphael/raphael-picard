@@ -15,7 +15,9 @@ import { NexusCity } from './NexusCity';
 import { SfModel } from './SfModel';
 import { EventHorizon, Stargate } from './Stargate';
 import { HoloPad, PAD_TIME } from './HoloPad';
+import { RigLight } from './LightRig';
 import { RaphyModel } from './Raphy';
+import { Warmup } from './Warmup';
 
 /**
  * The Nexus: a neon city floor, holographic towers and three AI "systems",
@@ -126,7 +128,7 @@ function Kiosk({ id, title, subtitle, color }: { id: string; title: string; subt
 				<planeGeometry args={[3.6, 1.8]} />
 				<meshBasicMaterial map={tex} transparent side={THREE.DoubleSide} toneMapped={false} />
 			</mesh>
-			<pointLight position={[0, 3.2, 0]} color={color} intensity={18} distance={10} />
+			<RigLight position={[0, 3.2, 0]} color={color} intensity={18} distance={10} />
 		</group>
 	);
 }
@@ -254,6 +256,9 @@ export function Nexus({ pixelRatio }: { pixelRatio: number; reflect?: boolean })
 	const uniforms = useMemo(() => ({ uTime: { value: 0 }, uCenter: { value: new THREE.Vector2(NEXUS_CENTER.x, NEXUS_CENTER.z) } }), []);
 	const zone = useGame((s) => s.zone);
 	const heading = useGame((s) => s.quests.portail === 'active' || s.quests.portail === 'ready');
+	// the val first: the gate model (0.7 MB) is fetched once the val is playable, its procedural stand-in shows until then
+	const valReady = useGame((s) => s.ready);
+	const gateStandIn = <Stargate x={back.x} z={back.z} rotation={Math.PI} />;
 	const [near, setNear] = useState(false);
 	// the heavy city (6 MB, hundreds of meshes) is fetched only when the visitor heads for the portal,
 	// never during the first minute in the val where it froze the game
@@ -270,11 +275,13 @@ export function Nexus({ pixelRatio }: { pixelRatio: number; reflect?: boolean })
 			<Suspense fallback={null}>
 				<Street />
 				<Cinema />
+				<Warmup />
 			</Suspense>
 			{/* the city is heavy: fetched once the game runs, never on the start screen */}
 			{loadCity && (
 				<Suspense fallback={null}>
 					<NexusCity />
+					<Warmup />
 				</Suspense>
 			)}
 			<group position={[agents.x, 0, agents.z]}>
@@ -291,12 +298,17 @@ export function Nexus({ pixelRatio }: { pixelRatio: number; reflect?: boolean })
 			<Kiosk id="neoagent" title="NeoAgent" subtitle="Devis · annonces · documents" color="#ffb45c" />
 			<Beacon />
 			<HoloNpc />
-			<Suspense fallback={<Stargate x={back.x} z={back.z} rotation={Math.PI} />}>
+			{valReady ? (
+				<Suspense fallback={gateStandIn}>
 				{/* seated on the street (measured): its own foot plate on the road (-0.06), the ring 21 cm into it */}
 				<SfModel file="scifi_gate" height={13} hide={['Object_6']} position={[back.x, -0.275, back.z]} rotation={[0, Math.PI, 0]} />
 				{/* the event horizon sits in the plane of the ring (measured centre: 6.225 m up, on the gate's own z) */}
 				<EventHorizon radius={5.15} position={[back.x, 6.225, back.z]} rotation={[0, Math.PI, 0]} />
-			</Suspense>
+				<Warmup />
+				</Suspense>
+			) : (
+				gateStandIn
+			)}
 			{/* the gate model's side wings hover 4.2 m up: steel pedestals carry them to the street, inside its outer box */}
 			{GATE_PEDESTALS.map((p) => (
 				<group key={p.x} position={[back.x + p.x, -0.06, back.z]}>

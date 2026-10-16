@@ -4,7 +4,10 @@ import { useAnimations, useGLTF } from '@react-three/drei';
 import type { ThreeElements } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
+
+import { bakeGeometry } from './bake';
 
 /**
  * A Sketchfab model (CC BY 4.0, credited in the menu), normalised to a target height,
@@ -37,6 +40,53 @@ function visibleBox(root: THREE.Object3D) {
 	return box;
 }
 
+/**
+ * A still model (no animation, no skinning) is merged into one mesh per material: the village packs come split in
+ * dozens of nodes sharing a few materials, each node a draw call and a node to update every frame. Merged once per
+ * model and size, shared by every copy (the eight houses use two). Null when the model cannot be merged as is.
+ */
+type Merged = { geometry: THREE.BufferGeometry; material: THREE.Material }[];
+const merged = new Map<string, Merged | null>();
+
+function mergeStill(root: THREE.Object3D): Merged | null {
+	root.updateMatrixWorld(true);
+	const byMat = new Map<THREE.Material, THREE.BufferGeometry[]>();
+	let ok = true;
+	root.traverse((o) => {
+		if ((o as THREE.SkinnedMesh).isSkinnedMesh || (o as THREE.InstancedMesh).isInstancedMesh) ok = false;
+	});
+	if (!ok) return null;
+	root.traverseVisible((o) => {
+		const m = o as THREE.Mesh;
+		if (!m.isMesh || !ok) return;
+		if (Array.isArray(m.material) || m.morphTargetInfluences || m.geometry.groups.length > 0) {
+			ok = false;
+			return;
+		}
+		const list = byMat.get(m.material) ?? [];
+		list.push(bakeGeometry(m.geometry, m.matrixWorld));
+		byMat.set(m.material, list);
+	});
+	if (!ok || byMat.size === 0) return null;
+	const out: Merged = [];
+	for (const [material, geos] of byMat) {
+		// one attribute set for all (an attribute missing somewhere is dropped, unless the material reads it)
+		const names = Object.keys(geos[0].attributes).filter((n) => geos.every((g) => g.getAttribute(n)));
+		if ((material as THREE.MeshStandardMaterial).vertexColors && !names.includes('color')) return null;
+		const indexed = geos.every((g) => g.index);
+		const ready = geos.map((g) => {
+			const h = indexed ? g : g.index ? g.toNonIndexed() : g;
+			for (const n of Object.keys(h.attributes)) if (!names.includes(n)) h.deleteAttribute(n);
+			return h;
+		});
+		const geometry = ready.length === 1 ? ready[0] : mergeGeometries(ready, false);
+		if (!geometry) return null;
+		geometry.computeBoundingSphere();
+		out.push({ geometry, material });
+	}
+	return out;
+}
+
 export function SfModel({ file, height, animate, shadows = true, glow, tint, hide, fix, ...props }: Props) {
 	const url = `/models/sf/${file}.glb`;
 	const { scene, animations } = useGLTF(url);
@@ -57,31 +107,53 @@ export function SfModel({ file, height, animate, shadows = true, glow, tint, hid
 		clone.position.x -= center.x;
 		clone.position.z -= center.z;
 		clone.position.y -= scaled.min.y;
+		// one adjusted material per source material (meshes sharing one keep sharing it, and can be merged)
+		const adjusted = new Map<THREE.Material, THREE.Material>();
 		clone.traverse((o) => {
 			const m = o as THREE.Mesh;
 			if (!m.isMesh) return;
 			m.castShadow = shadows;
 			m.receiveShadow = shadows;
-			// foliage and grass cards: alpha cut-out instead of unsorted blending (which reads as dark blocks)
-			const base = m.material as THREE.MeshStandardMaterial;
-			if (base?.transparent && base.map) {
-				const cut = base.clone();
-				cut.transparent = false;
-				cut.depthWrite = true;
-				cut.alphaTest = 0.5;
-				m.material = cut;
+			const source = m.material as THREE.MeshStandardMaterial;
+			if (!source || Array.isArray(source)) return;
+			const known = adjusted.get(source);
+			if (known) {
+				m.material = known;
+				return;
 			}
-			if (glow && m.material) {
-				const mat = (m.material as THREE.MeshStandardMaterial).clone();
+			let mat: THREE.MeshStandardMaterial = source;
+			// foliage and grass cards: alpha cut-out instead of unsorted blending (which reads as dark blocks)
+			if (source.transparent && source.map) {
+				mat = source.clone();
+				mat.transparent = false;
+				mat.depthWrite = true;
+				mat.alphaTest = 0.5;
+			}
+			if (glow) {
+				mat = mat === source ? source.clone() : mat;
 				if (mat.emissiveMap || mat.emissive.getHex() !== 0) {
 					mat.emissiveIntensity = glow;
 					if (tint) mat.emissive.set(tint);
 				}
-				m.material = mat;
 			}
+			adjusted.set(source, mat);
+			m.material = mat;
 		});
-		return clone;
-	}, [scene, height, shadows, glow, tint, hide, fix]);
+		if (animate) return clone;
+		const key = [url, height, shadows, glow, tint, hide?.join(','), fix?.join(',')].join('|');
+		if (!merged.has(key)) merged.set(key, mergeStill(clone));
+		const parts = merged.get(key);
+		if (!parts) return clone;
+		const still = new THREE.Group();
+		for (const p of parts) {
+			const mesh = new THREE.Mesh(p.geometry, p.material);
+			mesh.castShadow = shadows;
+			mesh.receiveShadow = shadows;
+			mesh.matrixAutoUpdate = false;
+			still.add(mesh);
+		}
+		return still;
+	}, [scene, url, animate, height, shadows, glow, tint, hide, fix]);
 
 	const group = useRef<THREE.Group>(null);
 	const { actions, names } = useAnimations(animations, group);

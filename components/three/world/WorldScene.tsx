@@ -13,7 +13,10 @@ import { ValleyLandmarks } from './Landmarks';
 import { phaseFor, NIGHT } from '@/lib/daytime';
 import { Rain } from './Cyber';
 import { Lanterns } from './Lanterns';
+import { AdaptiveQuality } from './AdaptiveQuality';
+import { BlobShadows } from './BlobShadows';
 import { Lasers } from './Lasers';
+import { LightRig } from './LightRig';
 import { Mobs } from './Mobs';
 import { Nature } from './Nature';
 import { Nexus } from './Nexus';
@@ -22,6 +25,7 @@ import { QuestTrail } from './QuestTrail';
 import { Player } from './Player';
 import { SkyDome } from './SkyDome';
 import { Valley } from './Valley';
+import { Warmup, warmupSettings } from './Warmup';
 
 type Quality = { dpr: [number, number]; post: boolean; shadows: boolean; pr: number };
 
@@ -30,8 +34,8 @@ function detect(): Quality {
 	const small = window.innerWidth < 768;
 	const pr = Math.min(window.devicePixelRatio || 1, 2);
 	if (coarse || small) return { dpr: [1, 1.5], post: false, shadows: false, pr: Math.min(pr, 1.5) };
-	// sharp desktop rendering: full device resolution up to 2x
-	return { dpr: [1, 2], post: true, shadows: true, pr };
+	// desktop: up to 1.5x (with the post-processing's 4x MSAA, 2x cost nearly twice the pixels for no visible gain)
+	return { dpr: [1, 1.5], post: true, shadows: true, pr: Math.min(pr, 1.5) };
 }
 
 const LIGHT = {
@@ -104,6 +108,8 @@ function Atmosphere({ shadows }: { shadows: boolean }) {
 			{!val && <Starfield count={2500} pixelRatio={1} />}
 			{weather === 'rain' && <Rain count={val ? 1100 : 1500} />}
 			<Lanterns on={val} night={Math.max(night, weather === 'rain' ? 0.5 : 0)} />
+			{/* the only point lights of the world: a fixed pool shared by lanterns, lamps, gates and kiosks */}
+			<LightRig />
 		</>
 	);
 }
@@ -124,60 +130,55 @@ if (typeof window !== 'undefined') {
 	manager.onLoad = () => publish(100);
 }
 
-/**
- * Mounted once everything of the first scene has loaded: compiles every shader in parallel
- * (KHR_parallel_shader_compile) instead of freezing on the first frames, then lets the game start.
- */
-function Warmup() {
-	const { gl, scene, camera } = useThree();
-	useEffect(() => {
-		let done = false;
-		const finish = () => {
-			if (done) return;
-			done = true;
-			game.set({ ready: true });
-		};
-		gl.compileAsync(scene, camera).then(finish, finish);
-		// never block the start screen forever: a failing compile still lets the visitor in (slow 4G needs ~35 s)
-		const t = setTimeout(finish, 45000);
-		return () => clearTimeout(t);
-	}, [gl, scene, camera]);
-	return null;
-}
+/** The val is compiled: the start screen lets the visitor in. */
+const markReady = () => game.set({ ready: true });
 
 export default function WorldScene() {
 	const [q, setQ] = useState<Quality | null>(null);
 	useEffect(() => {
+		const quality = detect();
+		warmupSettings.offscreen = quality.post;
 		// eslint-disable-next-line react-hooks/set-state-in-effect -- capability detection must run on the client
-		setQ(detect());
+		setQ(quality);
 	}, []);
 	if (!q) return null;
 	return (
 		<Canvas
 			className="!fixed inset-0"
-			shadows={q.shadows}
+			// PCF: what three draws anyway (it swaps the deprecated soft PCF for it on the first shadow pass, and every shader
+			// compiled before that pass would be compiled again, one by one)
+			shadows={q.shadows ? 'percentage' : false}
 			dpr={q.dpr}
 			camera={{ fov: 55, near: 0.3, far: 900, position: [0, 14, 30] }}
 			// MSAA comes from the post-processing composer when it runs
 			gl={{ antialias: !q.post, powerPreference: 'high-performance' }}
+			// shader errors are read back synchronously (a blocking query under ANGLE): development only
+			onCreated={({ gl }) => {
+				gl.debug.checkShaderErrors = process.env.NODE_ENV !== 'production';
+			}}
 			aria-hidden
 		>
 			<Atmosphere shadows={q.shadows} />
+			<AdaptiveQuality cap={q.dpr[1]} />
 			<Suspense fallback={null}>
 				<Valley />
 				<Nature />
 				<ValleyLandmarks />
 				<Mobs />
+				<BlobShadows />
 				<Lasers />
 				<Player />
-				<Warmup />
+				<Warmup pause onReady={markReady} />
 			</Suspense>
 			{/* the Nexus loads on its own: the val is playable without waiting for the city across the portal */}
 			<Suspense fallback={null}>
 				<Nexus pixelRatio={q.pr} reflect={q.post} />
+				<Warmup />
 			</Suspense>
 			<HeadPrompt />
 			<QuestTrail />
+			{/* what mounts at once, outside the loading boundaries (sky, lanterns, trail…) */}
+			<Warmup />
 			{q.post && (
 				<EffectComposer multisampling={4}>
 					<Bloom mipmapBlur intensity={0.75} luminanceThreshold={0.85} luminanceSmoothing={0.2} radius={0.65} />

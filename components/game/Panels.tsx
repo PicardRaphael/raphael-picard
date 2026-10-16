@@ -13,6 +13,7 @@ import { MotionProvider } from '@/components/ui/MotionProvider';
 import { about } from '@/content/profile';
 import { experiences, projects } from '@/content/work';
 import { game, useGame } from '@/lib/game-store';
+import { PLACE_LINES } from '@/lib/place-lines';
 import { QUESTS, objectiveDone } from '@/lib/quests';
 import { voice, voiceClip, useVoice } from '@/lib/voice';
 import { landmark } from '@/lib/world';
@@ -84,6 +85,41 @@ function QuestBlock({ id }: { id: string }) {
 	);
 }
 
+/**
+ * The line of the place, read aloud when its panel opens, unless a quest line is playing (the quest dialog speaks first).
+ */
+function PlaceLine({ id }: { id: string }) {
+	const line = PLACE_LINES[id];
+	const sound = useGame((s) => s.sound);
+	const playing = useVoice();
+	const clip = line ? voiceClip(`place-${id}`, line) : null;
+	useEffect(() => {
+		if (!clip) return;
+		// after the quest dialog's own effect: its line, if any, has the floor
+		const t = setTimeout(() => voice.offer(clip), 60);
+		return () => {
+			clearTimeout(t);
+			if (voice.current() === clip) voice.stop();
+		};
+	}, [clip]);
+	if (!line) return null;
+	return (
+		<div className="mx-auto mb-6 flex max-w-3xl items-start justify-between gap-3 px-4 sm:px-6">
+			<p className="text-xl leading-relaxed text-white/90 italic">{line}</p>
+			{clip && sound && (
+				<button
+					onClick={() => (playing === clip ? voice.stop() : voice.play(clip))}
+					aria-pressed={playing === clip}
+					aria-label={playing === clip ? 'Arrêter la lecture' : 'Écouter la réplique du lieu'}
+					className="shrink-0 rounded-lg border border-white/30 bg-white/5 px-2.5 py-1 font-mono text-xs text-white/80 transition hover:bg-white/15"
+				>
+					{playing === clip ? '⏹' : '🔊'}
+				</button>
+			)}
+		</div>
+	);
+}
+
 /** Raphy reacts to where the visitor stands in the story instead of repeating the same line. */
 const RAPHY_TIPS = [
 	'Astuce : les bugs du val ont chacun une fiche « problème / parade ». Retrouve-les toutes dans le Bestiaire du menu.',
@@ -122,11 +158,6 @@ function raphyLine(g: ReturnType<typeof game.get>) {
 	return RAPHY_TIPS[(g.kills + g.visited.length) % RAPHY_TIPS.length];
 }
 
-const NPC_TEXT: Record<string, string> = {
-	holo: 'Raphy·OS en ligne. Depuis novembre 2025, Raphaël est Senior AI Engineer & Responsable IA chez Neoteem : sept agents spécialisés en production.',
-	portal: 'Une arche ancienne parcourue d’énergie arcanique. Marche dedans pour rejoindre le Nexus : l’ère des agents.',
-	'portal-back': 'Ce portail te ramène au Val des Origines.',
-};
 
 /** The stone circle carries the manifesto: the principles behind every agent Raphaël ships. */
 function Manifesto() {
@@ -238,7 +269,11 @@ function Body({ id }: { id: string }) {
 		default:
 			return (
 				<div className="mx-auto max-w-3xl space-y-5 px-4 sm:px-6">
-					{(id === 'raphy' || NPC_TEXT[id]) && <p className="text-xl leading-relaxed text-white/90">{id === 'raphy' ? <RaphyLine /> : NPC_TEXT[id]}</p>}
+					{id === 'raphy' && (
+						<p className="text-xl leading-relaxed text-white/90">
+							<RaphyLine />
+						</p>
+					)}
 				</div>
 			);
 	}
@@ -264,6 +299,7 @@ export function Panel() {
 					</button>
 				</div>
 				<div className="overflow-y-auto py-8" data-lenis-prevent>
+					<PlaceLine id={id} />
 					{/* the quest offered or handed in here, above the place's own content */}
 					<div className="mx-auto mb-6 max-w-3xl px-4 empty:hidden sm:px-6">
 						<QuestBlock id={id} />

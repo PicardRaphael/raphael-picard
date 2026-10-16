@@ -1,100 +1,702 @@
 {
 	"origines-intro": {
-		"text": "8d004d46",
-		"key": "f89d4af20c8b",
-		"voice": "val",
-		"seconds": 20.43,
-		"bytes": 128922
+		"text": "bae72b93",
+		"default": "m",
+		"f": {
+			"key": "9c05dc674f0b",
+			"seconds": 17.66,
+			"bytes": 130392
+		},
+		"m": {
+			"key": "a7a935e0d443",
+			"seconds": 21.16,
+			"bytes": 158496
+		}
 	},
 	"origines-outro": {
 		"text": "e9bfe993",
-		"key": "5b69d96e2a09",
-		"voice": "val",
-		"seconds": 12.12,
-		"bytes": 78359
+		"default": "m",
+		"f": {
+			"key": "fbc0e6e6210d",
+			"seconds": 11.02,
+			"bytes": 80640
+		},
+		"m": {
+			"key": "42faf23a5f33",
+			"seconds": 11.44,
+			"bytes": 87408
+		}
 	},
 	"parcours-intro": {
 		"text": "5c0d3272",
-		"key": "427cb68688aa",
-		"voice": "val",
-		"seconds": 14.92,
-		"bytes": 94135
+		"default": "m",
+		"f": {
+			"key": "3ba91c069d7d",
+			"seconds": 14.32,
+			"bytes": 103992
+		},
+		"m": {
+			"key": "6bbec0278665",
+			"seconds": 14.77,
+			"bytes": 113016
+		}
 	},
 	"parcours-outro": {
 		"text": "c45c3c12",
-		"key": "30f77bd4bba4",
-		"voice": "val",
-		"seconds": 8.62,
-		"bytes": 58264
+		"default": "m",
+		"f": {
+			"key": "a360d6e62b7a",
+			"seconds": 9.9,
+			"bytes": 73296
+		},
+		"m": {
+			"key": "48124301d0db",
+			"seconds": 10.37,
+			"bytes": 77328
+		}
 	},
 	"portail-intro": {
 		"text": "7d10fffe",
-		"key": "ceee33f31820",
-		"voice": "val",
-		"seconds": 4.31,
-		"bytes": 28686
+		"default": "m",
+		"f": {
+			"key": "278cf2d82589",
+			"seconds": 4.02,
+			"bytes": 28512
+		},
+		"m": {
+			"key": "2cb2ebaeabfb",
+			"seconds": 4.08,
+			"bytes": 30960
+		}
 	},
 	"portail-outro": {
 		"text": "1a1287dd",
-		"key": "2a7b125c6986",
-		"voice": "nexus",
-		"seconds": 7.82,
-		"bytes": 55656
+		"default": "f",
+		"f": {
+			"key": "66a1932449df",
+			"seconds": 7.48,
+			"bytes": 54336
+		},
+		"m": {
+			"key": "75e6fce6d506",
+			"seconds": 7.32,
+			"bytes": 57600
+		}
 	},
 	"production-intro": {
 		"text": "246e18d5",
-		"key": "c22d64df07c1",
-		"voice": "nexus",
-		"seconds": 12.52,
-		"bytes": 90792
+		"default": "f",
+		"f": {
+			"key": "c2339409494b",
+			"seconds": 12.22,
+			"bytes": 90288
+		},
+		"m": {
+			"key": "cfc44ef0e65f",
+			"seconds": 13.06,
+			"bytes": 99336
+		}
 	},
 	"production-outro": {
 		"text": "2bf2af17",
-		"key": "a0ac59c68573",
-		"voice": "nexus",
-		"seconds": 10.67,
-		"bytes": 78144
+		"default": "f",
+		"f": {
+			"key": "0603bc4c6fdc",
+			"seconds": 10.43,
+			"bytes": 75408
+		},
+		"m": {
+			"key": "a8d3684cd819",
+			"seconds": 10.38,
+			"bytes": 83664
+		}
 	},
 	"agents-intro": {
 		"text": "7e1a01ee",
-		"key": "9054bf958d0c",
-		"voice": "nexus",
-		"seconds": 11.92,
-		"bytes": 89160
+		"default": "f",
+		"f": {
+			"key": "51e83e4cabe7",
+			"seconds": 11.53,
+			"bytes": 85272
+		},
+		"m": {
+			"key": "3dfd81d37c92",
+			"seconds": 12.54,
+			"bytes": 96144
+		}
 	},
 	"agents-outro": {
 		"text": "63a853e6",
-		"key": "2d79f14a11f6",
-		"voice": "nexus",
-		"seconds": 6.02,
-		"bytes": 42768
+		"default": "f",
+		"f": {
+			"key": "979ef53578dc",
+			"seconds": 5.86,
+			"bytes": 41568
+		},
+		"m": {
+			"key": "faae648fe808",
+			"seconds": 6.18,
+			"bytes": 47112
+		}
 	},
 	"chasse-intro": {
 		"text": "2b128699",
-		"key": "ded365b738e5",
-		"voice": "val",
-		"seconds": 10.29,
-		"bytes": 65047
+		"default": "m",
+		"f": {
+			"key": "62cba2a8225e",
+			"seconds": 9.74,
+			"bytes": 70920
+		},
+		"m": {
+			"key": "a84afbb07dfb",
+			"seconds": 10.67,
+			"bytes": 79896
+		}
 	},
 	"chasse-outro": {
 		"text": "bed1d5db",
-		"key": "5cb96ade4994",
-		"voice": "val",
-		"seconds": 7.37,
-		"bytes": 50102
+		"default": "m",
+		"f": {
+			"key": "a603939d4cc7",
+			"seconds": 7.81,
+			"bytes": 56016
+		},
+		"m": {
+			"key": "42a365db5723",
+			"seconds": 8.3,
+			"bytes": 64968
+		}
 	},
 	"purge-intro": {
 		"text": "862329f4",
-		"key": "ff5e333eb21a",
-		"voice": "nexus",
-		"seconds": 10.58,
-		"bytes": 75960
+		"default": "f",
+		"f": {
+			"key": "0a4050a2c4f8",
+			"seconds": 10.26,
+			"bytes": 74208
+		},
+		"m": {
+			"key": "f3cefe6cabce",
+			"seconds": 11.06,
+			"bytes": 82152
+		}
 	},
 	"purge-outro": {
 		"text": "7429543c",
-		"key": "8465035ea4f4",
-		"voice": "nexus",
-		"seconds": 7.99,
-		"bytes": 57768
+		"default": "f",
+		"f": {
+			"key": "29c49b3f2092",
+			"seconds": 7.86,
+			"bytes": 56376
+		},
+		"m": {
+			"key": "4874959d8875",
+			"seconds": 8.16,
+			"bytes": 60432
+		}
+	},
+	"place-raphy": {
+		"text": "f9112c36",
+		"default": "m",
+		"f": {
+			"key": "131f0795d1df",
+			"seconds": 5.91,
+			"bytes": 41904
+		},
+		"m": {
+			"key": "a37e41030196",
+			"seconds": 6.44,
+			"bytes": 50736
+		}
+	},
+	"place-forge": {
+		"text": "66342769",
+		"default": "m",
+		"f": {
+			"key": "f9c179e5f9d6",
+			"seconds": 6.56,
+			"bytes": 48192
+		},
+		"m": {
+			"key": "0c07c72dc160",
+			"seconds": 5.7,
+			"bytes": 44184
+		}
+	},
+	"place-tower": {
+		"text": "a62b22d1",
+		"default": "m",
+		"f": {
+			"key": "5afafe05df26",
+			"seconds": 5.45,
+			"bytes": 38880
+		},
+		"m": {
+			"key": "1bc1ca820ac9",
+			"seconds": 5.01,
+			"bytes": 37944
+		}
+	},
+	"place-stones": {
+		"text": "2d28ed25",
+		"default": "m",
+		"f": {
+			"key": "05b7f407c8ae",
+			"seconds": 5.68,
+			"bytes": 40848
+		},
+		"m": {
+			"key": "d1c6e37bfb46",
+			"seconds": 5.86,
+			"bytes": 42264
+		}
+	},
+	"place-portal": {
+		"text": "d61a3813",
+		"default": "m",
+		"f": {
+			"key": "0cf336d9c235",
+			"seconds": 6.43,
+			"bytes": 45840
+		},
+		"m": {
+			"key": "dae731936a48",
+			"seconds": 6.22,
+			"bytes": 48456
+		}
+	},
+	"place-leasys": {
+		"text": "ea438de8",
+		"default": "m",
+		"f": {
+			"key": "b739aa973a46",
+			"seconds": 7.96,
+			"bytes": 58152
+		},
+		"m": {
+			"key": "0a76bd4c54fc",
+			"seconds": 8.11,
+			"bytes": 63936
+		}
+	},
+	"place-schoolmouv": {
+		"text": "101257df",
+		"default": "m",
+		"f": {
+			"key": "5a772ca14b8c",
+			"seconds": 6.03,
+			"bytes": 44088
+		},
+		"m": {
+			"key": "2e83de4cb861",
+			"seconds": 5.52,
+			"bytes": 42528
+		}
+	},
+	"place-royal": {
+		"text": "1d2d6ddd",
+		"default": "m",
+		"f": {
+			"key": "56e4781b88a5",
+			"seconds": 6.28,
+			"bytes": 45144
+		},
+		"m": {
+			"key": "032b5f7b862c",
+			"seconds": 6.37,
+			"bytes": 48576
+		}
+	},
+	"place-portal-back": {
+		"text": "8d66796f",
+		"default": "f",
+		"f": {
+			"key": "755eec652bda",
+			"seconds": 2.93,
+			"bytes": 20184
+		},
+		"m": {
+			"key": "c47a0d1399b1",
+			"seconds": 2.25,
+			"bytes": 17472
+		}
+	},
+	"place-holo": {
+		"text": "4c68d5b9",
+		"default": "f",
+		"f": {
+			"key": "8488a82021b1",
+			"seconds": 10.49,
+			"bytes": 75840
+		},
+		"m": {
+			"key": "ac09cf7601ed",
+			"seconds": 10.73,
+			"bytes": 82320
+		}
+	},
+	"place-agents": {
+		"text": "474dd756",
+		"default": "f",
+		"f": {
+			"key": "0a84ed1ef17c",
+			"seconds": 5.1,
+			"bytes": 37560
+		},
+		"m": {
+			"key": "c37eedd8e7fe",
+			"seconds": 5.29,
+			"bytes": 43176
+		}
+	},
+	"place-core": {
+		"text": "b9f8fc34",
+		"default": "f",
+		"f": {
+			"key": "2cb725834b00",
+			"seconds": 7.08,
+			"bytes": 50880
+		},
+		"m": {
+			"key": "b443e4744c57",
+			"seconds": 6.19,
+			"bytes": 49224
+		}
+	},
+	"place-gallery": {
+		"text": "5f66e0d6",
+		"default": "f",
+		"f": {
+			"key": "ef13bd4e5e54",
+			"seconds": 5.79,
+			"bytes": 41856
+		},
+		"m": {
+			"key": "84a3be77d154",
+			"seconds": 5.03,
+			"bytes": 39480
+		}
+	},
+	"place-beacon": {
+		"text": "3a70922e",
+		"default": "f",
+		"f": {
+			"key": "5f82d3eefb27",
+			"seconds": 5.1,
+			"bytes": 36048
+		},
+		"m": {
+			"key": "9a29f47c2986",
+			"seconds": 5.22,
+			"bytes": 40704
+		}
+	},
+	"place-neochat": {
+		"text": "c45be9a4",
+		"default": "f",
+		"f": {
+			"key": "d277bc75be5e",
+			"seconds": 7.07,
+			"bytes": 50688
+		},
+		"m": {
+			"key": "2991e1cafbdd",
+			"seconds": 7.55,
+			"bytes": 57624
+		}
+	},
+	"place-neosupport": {
+		"text": "f61ef3f2",
+		"default": "f",
+		"f": {
+			"key": "f3779d1a8fa6",
+			"seconds": 6.26,
+			"bytes": 46032
+		},
+		"m": {
+			"key": "995d4587684e",
+			"seconds": 5.79,
+			"bytes": 44616
+		}
+	},
+	"place-neoagent": {
+		"text": "f8d95a60",
+		"default": "f",
+		"f": {
+			"key": "7b8e68e26961",
+			"seconds": 6.32,
+			"bytes": 45120
+		},
+		"m": {
+			"key": "d0782665d360",
+			"seconds": 5.87,
+			"bytes": 45768
+		}
+	},
+	"bug-0": {
+		"text": "536c749b",
+		"default": "m",
+		"f": {
+			"key": "fd55156e81de",
+			"seconds": 5.47,
+			"bytes": 39120
+		},
+		"m": {
+			"key": "8a7827a74834",
+			"seconds": 5.66,
+			"bytes": 40296
+		}
+	},
+	"bug-1": {
+		"text": "dd0ba010",
+		"default": "m",
+		"f": {
+			"key": "65ce0ba646c0",
+			"seconds": 5.21,
+			"bytes": 37632
+		},
+		"m": {
+			"key": "ea5929f9ff78",
+			"seconds": 5.0,
+			"bytes": 36912
+		}
+	},
+	"bug-2": {
+		"text": "06bd45b7",
+		"default": "m",
+		"f": {
+			"key": "f623a3857fe7",
+			"seconds": 6.38,
+			"bytes": 45720
+		},
+		"m": {
+			"key": "9fb9f2cadda2",
+			"seconds": 6.4,
+			"bytes": 48600
+		}
+	},
+	"bug-3": {
+		"text": "e6aaafa6",
+		"default": "m",
+		"f": {
+			"key": "81b3f19a6e51",
+			"seconds": 5.19,
+			"bytes": 37224
+		},
+		"m": {
+			"key": "058c771dcee9",
+			"seconds": 5.28,
+			"bytes": 39672
+		}
+	},
+	"bug-4": {
+		"text": "5970ec78",
+		"default": "m",
+		"f": {
+			"key": "a680438a9855",
+			"seconds": 6.3,
+			"bytes": 46128
+		},
+		"m": {
+			"key": "851c42af0f35",
+			"seconds": 5.7,
+			"bytes": 44376
+		}
+	},
+	"bug-5": {
+		"text": "91ab65fb",
+		"default": "m",
+		"f": {
+			"key": "9aa8b09f7e80",
+			"seconds": 6.02,
+			"bytes": 43896
+		},
+		"m": {
+			"key": "dd04396cc906",
+			"seconds": 5.75,
+			"bytes": 43968
+		}
+	},
+	"bug-6": {
+		"text": "7c44a9c4",
+		"default": "m",
+		"f": {
+			"key": "725415435da4",
+			"seconds": 5.19,
+			"bytes": 35352
+		},
+		"m": {
+			"key": "dde45cb15069",
+			"seconds": 5.45,
+			"bytes": 40296
+		}
+	},
+	"bug-7": {
+		"text": "d20b1d1d",
+		"default": "m",
+		"f": {
+			"key": "29756ef95a3e",
+			"seconds": 5.4,
+			"bytes": 40344
+		},
+		"m": {
+			"key": "1101de88883d",
+			"seconds": 5.25,
+			"bytes": 43128
+		}
+	},
+	"bug-8": {
+		"text": "44a695bd",
+		"default": "m",
+		"f": {
+			"key": "047504e57207",
+			"seconds": 5.27,
+			"bytes": 37800
+		},
+		"m": {
+			"key": "f1049baad9cc",
+			"seconds": 4.97,
+			"bytes": 36768
+		}
+	},
+	"bug-9": {
+		"text": "47764394",
+		"default": "m",
+		"f": {
+			"key": "c12dd77d0c03",
+			"seconds": 4.55,
+			"bytes": 32784
+		},
+		"m": {
+			"key": "c4c29f4ec32e",
+			"seconds": 4.45,
+			"bytes": 32976
+		}
+	},
+	"bug-10": {
+		"text": "e40a372f",
+		"default": "m",
+		"f": {
+			"key": "17b3bef23b1d",
+			"seconds": 5.89,
+			"bytes": 42480
+		},
+		"m": {
+			"key": "1ab6d1a22312",
+			"seconds": 6.54,
+			"bytes": 50928
+		}
+	},
+	"bug-11": {
+		"text": "7e2792e1",
+		"default": "f",
+		"f": {
+			"key": "3e251a5483ac",
+			"seconds": 6.13,
+			"bytes": 44040
+		},
+		"m": {
+			"key": "ff4662ceebfc",
+			"seconds": 6.3,
+			"bytes": 48264
+		}
+	},
+	"bug-12": {
+		"text": "23a62902",
+		"default": "f",
+		"f": {
+			"key": "e346966d1466",
+			"seconds": 6.06,
+			"bytes": 44136
+		},
+		"m": {
+			"key": "409ea2278c91",
+			"seconds": 6.06,
+			"bytes": 49008
+		}
+	},
+	"bug-13": {
+		"text": "dae09e7d",
+		"default": "f",
+		"f": {
+			"key": "4308e2236187",
+			"seconds": 5.87,
+			"bytes": 42240
+		},
+		"m": {
+			"key": "ed57a6ca350e",
+			"seconds": 6.08,
+			"bytes": 46440
+		}
+	},
+	"bug-14": {
+		"text": "e75aa7bd",
+		"default": "f",
+		"f": {
+			"key": "afbd330c4e6f",
+			"seconds": 5.52,
+			"bytes": 39816
+		},
+		"m": {
+			"key": "d32941a47dea",
+			"seconds": 5.74,
+			"bytes": 43656
+		}
+	},
+	"bug-15": {
+		"text": "0c846570",
+		"default": "f",
+		"f": {
+			"key": "860bb1ad66c1",
+			"seconds": 6.48,
+			"bytes": 47664
+		},
+		"m": {
+			"key": "f86cec13c30f",
+			"seconds": 6.03,
+			"bytes": 45696
+		}
+	},
+	"bug-16": {
+		"text": "257ca7a7",
+		"default": "f",
+		"f": {
+			"key": "92c02c199b86",
+			"seconds": 4.73,
+			"bytes": 33216
+		},
+		"m": {
+			"key": "d642fc6a28ed",
+			"seconds": 4.7,
+			"bytes": 37536
+		}
+	},
+	"bug-17": {
+		"text": "cb2d204d",
+		"default": "f",
+		"f": {
+			"key": "9272499b25ae",
+			"seconds": 6.1,
+			"bytes": 44328
+		},
+		"m": {
+			"key": "6e78afc8aff9",
+			"seconds": 6.08,
+			"bytes": 46080
+		}
+	},
+	"bug-18": {
+		"text": "7fd0f263",
+		"default": "f",
+		"f": {
+			"key": "df1cd9fc8adf",
+			"seconds": 6.19,
+			"bytes": 44208
+		},
+		"m": {
+			"key": "1e1d49b18ab2",
+			"seconds": 6.07,
+			"bytes": 44400
+		}
 	}
 }

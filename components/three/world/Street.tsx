@@ -4,9 +4,10 @@ import { useMemo } from 'react';
 import * as THREE from 'three';
 
 import { NEXUS_AVENUE_END, NEXUS_CENTER, NEXUS_LAMPS, NEXUS_SIDE_STREETS, NEXUS_STREET_END } from '@/lib/world';
+import { RigLight } from './LightRig';
 
 const LIGHT_COLORS = ['#ff4fd8', '#5ef2ff', '#ffb45c', '#b18cff'];
-/** The 8 real point lights sit in 8 of the lamp heads, spread along the avenue (the light count never changes). */
+/** 8 of the lamp heads, spread along the avenue, hold a light of the shared pool (LightRig). */
 const LIT = Array.from({ length: 8 }, (_, k) => Math.round((k * (NEXUS_LAMPS.length - 1)) / 7));
 /** Lamp heads of slightly different whites, like real streets. */
 const HEAD_TINTS = ['#e8f6ff', '#ffe6c4', '#dcd0ff', '#cff7ff'];
@@ -199,7 +200,7 @@ export function Street() {
 			<Lamps />
 			{LIT.map((idx, i) => {
 				const l = NEXUS_LAMPS[idx];
-				return <pointLight key={idx} position={[l.x - l.side * 2.1, HEAD_Y * l.h - 0.4, l.z]} color={LIGHT_COLORS[i % LIGHT_COLORS.length]} intensity={120} distance={38} decay={1.5} />;
+				return <RigLight key={idx} position={[l.x - l.side * 2.1, HEAD_Y * l.h - 0.4, l.z]} color={LIGHT_COLORS[i % LIGHT_COLORS.length]} intensity={120} distance={38} decay={1.5} />;
 			})}
 		</group>
 	);

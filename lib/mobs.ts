@@ -54,21 +54,21 @@ const PROBLEMS: Record<string, string> = {
 };
 
 const SPECS: { name: string; lesson: string; zone: Zone; x: number; z: number }[] = [
-	{ name: 'Hallucination', lesson: 'Bornée, pas vaincue : les chiffres viennent de vues et de rapports SQL, jamais du modèle ; chaque passage est étendu à sa page complète ; la Faithfulness est mesurée avant chaque release ; et l’agent préfère « je ne sais pas » ou un signalement de manque dans la doc à une réponse inventée.', zone: 'val', x: -24, z: 2 },
+	{ name: 'Hallucination', lesson: 'Bornée, pas vaincue : les chiffres viennent de vues et de rapports SQL, jamais du modèle. Chaque passage est étendu à sa page complète, la Faithfulness est mesurée avant chaque release, et l’agent préfère « je ne sais pas » ou un signalement de manque dans la doc à une réponse inventée.', zone: 'val', x: -24, z: 2 },
 	{ name: 'Régression', lesson: 'Bloquée : plus de 7 000 fonctions de test, CI sur chaque PR, et un golden set de 64 cas rejoué 5 fois avec DeepEval avant chaque release.', zone: 'val', x: 26, z: -2 },
 	{ name: 'Donnée invalide', lesson: 'Arrêtée à la frontière : contrats OpenAPI, schémas Zod et Pydantic, client HTTP de l’IA généré depuis le contrat du backend.', zone: 'val', x: 12, z: -58 },
 	{ name: 'Dette technique', lesson: 'Contenue : architecture hexagonale aux frontières vérifiées en CI, détection de duplication et de code mort, mutation testing à 80 % sur chaque PR.', zone: 'val', x: -30, z: -40 },
 	{ name: 'Contexte obèse', lesson: 'Dégonflé : context caching (−33 % de coûts d’inférence) et condensés courts des résultats d’outils pour les tours suivants.', zone: 'val', x: 14, z: 28 },
 	{ name: 'Golden set biaisé', lesson: 'Évité : les traces de production et les retours utilisateurs révèlent ce que le golden set ne couvre pas.', zone: 'val', x: -44, z: -10 },
-	{ name: 'Boucle infinie', lesson: 'Cassée : jeu d’outils fixe, invariants vérifiés avant chaque appel d’outil, délais bornés ; DeepEval vérifie que l’agent appelle les bons outils.', zone: 'val', x: 30, z: -28 },
-	{ name: 'Test LLM instable', lesson: 'Apprivoisé : chaque cas du golden set est rejoué 5 fois pour séparer une vraie régression de la variance ; le contrôle des outils appelés reste déterministe.', zone: 'val', x: -12, z: -74 },
-	{ name: 'Liste tronquée', lesson: 'Corrigée : pagination par curseur opaque que le modèle ne voit jamais ; une liste incomplète n’est jamais présentée comme complète.', zone: 'val', x: 44, z: 30 },
+	{ name: 'Boucle infinie', lesson: 'Cassée : jeu d’outils fixe, invariants vérifiés avant chaque appel d’outil, délais bornés. DeepEval vérifie que l’agent appelle les bons outils.', zone: 'val', x: 30, z: -28 },
+	{ name: 'Test LLM instable', lesson: 'Apprivoisé : chaque cas du golden set est rejoué 5 fois pour séparer une vraie régression de la variance. Le contrôle des outils appelés reste déterministe.', zone: 'val', x: -12, z: -74 },
+	{ name: 'Liste tronquée', lesson: 'Corrigée : pagination par curseur opaque que le modèle ne voit jamais. Une liste incomplète n’est jamais présentée comme complète.', zone: 'val', x: 44, z: 30 },
 	{ name: 'Échec silencieux', lesson: 'Démasqué : une panne n’est jamais déguisée en « rien trouvé », et un outil manquant fait échouer l’agent explicitement.', zone: 'val', x: -58, z: 14 },
 	{ name: 'SQL sauvage', lesson: 'Impossible ici : 5 outils génériques sur 42 vues, colonnes validées, opérateurs en liste fermée, paramètres liés, SELECT uniquement, une base par client.', zone: 'val', x: 16, z: -76 },
-	{ name: 'Prompt injection', lesson: 'Contenue par construction, pas par le prompt : identité tirée du jeton vérifié, jeu d’outils fixe, invariants avant chaque appel, passerelle en lecture seule, aucun envoi ni suppression sans validation humaine. Une injection réussie ne peut ni écrire dans l’ERP, ni envoyer ou supprimer quoi que ce soit sans validation humaine, ni changer d’identité, ni toucher la base d’un autre client ; l’aperçu avant envoi bloque aussi l’exfiltration par mail.', zone: 'nexus', x: 7, z: NEXUS_Z - 30 },
+	{ name: 'Prompt injection', lesson: 'Contenue par construction, pas par le prompt : identité tirée du jeton vérifié, jeu d’outils fixe, invariants avant chaque appel, passerelle en lecture seule, aucun envoi ni suppression sans validation humaine. Une injection réussie ne peut ni écrire dans l’ERP, ni envoyer ou supprimer quoi que ce soit sans validation humaine, ni changer d’identité, ni toucher la base d’un autre client. L’aperçu avant envoi bloque aussi l’exfiltration par mail.', zone: 'nexus', x: 7, z: NEXUS_Z - 30 },
 	{ name: 'Latence', lesson: 'Réduite : streaming SSE, raccourci pour les salutations et cache dans le support, délais bornés côté passerelle.', zone: 'nexus', x: 16, z: NEXUS_Z - 36 },
 	{ name: 'Coût explosif', lesson: 'Maîtrisé : coût et latence suivis par application et par agent dans Langfuse, cache dans le support, context caching (−33 %).', zone: 'nexus', x: 9, z: NEXUS_Z - 100 },
-	{ name: 'Dérive du modèle', lesson: 'Surveillée : chaque changement de prompt ou de modèle rejoue le golden set (64 cas × 5) avec DeepEval ; en production, traces Langfuse et retours utilisateurs révèlent ce que les tests n’ont pas vu.', zone: 'nexus', x: -9, z: NEXUS_Z - 72 },
+	{ name: 'Dérive du modèle', lesson: 'Surveillée : chaque changement de prompt ou de modèle rejoue le golden set (64 cas × 5) avec DeepEval. En production, traces Langfuse et retours utilisateurs révèlent ce que les tests n’ont pas vu.', zone: 'nexus', x: -9, z: NEXUS_Z - 72 },
 	{ name: 'Fuite de clé API', lesson: 'Colmatée : détection de secrets en CI sur chaque PR et hooks qui bloquent avant le commit.', zone: 'nexus', x: 15, z: NEXUS_Z - 116 },
 	{ name: 'Action irréversible', lesson: 'Bloquée : choix du destinataire, aperçu avant envoi, confirmation avant suppression — l’agent propose, l’humain décide.', zone: 'nexus', x: 6, z: NEXUS_Z - 50 },
 	{ name: 'Token perdu', lesson: 'Retrouvé : prompt système, résumé de la conversation et condensés des résultats d’outils gardent l’essentiel dans la fenêtre.', zone: 'nexus', x: 5, z: NEXUS_Z - 90 },
@@ -94,6 +94,23 @@ export const mobs: Mob[] = SPECS.map((s, i) => ({
 	tz: s.z,
 	cooldown: 0,
 }));
+
+/** « Bornée, pas vaincue : les chiffres viennent… Chaque passage… » → the verdict and the first measure (the colon may follow a no-break space). */
+export function lessonGist(lesson: string) {
+	const firstMeasure = (t: string) => t.split(/[   ]; |\. /)[0] ?? t;
+	const at = lesson.search(/[   ]: /);
+	if (at < 0) return { head: '', first: firstMeasure(lesson) };
+	return { head: lesson.slice(0, at), first: firstMeasure(lesson.slice(at + 3)) };
+}
+
+/**
+ * What the voice-over of a defeated bug is recorded from: its name, the verdict and the first measure (the card's compact
+ * text). scripts/voices/generate.py builds the same string; a clip recorded for another text is not played.
+ */
+export function bugVoiceText(m: Pick<Mob, 'name' | 'lesson'>) {
+	const g = lessonGist(m.lesson);
+	return [m.name, g.head, g.first.replace(/\.$/, '')].filter(Boolean).join('. ') + '.';
+}
 
 export function nearestMob(x: number, z: number, max: number) {
 	let best: Mob | null = null;

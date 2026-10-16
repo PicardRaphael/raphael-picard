@@ -1,12 +1,17 @@
 'use client';
 
-import { useFrame } from '@react-three/fiber';
-import { Suspense, useMemo, useRef } from 'react';
+import { useGLTF } from '@react-three/drei';
+import { Suspense, useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 
-import { player } from '@/lib/player-state';
 import { HOUSES, LAKE, LANDMARKS, PATHS, landmark, valHeight } from '@/lib/world';
-import { SfModel } from './SfModel';
+import { bakeGeometry } from './bake';
+import { addRigLights } from './LightRig';
+import { preloadSf } from './SfModel';
+import { Warmup } from './Warmup';
+
+// fetched with the rest of the val, not once the lanterns render
+preloadSf('street_lamp');
 
 /**
  * Street lamps along the roads ("Stylized Street Lamp" by lazarys, Sketchfab, CC BY 4.0: a timber post with a
@@ -15,7 +20,6 @@ import { SfModel } from './SfModel';
 const LAMP_H = 4.4;
 // the hanging lantern, relative to the model's centred base (model units scaled to LAMP_H)
 const LANTERN: [number, number, number] = [0.5, 2.95, 0.08];
-const POOL = 8;
 
 /** Soft round halo drawn once, shared by every lantern. */
 let haloTex: THREE.Texture | null = null;
@@ -36,13 +40,86 @@ function halo() {
 	return haloTex;
 }
 
+type Spot = { x: number; z: number; rot: number };
+
 /**
- * The light count never changes (a change recompiles every shader): lights are switched off by intensity,
- * never unmounted or hidden — also when the hero is in the Nexus (`on` false).
+ * Every lamp post of the val in a handful of draw calls: one InstancedMesh per sub-mesh of the model (normalised
+ * exactly like SfModel: LAMP_H tall, centred, standing on its base), one for the glowing bulbs, and the halos as
+ * a single cloud of point sprites. The model's MeshPhysicalMaterial becomes a standard one (same look on painted
+ * timber, cheaper per pixel).
+ */
+function LampPosts({ spots, bulbs, lampMat, haloMat }: { spots: Spot[]; bulbs: THREE.Vector3[]; lampMat: THREE.Material; haloMat: THREE.PointsMaterial }) {
+	const { scene } = useGLTF('/models/sf/street_lamp.glb');
+	const meshes = useMemo(() => {
+		scene.updateMatrixWorld(true);
+		const box = new THREE.Box3();
+		scene.traverseVisible((o) => {
+			if ((o as THREE.Mesh).isMesh) box.expandByObject(o, true);
+		});
+		const size = box.getSize(new THREE.Vector3());
+		const k = LAMP_H / Math.max(size.y, 0.001);
+		const centre = box.getCenter(new THREE.Vector3());
+		const m = new THREE.Matrix4();
+		const q = new THREE.Quaternion();
+		const up = new THREE.Vector3(0, 1, 0);
+		const one = new THREE.Vector3(1, 1, 1);
+		const at = spots.map((s) => m.clone().compose(new THREE.Vector3(s.x, valHeight(s.x, s.z) - 0.1, s.z), q.setFromAxisAngle(up, s.rot), one));
+		const list: THREE.InstancedMesh[] = [];
+		scene.traverseVisible((o) => {
+			const mesh = o as THREE.Mesh;
+			if (!mesh.isMesh) return;
+			const g = bakeGeometry(mesh.geometry, mesh.matrixWorld);
+			g.translate(-centre.x, -box.min.y, -centre.z);
+			g.scale(k, k, k);
+			const src = mesh.material as THREE.MeshStandardMaterial;
+			const mat = new THREE.MeshStandardMaterial().copy(src);
+			if (src.transparent && src.map) {
+				mat.transparent = false;
+				mat.depthWrite = true;
+				mat.alphaTest = 0.5;
+			}
+			const inst = new THREE.InstancedMesh(g, mat, at.length);
+			at.forEach((mm, i) => inst.setMatrixAt(i, mm));
+			inst.castShadow = true;
+			inst.receiveShadow = true;
+			inst.computeBoundingSphere();
+			list.push(inst);
+		});
+		const bulb = new THREE.InstancedMesh(new THREE.SphereGeometry(0.13, 10, 8), lampMat, bulbs.length);
+		bulbs.forEach((b, i) => bulb.setMatrixAt(i, m.makeTranslation(b.x, b.y, b.z)));
+		bulb.computeBoundingSphere();
+		list.push(bulb);
+		return list;
+	}, [scene, spots, bulbs, lampMat]);
+	const halos = useMemo(() => {
+		const g = new THREE.BufferGeometry().setFromPoints(bulbs);
+		const pts = new THREE.Points(g, haloMat);
+		pts.frustumCulled = false;
+		return pts;
+	}, [bulbs, haloMat]);
+	useEffect(
+		() => () => {
+			meshes.forEach((m) => m.dispose());
+			halos.geometry.dispose();
+		},
+		[meshes, halos],
+	);
+	return (
+		<>
+			{meshes.map((m) => (
+				<primitive key={m.uuid} object={m} />
+			))}
+			<primitive object={halos} />
+		</>
+	);
+}
+
+/**
+ * The lanterns' lights are candidates of the shared light pool (LightRig): the light count never changes here.
  */
 export function Lanterns({ night, on = true }: { night: number; on?: boolean }) {
 	const spots = useMemo(() => {
-		const list: { x: number; z: number; rot: number }[] = [];
+		const list: Spot[] = [];
 		for (const line of PATHS) {
 			for (let i = 0; i < line.length - 1; i++) {
 				const [ax, az] = line[i];
@@ -80,9 +157,14 @@ export function Lanterns({ night, on = true }: { night: number; on?: boolean }) 
 		return pts;
 	}, []);
 
-	const glow = 0.6 + night * 3.4;
-	const lampMat = useMemo(() => new THREE.MeshStandardMaterial({ color: '#ffd59a', emissive: '#ffb347', emissiveIntensity: glow, toneMapped: false }), [glow]);
-	const haloMat = useMemo(() => new THREE.SpriteMaterial({ map: halo(), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.25 + night * 0.75 }), [night]);
+	const lampMat = useMemo(() => new THREE.MeshStandardMaterial({ color: '#ffd59a', emissive: '#ffb347', toneMapped: false }), []);
+	// the 2.2 m sprites of before: a point sprite's size is divided by the distance only, a sprite's also by the
+	// tangent of half the field of view (55°: tan 27.5° ≈ 0.52)
+	const haloMat = useMemo(() => new THREE.PointsMaterial({ map: halo(), size: 2.2 / 0.52, sizeAttenuation: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }), []);
+	useEffect(() => {
+		lampMat.emissiveIntensity = 0.6 + night * 3.4;
+		haloMat.opacity = 0.25 + night * 0.75;
+	}, [lampMat, haloMat, night]);
 
 	// world position of every hanging lantern
 	const bulbs = useMemo(
@@ -94,53 +176,26 @@ export function Lanterns({ night, on = true }: { night: number; on?: boolean }) 
 			}),
 		[spots],
 	);
-	// a small pool of real lights follows the lanterns nearest to the hero
-	const pool = useRef<(THREE.PointLight | null)[]>([]);
-	const tick = useRef(0);
-	useFrame((_, dt) => {
-		tick.current -= dt;
-		if (tick.current > 0) return;
-		tick.current = 0.25;
-		const near = bulbs
-			.map((b, i) => ({ i, d: (b.x - player.x) ** 2 + (b.z - player.z) ** 2 }))
-			.sort((a, b) => a.d - b.d)
-			.slice(0, POOL);
-		pool.current.forEach((l, k) => {
-			if (!l) return;
-			const n = near[k];
-			l.intensity = n && on ? 6 + night * 34 : 0;
-			if (n) l.position.copy(bulbs[n.i]);
-		});
-	});
+	// every lantern and key building is a candidate of the shared light pool (LightRig), which lights the nearest
+	const lit = useMemo(
+		() => ({
+			bulbs: bulbs.map((b) => ({ pos: b.clone(), color: new THREE.Color('#ffb45c'), intensity: 0, distance: 14, decay: 1.5 })),
+			keys: keyLights.map((p) => ({ pos: new THREE.Vector3(p.x, valHeight(p.x, p.z) + 4, p.z), color: new THREE.Color('#ffb347'), intensity: 0, distance: 22, decay: 1.6 })),
+		}),
+		[bulbs, keyLights],
+	);
+	useEffect(() => addRigLights([...lit.bulbs, ...lit.keys]), [lit]);
+	useEffect(() => {
+		for (const b of lit.bulbs) b.intensity = on ? 6 + night * 34 : 0;
+		for (const k of lit.keys) k.intensity = on && night > 0.2 ? 40 * night : 0;
+	}, [lit, on, night]);
 
 	return (
 		<group>
 			<Suspense fallback={null}>
-				{spots.map((s, i) => (
-					<group key={i} position={[s.x, valHeight(s.x, s.z) - 0.1, s.z]} rotation={[0, s.rot, 0]}>
-						<SfModel file="street_lamp" height={LAMP_H} />
-						<mesh position={LANTERN} material={lampMat}>
-							<sphereGeometry args={[0.13, 10, 8]} />
-						</mesh>
-						<sprite position={LANTERN} scale={[2.2, 2.2, 1]} material={haloMat} />
-					</group>
-				))}
+				<LampPosts spots={spots} bulbs={bulbs} lampMat={lampMat} haloMat={haloMat} />
+				<Warmup />
 			</Suspense>
-			{Array.from({ length: POOL }, (_, k) => (
-				<pointLight
-					key={k}
-					ref={(l) => {
-						pool.current[k] = l;
-					}}
-					color="#ffb45c"
-					intensity={0}
-					distance={14}
-					decay={1.5}
-				/>
-			))}
-			{keyLights.map((p, i) => (
-				<pointLight key={i} position={[p.x, valHeight(p.x, p.z) + 4, p.z]} color="#ffb347" intensity={on && night > 0.2 ? 40 * night : 0} distance={22} decay={1.6} />
-			))}
 		</group>
 	);
 }

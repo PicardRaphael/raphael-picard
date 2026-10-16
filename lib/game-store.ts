@@ -20,6 +20,8 @@ type GameState = {
 	/** Chosen character: fantasy knight or cyberpunk runner. */
 	hero: 'knight' | 'runner';
 	sound: boolean;
+	/** Voice of the characters: « auto » keeps each character's own voice, or the same female / male voice everywhere. */
+	voiceGender: 'auto' | 'f' | 'm';
 	zone: Zone;
 	/** Landmark the player can interact with right now. */
 	inRange: string | null;
@@ -68,6 +70,7 @@ let state: GameState = {
 	loading: 0,
 	hero: 'knight',
 	sound: false,
+	voiceGender: 'auto',
 	zone: 'val',
 	inRange: null,
 	panel: null,
@@ -129,7 +132,7 @@ function pumpToasts() {
 /** What the server rendered: React hydrates from it, then switches to the restored save. */
 const INITIAL: GameState = state;
 const SAVE_KEY = 'rp-save-v1';
-const SAVED = ['quests', 'progress', 'tracked', 'visited', 'kills', 'defeated', 'flags', 'jumps', 'hero', 'timeMode', 'zone'] as const;
+const SAVED = ['quests', 'progress', 'tracked', 'visited', 'kills', 'defeated', 'flags', 'jumps', 'hero', 'timeMode', 'voiceGender', 'zone'] as const;
 if (typeof window !== 'undefined') {
 	try {
 		const raw = window.localStorage.getItem(SAVE_KEY);

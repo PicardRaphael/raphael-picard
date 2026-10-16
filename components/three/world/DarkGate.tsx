@@ -5,7 +5,12 @@ import { Suspense, useMemo } from 'react';
 import * as THREE from 'three';
 
 import { mulberry32 } from '../shapes';
-import { SfModel } from './SfModel';
+import { RigLight } from './LightRig';
+import { SfModel, preloadSf } from './SfModel';
+import { Warmup } from './Warmup';
+
+// fetched with the rest of the val: arriving after it, the arch would pop in and compile on its own
+preloadSf('arch');
 
 /**
  * The gate between the realms: a hand-painted stone arch ("Low Poly Hand Painted Dungeon Arch" by bitgem,
@@ -127,13 +132,14 @@ export function DarkGate({ x, y, z }: { x: number; y: number; z: number }) {
 		<group position={[x, y, z]}>
 			<Suspense fallback={null}>
 				<SfModel file="arch" height={ARCH_H} />
+				<Warmup />
 			</Suspense>
 			<mesh position={[0, OPENING.y + OPENING.h / 2, 0]}>
 				<planeGeometry args={[OPENING.w, OPENING.h]} />
 				<shaderMaterial vertexShader={vertex} fragmentShader={fragment} uniforms={uniforms} transparent side={THREE.DoubleSide} depthWrite={false} toneMapped={false} />
 			</mesh>
 			<Sparks />
-			<pointLight position={[0, 6, 3]} color="#7c6bff" intensity={50} distance={26} />
+			<RigLight position={[0, 6, 3]} color="#7c6bff" intensity={50} distance={26} />
 		</group>
 	);
 }

@@ -2,15 +2,16 @@
 
 import { useGLTF } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
-import { useEffect, useMemo, useRef } from 'react';
+import { Suspense, useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
 
-import { game } from '@/lib/game-store';
+import { game, useGame } from '@/lib/game-store';
 import { type Mob, type MobState, mobs } from '@/lib/mobs';
 import { player } from '@/lib/player-state';
 import { HOUSES, LAKE, nexusWalkable } from '@/lib/world';
 import { groundAt } from './Player';
+import { Warmup } from './Warmup';
 
 /** Valley bugs are KayKit skeletons (CC0); Nexus bugs are Quaternius sci-fi robots (CC0, PBR textures). */
 type Kind = { url: string; height: number; hover: number; once: string[]; anim: Record<MobState, string> };
@@ -45,11 +46,38 @@ const KINDS: Record<'bones' | 'drone' | 'quadshell' | 'trilobite', Kind> = {
 		anim: { idle: 'Idle', walk: 'Walk', chase: 'Run', attack: 'Attack', hit: 'Hit', dead: 'TurnOff' },
 	},
 };
-Object.values(KINDS).forEach((k) => useGLTF.preload(k.url));
+// only the val's skeletons hold up the start screen: the Nexus robots are fetched once the val is ready (see Mobs)
+useGLTF.preload(KINDS.bones.url);
 const ROBOTS = ['drone', 'quadshell', 'trilobite'] as const;
 /** Lake and houses as circles monsters cannot enter. */
 const MOB_BLOCKERS = [{ x: LAKE.x, z: LAKE.z, r: LAKE.r + 1.5 }, ...HOUSES.map((h) => ({ x: h.x, z: h.z, r: h.c + 0.5 }))];
 const kindOf = (mob: Mob) => (mob.zone === 'nexus' ? ROBOTS[mob.id % ROBOTS.length] : 'bones');
+
+/**
+ * A hidden subtree skips its world-matrix update: three.js walks every node each frame, visible or not, and one
+ * val skeleton alone is ~400 bones (11 of them were most of the scene's 5,600 nodes). Nothing moves a hidden bug,
+ * and the first visible frame recomputes everything (updateMatrix always flags the world matrix).
+ */
+function skipWhenHidden(o: THREE.Object3D) {
+	const update = THREE.Object3D.prototype.updateMatrixWorld;
+	o.updateMatrixWorld = function (force?: boolean) {
+		if (this.visible) update.call(this, force);
+	};
+}
+
+/** Camera frustum, rebuilt once per rendered frame and shared by every bug. */
+const view = { frustum: new THREE.Frustum(), m: new THREE.Matrix4(), sphere: new THREE.Sphere(), frame: -1 };
+function inView(camera: THREE.Camera, frame: number, x: number, y: number, z: number, r: number) {
+	if (view.frame !== frame) {
+		view.frame = frame;
+		view.frustum.setFromProjectionMatrix(view.m.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
+	}
+	view.sphere.center.set(x, y, z);
+	view.sphere.radius = r;
+	return view.frustum.intersectsSphere(view.sphere);
+}
+/** Beyond this distance a bug is a few pixels tall (and past the fog's thick part): not drawn, not animated. */
+const DRAW_DIST = { val: 100, nexus: 120 } as const;
 
 /** Name plate + health bar drawn on a canvas sprite. */
 function useLabel(name: string, nexus: boolean) {
@@ -101,6 +129,7 @@ function MobUnit({ mob }: { mob: Mob }) {
 			const box = new THREE.Box3().setFromObject(clone);
 			clone.scale.setScalar(kind.height / Math.max(box.max.y - box.min.y, 0.01));
 		}
+		skipWhenHidden(clone);
 		return clone;
 	}, [scene, kind]);
 	const group = useRef<THREE.Group>(null);
@@ -109,6 +138,9 @@ function MobUnit({ mob }: { mob: Mob }) {
 	const label = useLabel(mob.name, nexus);
 	const sprite = useRef<THREE.Sprite>(null);
 	const v = useRef({ anim: '', hp: -1, flash: 0, shadow: true });
+	useEffect(() => {
+		if (group.current) skipWhenHidden(group.current);
+	}, []);
 
 	useEffect(() => {
 		label.draw(mob.hp, mob.maxHp);
@@ -242,9 +274,13 @@ function MobUnit({ mob }: { mob: Mob }) {
 			v.current.hp = mob.hp;
 			label.draw(Math.max(mob.hp, 0), mob.maxHp);
 		}
+		// off-screen or far bugs are not drawn (their skinned meshes are never culled by three.js): no skeleton
+		// update, no bone upload, no draw call. The sphere is wide enough to keep a bug whose shadow enters the view.
+		const seen = dp < DRAW_DIST[mob.zone] && inView(state.camera, state.clock.elapsedTime, mob.x, groundAt(mob.x, mob.z) + 1.2 + kind.hover, mob.z, 4);
+		model.visible = seen;
 		// far bugs: no skinning update and no shadow (CPU and shadow-map cost on phones)
 		const close = dp < 45;
-		if (dp < 70) mixer.update(dt);
+		if (dp < 70 && seen) mixer.update(dt);
 		if (close !== v.current.shadow) {
 			v.current.shadow = close;
 			model.traverse((o) => {
@@ -298,12 +334,26 @@ function MobUnit({ mob }: { mob: Mob }) {
 	);
 }
 
+/** The val's bugs load with the val; the Nexus robots, 600 m away, only once it is playable (their own boundary). */
 export function Mobs() {
+	const ready = useGame((s) => s.ready);
 	return (
 		<>
-			{mobs.map((m) => (
-				<MobUnit key={m.id} mob={m} />
-			))}
+			{mobs
+				.filter((m) => m.zone !== 'nexus')
+				.map((m) => (
+					<MobUnit key={m.id} mob={m} />
+				))}
+			{ready && (
+				<Suspense fallback={null}>
+					{mobs
+						.filter((m) => m.zone === 'nexus')
+						.map((m) => (
+							<MobUnit key={m.id} mob={m} />
+						))}
+					<Warmup />
+				</Suspense>
+			)}
 		</>
 	);
 }

@@ -11,7 +11,9 @@ import { keymap } from '@/lib/keymap';
 import { player } from '@/lib/player-state';
 import { QUESTS } from '@/lib/quests';
 import { site } from '@/lib/site';
+import { voice } from '@/lib/voice';
 import { SPAWN } from '@/lib/world';
+import { useLayoutLabels } from './StartScreen';
 
 type Tab = 'home' | 'options' | 'controls' | 'achievements' | 'bestiary' | 'credits' | 'help';
 
@@ -56,6 +58,21 @@ function Options() {
 		<div className="divide-y divide-white/10">
 			<Row label="Musique & sons">
 				<Choice value={s.sound ? 'on' : 'off'} options={[{ v: 'on', l: 'Son activé' }, { v: 'off', l: 'Son coupé' }]} onChange={(v) => game.set({ sound: v === 'on' })} />
+			</Row>
+			<Row label="Voix des personnages">
+				<Choice
+					value={s.voiceGender}
+					options={[
+						{ v: 'auto', l: 'Auto' },
+						{ v: 'f', l: 'Femme' },
+						{ v: 'm', l: 'Homme' },
+					]}
+					onChange={(v) => {
+						game.set({ voiceGender: v });
+						// a line already playing keeps its voice: stop it so the next one is heard in the new voice
+						voice.stop();
+					}}
+				/>
 			</Row>
 			<Row label="Heure">
 				<Choice
@@ -114,6 +131,27 @@ function Options() {
 				</button>
 			</Row>
 		</div>
+	);
+}
+
+/** The visitor's own key bindings, as printed on their keyboard (AZERTY shows A for the physical Q key). */
+function KeyboardKeys() {
+	const label = useLayoutLabels();
+	const k = keymap.get();
+	const move = [k.forward, k.left, k.back, k.right].map((a) => label(a[0])).join('');
+	return (
+		<ul className="mt-1.5 space-y-1.5">
+			<li>Flèches ou {move} : bouger</li>
+			<li>
+				{label(k.jump[0])} : sauter · {label(k.sprint[0])} : sprinter
+			</li>
+			<li>
+				{label(k.attack[0])} : attaquer · {label(k.interact[0])} : interagir
+			</li>
+			<li>
+				{label(k.map[0])} : carte · {label(k.menu[0])} ou {label(k.menu[1])} : menu
+			</li>
+		</ul>
 	);
 }
 
@@ -209,11 +247,8 @@ function Body({ tab }: { tab: Tab }) {
 							<li>Clic : aller / parler / attaquer</li>
 							<li>Glisser (clic gauche ou droit) : caméra</li>
 							<li>Molette : zoom</li>
-							<li>Flèches ou ZQSD : bouger</li>
-							<li>Espace : sauter · Maj : sprinter</li>
-							<li>F : attaquer · E : interagir</li>
-							<li>M : carte · Échap ou O : menu</li>
 						</ul>
+						<KeyboardKeys />
 					</div>
 					<div>
 						<p className="font-display mb-2 text-lg font-bold text-white">Mobile & tablette</p>
@@ -249,19 +284,18 @@ function Body({ tab }: { tab: Tab }) {
 						<p className="mt-1 text-white/60">Pistes réencodées en MP3 et volume harmonisé.</p>
 					</div>
 					<div>
-						<p className="mb-1 font-semibold text-white">Voix des quêtes (synthèse vocale hors ligne)</p>
+						<p className="mb-1 font-semibold text-white">Voix des personnages (synthèse vocale hors ligne, voix générées par IA)</p>
 						<ul className="space-y-1">
 							<li>
-								Nexus : <a className="underline decoration-white/30 hover:text-white" href="https://huggingface.co/hexgrad/Kokoro-82M" target="_blank" rel="noreferrer">Kokoro-82M</a> — hexgrad, Apache-2.0 ; voix ff_siwis, corpus{' '}
-								<a className="underline decoration-white/30 hover:text-white" href="https://datashare.ed.ac.uk/handle/10283/2353" target="_blank" rel="noreferrer">SIWIS</a> (CC BY 4.0)
+								Voix féminine : <a className="underline decoration-white/30 hover:text-white" target="_blank" rel="noreferrer" href="https://huggingface.co/hexgrad/Kokoro-82M">Kokoro-82M</a> — hexgrad, Apache-2.0, voix ff_siwis, corpus 
+								<a className="underline decoration-white/30 hover:text-white" target="_blank" rel="noreferrer" href="https://datashare.ed.ac.uk/handle/10283/2353">SIWIS</a> (CC BY 4.0)
 							</li>
 							<li>
-								Val : <a className="underline decoration-white/30 hover:text-white" href="https://github.com/OHF-Voice/piper1-gpl" target="_blank" rel="noreferrer">Piper</a> — Open Home Foundation, GPL-3.0 ; voix{' '}
-								<a className="underline decoration-white/30 hover:text-white" href="https://huggingface.co/rhasspy/piper-voices/tree/main/fr/fr_FR/upmc/medium" target="_blank" rel="noreferrer">fr_FR-upmc-medium</a> (locuteur pierre), corpus{' '}
-								<a className="underline decoration-white/30 hover:text-white" href="https://github.com/marytts/upmc-pierre-data" target="_blank" rel="noreferrer">UPMC / MaryTTS</a> (CC BY-SA 4.0)
+								Voix masculine : <a className="underline decoration-white/30 hover:text-white" target="_blank" rel="noreferrer" href="https://huggingface.co/Supertone/supertonic-3">Supertonic 3</a> — Supertone, modèle sous licence 
+								<a className="underline decoration-white/30 hover:text-white" target="_blank" rel="noreferrer" href="https://huggingface.co/Supertone/supertonic-3/blob/main/LICENSE">OpenRAIL-M</a>, code MIT, style de voix M1
 							</li>
 						</ul>
-						<p className="mt-1 text-white/60">Répliques générées hors ligne ; les enregistrements des voix du val sont partagés sous CC BY-SA 4.0.</p>
+						<p className="mt-1 text-white/60">Répliques générées hors ligne et réencodées en MP3. « Voix des personnages » dans les Options choisit la voix.</p>
 					</div>
 					<div>
 						<p className="mb-1 font-semibold text-white">Modèles 3D Sketchfab — licence CC BY 4.0</p>

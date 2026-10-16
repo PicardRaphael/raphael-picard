@@ -9,6 +9,7 @@ import { markerFor } from '@/lib/quests';
 import { LANDMARKS, landmark, valHeight } from '@/lib/world';
 import { Village } from './Buildings';
 import { DarkGate } from './DarkGate';
+import { RigLight } from './LightRig';
 import { PaintedRock } from './PaintedRock';
 import { RaphyModel } from './Raphy';
 
@@ -35,7 +36,7 @@ function Stones() {
 			<mesh position={[0, 0.06, 0]} rotation={[-Math.PI / 2, 0, 0]} material={arcane}>
 				<ringGeometry args={[4.6, 4.85, 64]} />
 			</mesh>
-			<pointLight position={[0, 3, 0]} color="#7c9bff" intensity={14} distance={14} />
+			<RigLight position={[0, 3, 0]} color="#7c9bff" intensity={14} distance={14} />
 		</group>
 	);
 }
@@ -85,7 +86,7 @@ function Portal({ x, z, y, back = false }: { x: number; z: number; y: number; ba
 					<boxGeometry args={[2.2, 1.2, 2.4]} />
 				</mesh>
 			))}
-			<pointLight position={[0, 6.4, 2]} color="#b06bff" intensity={40} distance={22} />
+			<RigLight position={[0, 6.4, 2]} color="#b06bff" intensity={40} distance={22} />
 		</group>
 	);
 }

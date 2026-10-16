@@ -20,7 +20,7 @@ export function KeyHints({ className = '', withMouse = false }: { className?: st
 		[label(k.jump[0]), 'saut'],
 		[label(k.attack[0]), 'attaque'],
 		[label(k.interact[0]), 'parler'],
-		[k.map[0] === 'KeyM' ? 'M' : label(k.map[0]), 'carte'],
+		[label(k.map[0]), 'carte'],
 		[label(k.menu[0]), 'menu'],
 	];
 	if (withMouse) items.unshift(['🖱', 'clic : aller · glisser : caméra']);

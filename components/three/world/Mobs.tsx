@@ -276,12 +276,13 @@ function MobUnit({ mob }: { mob: Mob }) {
 		if (mob.state === 'dead' && mob.t > 4.5) g.visible = false;
 		g.rotation.y = mob.yaw;
 		if (sprite.current) {
-			// name plates: near bugs (or the one chasing the hero) only, hidden by walls, faded out from 25 to 35 m
+			// name plates: hidden by walls, readable from afar (the Nexus avenue is long): full up to 48 m (val 33 m), gone 12 m further
 			const d = state.camera.position.distanceTo(g.position);
 			const k = THREE.MathUtils.clamp(d / 14, 0.45, 3.2);
 			sprite.current.scale.set(3.2 * k, 0.8 * k, 1);
 			sprite.current.position.y = 2.6 + 0.5 * k;
-			const near = mob.state === 'chase' || mob.state === 'attack' ? 1 : THREE.MathUtils.clamp((35 - d) / 10, 0, 1);
+			const far = mob.zone === 'nexus' ? 60 : 45;
+			const near = mob.state === 'chase' || mob.state === 'attack' ? 1 : THREE.MathUtils.clamp((far - d) / 12, 0, 1);
 			(sprite.current.material as THREE.SpriteMaterial).opacity = near;
 			sprite.current.visible = near > 0 && (mob.state !== 'dead' || mob.t < 1.5);
 		}

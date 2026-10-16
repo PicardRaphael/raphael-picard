@@ -52,7 +52,7 @@ export function Hero() {
 			</div>
 
 			<div className="mt-14 overflow-hidden border-y border-white/5 bg-black/20 py-3 [mask-image:linear-gradient(90deg,transparent,#000_12%,#000_88%,transparent)]">
-				<ul className="animate-marquee flex w-max gap-10 font-mono text-sm text-white/40" aria-label="Technologies">
+				<ul className="animate-marquee flex w-max gap-10 font-mono text-sm text-white/65" aria-label="Technologies">
 					{[...stack, ...stack].map((t, i) => (
 						<li key={`${t}-${i}`} aria-hidden={i >= stack.length} className="flex items-center gap-10">
 							{t}

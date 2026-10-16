@@ -23,12 +23,19 @@ export function Village() {
 		<group>
 			{HOUSES.map((h, i) => {
 				const m = MODELS[h.type];
-				return <SfModel key={i} file={m.file} height={m.height * h.s} position={[h.x, valHeight(h.x, h.z) - 0.3, h.z]} rotation={[0, h.r, 0]} />;
+				return (
+					<SfModel key={i} file={m.file} height={m.height * h.s} position={[h.x, valHeight(h.x, h.z) - 0.3, h.z]} rotation={[0, h.r, 0]} />
+				);
 			})}
 			<SfModel file="blacksmith" height={9} position={[forge.x, valHeight(forge.x, forge.z) - 0.2, forge.z]} rotation={[0, 0.6, 0]} />
 			{/* the lighthouse spire sits off the model's centre: shift the model so the spire stands on the landmark */}
 			<CareerSigns />
-			<SfModel file="v_tower_house" height={26} position={[tower.x + 5.0, valHeight(tower.x, tower.z) - 0.3, tower.z + 2.4]} rotation={[0, 0.3, 0]} />
+			<SfModel
+				file="v_tower_house"
+				height={26}
+				position={[tower.x + 5.0, valHeight(tower.x, tower.z) - 0.3, tower.z + 2.4]}
+				rotation={[0, 0.3, 0]}
+			/>
 		</group>
 	);
 }
@@ -64,7 +71,7 @@ function signTexture(title: string, years: string) {
 		ctx.fillStyle = '#ffd36b';
 		let px = 54;
 		do ctx.font = `700 ${px--}px Georgia, serif`;
-		while (ctx.measureText(title).width > 460 && px > 20);
+		while (ctx.measureText(title).width > 430 && px > 20);
 		ctx.fillText(title, 256, 78);
 		ctx.fillStyle = '#f5e6c8';
 		ctx.font = '600 40px Georgia, serif';
@@ -93,7 +100,13 @@ export function CareerSigns() {
 					z,
 					y: valHeight(x, z),
 					yaw: Math.sign(dx) * (Math.PI / 2),
-					mat: new THREE.MeshStandardMaterial({ map, emissiveMap: map, emissive: new THREE.Color('#ffffff'), emissiveIntensity: 0.35, roughness: 0.8, side: THREE.DoubleSide }),
+					mat: new THREE.MeshStandardMaterial({
+						map,
+						emissiveMap: map,
+						emissive: new THREE.Color('#ffffff'),
+						emissiveIntensity: 0.35,
+						roughness: 0.8,
+					}),
 				};
 			}),
 		[],
@@ -103,12 +116,20 @@ export function CareerSigns() {
 		<>
 			{signs.map((s) => (
 				<group key={s.id} position={[s.x, s.y, s.z]} rotation={[0, s.yaw, 0]}>
+					{/* the posts stand behind the board: they no longer hide the ends of the name */}
 					{[-1.15, 1.15].map((px) => (
-						<mesh key={px} position={[px, 1.4, 0]} material={post} castShadow>
+						<mesh key={px} position={[px, 1.4, -0.16]} material={post} castShadow>
 							<boxGeometry args={[0.18, 2.8, 0.18]} />
 						</mesh>
 					))}
-					<mesh position={[0, 2.35, 0.02]} material={s.mat} castShadow>
+					{/* a thick wooden board, painted on both faces (never read mirrored from behind) */}
+					<mesh position={[0, 2.35, 0]} material={post} castShadow>
+						<boxGeometry args={[2.75, 1.05, 0.12]} />
+					</mesh>
+					<mesh position={[0, 2.35, 0.065]} material={s.mat}>
+						<planeGeometry args={[2.7, 1.0]} />
+					</mesh>
+					<mesh position={[0, 2.35, -0.065]} rotation={[0, Math.PI, 0]} material={s.mat}>
 						<planeGeometry args={[2.7, 1.0]} />
 					</mesh>
 				</group>

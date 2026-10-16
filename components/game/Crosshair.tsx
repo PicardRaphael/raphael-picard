@@ -36,13 +36,16 @@ export function Crosshair() {
 	const keyName = keymap.get().cursor[0] === 'AltLeft' ? 'Alt' : keymap.get().cursor[0].replace('Key', '');
 	return (
 		<>
-			<div className="pointer-events-none fixed top-1/2 left-1/2 z-20 h-6 w-6 -translate-x-1/2 -translate-y-1/2" aria-hidden>
-				<span className="absolute top-1/2 left-0 h-px w-2 bg-[#5ef2ff] shadow-[0_0_6px_#5ef2ff]" />
-				<span className="absolute top-1/2 right-0 h-px w-2 bg-[#5ef2ff] shadow-[0_0_6px_#5ef2ff]" />
-				<span className="absolute top-0 left-1/2 h-2 w-px bg-[#5ef2ff] shadow-[0_0_6px_#5ef2ff]" />
-				<span className="absolute bottom-0 left-1/2 h-2 w-px bg-[#5ef2ff] shadow-[0_0_6px_#5ef2ff]" />
-				<span className="absolute top-1/2 left-1/2 h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#ff4fd8]" />
-			</div>
+			{/* one SVG, drawn on whole pixels around the exact centre: the dot sits right between the four ticks */}
+			<svg className="pointer-events-none fixed top-1/2 left-1/2 z-20 -mt-[12.5px] -ml-[12.5px] drop-shadow-[0_0_4px_#5ef2ff]" width="25" height="25" viewBox="0 0 25 25" aria-hidden>
+				<g stroke="#5ef2ff" strokeWidth="1" shapeRendering="crispEdges">
+					<line x1="0" y1="12.5" x2="8" y2="12.5" />
+					<line x1="17" y1="12.5" x2="25" y2="12.5" />
+					<line x1="12.5" y1="0" x2="12.5" y2="8" />
+					<line x1="12.5" y1="17" x2="12.5" y2="25" />
+				</g>
+				<circle cx="12.5" cy="12.5" r="2" fill="#ff4fd8" />
+			</svg>
 			{(free || !locked) && (
 				<p className="pointer-events-none fixed top-[57%] left-1/2 z-20 -translate-x-1/2 rounded-full bg-black/60 px-4 py-1.5 font-mono text-xs text-[#5ef2ff] pointer-coarse:hidden">
 					{free ? `Souris libre · ${keyName} pour reprendre la visée` : `Souris = visée · ${keyName} pour libérer la souris`}

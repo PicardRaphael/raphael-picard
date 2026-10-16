@@ -1,10 +1,9 @@
 'use client';
 
 import { useTexture } from '@react-three/drei';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import { useLayoutEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
-import { Water as WaterMirror } from 'three/examples/jsm/objects/Water.js';
 
 import { fbm, noise2 } from '@/lib/noise';
 import { HOUSES, LAKE, LANDMARKS, pathDistance, valHeight } from '@/lib/world';
@@ -115,30 +114,89 @@ diffuseColor.rgb *= ground * 1.25;`,
 
 
 
-/** Real water: planar mirror reflections of the valley, normal-mapped ripples, a teal tint (three.js Water). */
+const waterVertex = /* glsl */ `
+varying vec3 vWorld;
+#include <fog_pars_vertex>
+void main() {
+	vec4 world = modelMatrix * vec4(position, 1.0);
+	vWorld = world.xyz;
+	vec4 mvPosition = viewMatrix * world;
+	gl_Position = projectionMatrix * mvPosition;
+	#include <fog_vertex>
+}
+`;
+const waterFragment = /* glsl */ `
+uniform sampler2D uNormals;
+uniform float uTime;
+uniform vec3 uSky;
+uniform vec3 uHorizon;
+uniform vec3 uDeep;
+uniform vec3 uSun;
+uniform vec3 uSunDir;
+varying vec3 vWorld;
+#include <fog_pars_fragment>
+void main() {
+	// two scrolling layers of the ripple normal map (rg = slope), never a zero-length normal
+	vec2 p = vWorld.xz * 0.06;
+	vec3 n1 = texture2D(uNormals, p + vec2(uTime * 0.02, uTime * 0.013)).rgb * 2.0 - 1.0;
+	vec3 n2 = texture2D(uNormals, p * 1.7 - vec2(uTime * 0.017, -uTime * 0.011)).rgb * 2.0 - 1.0;
+	vec3 n = normalize(vec3(n1.x + n2.x, 5.0, n1.y + n2.y));
+	vec3 v = normalize(cameraPosition - vWorld);
+	// Fresnel: deep teal seen from above, the sky mirrored at grazing angles
+	float fres = mix(0.06, 1.0, pow(1.0 - max(dot(n, v), 0.0), 3.0));
+	vec3 r = reflect(-v, n);
+	vec3 sky = mix(uHorizon, uSky, smoothstep(0.0, 0.45, r.y));
+	vec3 col = mix(uDeep, sky, fres);
+	col += uSun * pow(max(dot(r, uSunDir), 0.0), 140.0) * 1.6;
+	gl_FragColor = vec4(col, 1.0);
+	#include <tonemapping_fragment>
+	#include <colorspace_fragment>
+	#include <fog_fragment>
+}
+`;
+
+/**
+ * The lake: rippled water from a shader alone (scrolling normal map, Fresnel between a deep teal and the sky colour,
+ * the sun's glint). No mirror pass: a planar reflection re-rendered the whole valley every frame (half the frame
+ * rate on phones).
+ */
 function Water() {
 	const normals = useTexture('/textures/waternormals.jpg');
-	const water = useMemo(() => {
+	const { scene } = useThree();
+	const material = useMemo(() => {
 		normals.wrapS = normals.wrapT = THREE.RepeatWrapping;
-		const w = new WaterMirror(new THREE.CircleGeometry(LAKE.r + 9, 64), {
-			textureWidth: 512,
-			textureHeight: 512,
-			waterNormals: normals,
-			sunDirection: new THREE.Vector3(0.4, 0.8, 0.3).normalize(),
-			sunColor: 0xfff1d0,
-			waterColor: 0x0f4f57,
-			distortionScale: 1.6,
+		return new THREE.ShaderMaterial({
+			vertexShader: waterVertex,
+			fragmentShader: waterFragment,
 			fog: true,
+			uniforms: {
+				...THREE.UniformsUtils.clone(THREE.UniformsLib.fog),
+				uNormals: { value: normals },
+				uTime: { value: 0 },
+				uSky: { value: new THREE.Color('#5b8fd0') },
+				uHorizon: { value: new THREE.Color('#b9d2ea') },
+				uDeep: { value: new THREE.Color('#0b3c46') },
+				uSun: { value: new THREE.Color('#fff1d0') },
+				uSunDir: { value: new THREE.Vector3(0.4, 0.8, 0.3).normalize() },
+			},
 		});
-		w.rotation.x = -Math.PI / 2;
-		w.position.set(LAKE.x, LAKE.level, LAKE.z);
-		(w.material as THREE.ShaderMaterial).uniforms.size.value = 3.5;
-		return w;
 	}, [normals]);
+	const night = useMemo(() => new THREE.Color('#0d1430'), []);
 	useFrame((_, dt) => {
-		(water.material as THREE.ShaderMaterial).uniforms.time.value += dt * 0.35;
+		const u = material.uniforms;
+		u.uTime.value += dt;
+		// the sky it mirrors follows the val's weather: the fog colour on the horizon, a deeper tone overhead
+		const fog = scene.fog as THREE.Fog | null;
+		if (fog) {
+			(u.uHorizon.value as THREE.Color).copy(fog.color);
+			(u.uSky.value as THREE.Color).copy(fog.color).lerp(night, 0.45);
+		}
 	});
-	return <primitive object={water} />;
+	return (
+		<mesh position={[LAKE.x, LAKE.level, LAKE.z]} rotation={[-Math.PI / 2, 0, 0]} material={material}>
+			<circleGeometry args={[LAKE.r + 9, 64]} />
+		</mesh>
+	);
 }
 
 function blocked(x: number, z: number) {

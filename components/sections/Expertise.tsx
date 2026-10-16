@@ -18,7 +18,7 @@ export function Expertise() {
 				<Reveal>
 					<p className="eyebrow">V — Arbre de talents</p>
 					<h2 id="expertise-title" className="font-display mt-4 max-w-3xl text-4xl leading-tight font-bold text-balance sm:text-5xl">
-						Expertise IA : agents, RAG, sécurité et <span className="text-gradient">LLMOps</span>.
+						Expertise IA : agents, RAG, sécurité et <span className="text-gradient">LLMOps</span>.
 					</h2>
 					<p className="text-mist mt-4 max-w-2xl">Six domaines pratiqués au quotidien, chacun avec sa preuve. Sélectionnez-en un pour le détail.</p>
 				</Reveal>

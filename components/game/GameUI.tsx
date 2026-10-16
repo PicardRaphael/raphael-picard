@@ -124,7 +124,7 @@ function QuestTracker() {
 				{q ? (
 					<>
 						<span className="font-display block truncate font-bold text-[#ffd100]">➤ {q.title}</span>
-						<span className="block truncate text-white/85">{quests[q.id] === 'ready' ? `À rendre : ${who(q.turnIn)}` : next?.label}</span>
+						<span className="block truncate text-white/85">{quests[q.id] === 'ready' ? `À rendre : ${who(q.turnIn)}` : next?.label}</span>
 					</>
 				) : (
 					<span className="text-[#ffd100]">{offered.length ? `➤ Parle à ${who(offered[0].giver)}` : `☠ ${kills} / ${mobs.length}`}</span>
@@ -176,7 +176,7 @@ function QuestTracker() {
 				<button
 					key={q.id}
 					onClick={() => game.set({ tracked: q.id })}
-					title="Suivre : le chemin mène à celui qui donne la quête"
+					title="Suivre : le chemin mène à celui qui donne la quête"
 					className={`pointer-events-auto mb-1.5 block w-full text-right text-sm drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] ${q.id === tracked ? 'text-[#ffd100]' : 'text-[#ffe9a3] hover:text-[#ffd100]'}`}
 				>
 					<span className="font-bold">!</span> {q.title} — {who(q.giver)}

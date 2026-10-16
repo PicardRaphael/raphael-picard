@@ -5,6 +5,7 @@ import { useState } from 'react';
 
 import { Reveal } from '@/components/ui/Reveal';
 import { certifications, experiences, testimonials } from '@/content/work';
+import { site } from '@/lib/site';
 
 /** Career as a WoW quest log: pick a quest on the left, read it on the right. */
 export function Journey() {
@@ -17,7 +18,7 @@ export function Journey() {
 				<Reveal>
 					<p className="eyebrow">III — Journal de quêtes</p>
 					<h2 id="journey-title" className="font-display mt-4 max-w-3xl text-4xl leading-tight font-bold text-balance sm:text-5xl">
-						Parcours : 8+ ans d’ingénierie logicielle, <span className="text-gradient">dont une première intégration d’IA en production dès 2018</span>.
+						Parcours : 8+ ans d’ingénierie logicielle, <span className="text-gradient">dont une première intégration d’IA en production dès 2018</span>.
 					</h2>
 					<p className="text-mist mt-4 max-w-2xl">Chaque quête accomplie a laissé une compétence. Sélectionnez-en une pour lire son journal.</p>
 				</Reveal>
@@ -127,12 +128,23 @@ export function Journey() {
 						<p className="text-mist mt-1 text-sm">Extraits de recommandations LinkedIn (mission Royal Canin).</p>
 						<div className="mt-5 space-y-4">
 							{testimonials.map((t) => (
-								<figure key={t.author} className="glass spotlight rounded-2xl p-6">
-									<blockquote className="text-ink/90 text-lg leading-relaxed">« {t.quote} »</blockquote>
-									<figcaption className="text-mist mt-4 text-sm">
-										<span className="text-ink font-semibold">{t.author}</span> · {t.context}
-									</figcaption>
-								</figure>
+								// each quote opens the full recommendation on LinkedIn, in a new tab
+								<a
+									key={t.author}
+									href={`${site.social.linkedin.replace(/\/$/, '')}/details/recommendations/`}
+									target="_blank"
+									rel="noopener noreferrer"
+									aria-label={`Lire la recommandation de ${t.author} sur LinkedIn (nouvel onglet)`}
+									className="group block"
+								>
+									<figure className="glass spotlight hover:border-signal/40 rounded-2xl p-6 transition-colors">
+										<blockquote className="text-ink/90 text-lg leading-relaxed">« {t.quote} »</blockquote>
+										<figcaption className="text-mist mt-4 text-sm">
+											<span className="text-ink font-semibold">{t.author}</span> · {t.context}
+											<span className="text-signal ml-2 opacity-0 transition-opacity group-hover:opacity-100">Voir sur LinkedIn ↗</span>
+										</figcaption>
+									</figure>
+								</a>
 							))}
 						</div>
 					</Reveal>

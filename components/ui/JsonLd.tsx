@@ -39,6 +39,7 @@ export function SiteJsonLd() {
 		description: site.description,
 		url: site.url,
 		email: `mailto:${site.email}`,
+		telephone: site.phone.href.replace('tel:', ''),
 		image: `${site.url}/opengraph-image`,
 		address: { '@type': 'PostalAddress', addressLocality: 'Lyon', addressCountry: 'FR' },
 		worksFor: { '@type': 'Organization', name: site.employer.name, url: site.employer.url },

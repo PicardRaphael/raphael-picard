@@ -86,12 +86,12 @@ function QuestBlock({ id }: { id: string }) {
 
 /** Raphy reacts to where the visitor stands in the story instead of repeating the same line. */
 const RAPHY_TIPS = [
-	'Astuce : les bugs du val ont chacun une fiche « problème / parade ». Retrouve-les toutes dans le Bestiaire du menu.',
-	'Plus de huit ans d’ingénierie logicielle, et une première intégration d’IA en production dès 2018 : la Forge raconte ce chemin.',
-	'La Tour du Savoir garde sa fiche de personnage : son parcours et son virage vers l’IA.',
-	'Le Cercle du Manifeste porte ses quatre règles : des agents utiles, mesurés, et sous contrôle humain.',
+	'Astuce : les bugs du val ont chacun une fiche « problème / parade ». Retrouve-les toutes dans le Bestiaire du menu.',
+	'Plus de huit ans d’ingénierie logicielle, et une première intégration d’IA en production dès 2018 : la Forge raconte ce chemin.',
+	'La Tour du Savoir garde sa fiche de personnage : son parcours et son virage vers l’IA.',
+	'Le Cercle du Manifeste porte ses quatre règles : des agents utiles, mesurés, et sous contrôle humain.',
 	'Dans le Nexus, le Noyau d’orchestration montre l’architecture réelle de NeoChat, une vraie question à l’appui.',
-	'Tu préfères lire tranquillement ? La « Version classique » en haut à gauche ouvre le portfolio en une page.',
+	'Tu préfères lire tranquillement ? La « Version classique » en haut à gauche ouvre le portfolio en une page.',
 ];
 /** Re-rendered with the game state: the line follows the quest the visitor just accepted or handed in. */
 function RaphyLine() {
@@ -100,31 +100,31 @@ function RaphyLine() {
 }
 
 function raphyLine(g: ReturnType<typeof game.get>) {
-	const intro = 'Je suis Raphy, la mascotte de Raphaël Picard, ingénieur IA à Lyon : il conçoit des agents qui tournent en production et forme les équipes à l’IA.';
-	if (g.quests.origines === 'available') return intro + ' Bienvenue dans le Val des Origines !';
-	if (g.quests.origines === 'ready' || g.quests.parcours === 'ready') return 'Tu as tout vu ! Termine la quête ci-dessus, la suite t’attend.';
+	const intro = 'Je suis Raphy, la mascotte de Raphaël Picard, ingénieur IA à Lyon : il conçoit des agents qui tournent en production et forme les équipes à l’IA.';
+	if (g.quests.origines === 'available') return intro + ' Bienvenue dans le Val des Origines !';
+	if (g.quests.origines === 'ready' || g.quests.parcours === 'ready') return 'Tu as tout vu ! Termine la quête ci-dessus, la suite t’attend.';
 	if (g.quests.origines === 'active') {
 		const left = ['forge', 'tower', 'stones'].filter((id) => !g.visited.includes(id)).map((id) => landmark(id).name);
-		return left.length ? `Il te reste à voir : ${left.join(', ')}. Suis les « ? » dorés.` : 'Tu as tout vu ! Reviens me parler pour terminer la quête.';
+		return left.length ? `Il te reste à voir : ${left.join(', ')}. Suis les « ? » dorés.` : 'Tu as tout vu ! Reviens me parler pour terminer la quête.';
 	}
 	if (g.quests.parcours === 'active') {
 		const left = ['leasys', 'schoolmouv', 'royal'].filter((id) => !g.visited.includes(id)).map((id) => landmark(id).name);
-		return left.length ? `Les maisons du val t’attendent : ${left.join(', ')}.` : 'Tu connais tout son parcours ! Reviens me parler pour terminer la quête.';
+		return left.length ? `Les maisons du val t’attendent : ${left.join(', ')}.` : 'Tu connais tout son parcours ! Reviens me parler pour terminer la quête.';
 	}
 	if (g.quests.agents === 'done') {
 		const left = QUESTS.filter((q) => g.quests[q.id] !== 'done').map((q) => `« ${q.title} »`);
 		return left.length
 			? `Tu as exploré les deux mondes ! Il reste ${left.length > 1 ? `${left.length} quêtes` : `une quête`} à finir si tu veux : ${left.join(', ')}. Et la Balise de contact reste ouverte.`
-			: `Toutes les quêtes sont terminées, ${g.kills} bug${g.kills > 1 ? 's' : ''} corrigé${g.kills > 1 ? 's' : ''} : tu connais Raphaël. Un poste IA à pourvoir ? La Balise de contact du Nexus est ouverte, et le CV se télécharge d’un clic, en haut à gauche.`;
+			: `Toutes les quêtes sont terminées, ${g.kills} bug${g.kills > 1 ? 's' : ''} corrigé${g.kills > 1 ? 's' : ''} : tu connais Raphaël. Un poste IA à pourvoir ? La Balise de contact du Nexus est ouverte, et le CV se télécharge d’un clic, en haut à gauche.`;
 	}
-	if (g.flags.includes('nexus')) return `De retour du Nexus ! ${g.kills} bug${g.kills > 1 ? 's' : ''} corrigé${g.kills > 1 ? 's' : ''} jusqu’ici. Raphy·OS t’attend là-bas pour la suite.`;
-	if (g.quests.portail === 'active' || g.quests.portail === 'available') return 'Le Portail arcanique t’attend au bout du chemin, au nord : de l’autre côté, l’ère des agents.';
+	if (g.flags.includes('nexus')) return `De retour du Nexus ! ${g.kills} bug${g.kills > 1 ? 's' : ''} corrigé${g.kills > 1 ? 's' : ''} jusqu’ici. Raphy·OS t’attend là-bas pour la suite.`;
+	if (g.quests.portail === 'active' || g.quests.portail === 'available') return 'Le Portail arcanique t’attend au bout du chemin, au nord : de l’autre côté, l’ère des agents.';
 	return RAPHY_TIPS[(g.kills + g.visited.length) % RAPHY_TIPS.length];
 }
 
 const NPC_TEXT: Record<string, string> = {
 	holo: 'Raphy·OS en ligne. Depuis novembre 2025, Raphaël est Senior AI Engineer & Responsable IA chez Neoteem : sept agents spécialisés en production.',
-	portal: 'Une arche ancienne parcourue d’énergie arcanique. Marche dedans pour rejoindre le Nexus : l’ère des agents.',
+	portal: 'Une arche ancienne parcourue d’énergie arcanique. Marche dedans pour rejoindre le Nexus : l’ère des agents.',
 	'portal-back': 'Ce portail te ramène au Val des Origines.',
 };
 

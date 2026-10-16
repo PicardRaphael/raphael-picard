@@ -98,8 +98,8 @@ async function playLandscape() {
 }
 
 const HEROES = [
-	{ id: 'knight' as const, name: 'Chevalier du val', tag: 'Fantasy', text: 'Armure, épée et bouclier : le héros du Val des Origines.', ring: '#ffd100' },
-	{ id: 'runner' as const, name: 'Runner du Nexus', tag: 'Cyberpunk', text: 'Vue à la première personne, fusil sci-fi : la ville à hauteur d’yeux.', ring: '#e879f9' },
+	{ id: 'knight' as const, name: 'Chevalier du val', tag: 'Fantasy', text: 'Armure, épée et bouclier : le héros du Val des Origines.', ring: '#ffd100' },
+	{ id: 'runner' as const, name: 'Runner du Nexus', tag: 'Cyberpunk', text: 'Vue à la première personne, fusil sci-fi : la ville à hauteur d’yeux.', ring: '#e879f9' },
 ];
 
 /** Starts the game, back in the realm the save was left in. */
@@ -225,7 +225,7 @@ export function StartScreen() {
 				<p className="mt-5 hidden text-sm text-white/75 pointer-coarse:block">Joystick pour bouger, ⚔ attaquer, ⤒ sauter, touchez un lieu pour y aller ou parler. Glissez pour la caméra, pincez pour zoomer.</p>
 				{/* the recruiter's way: CV, classic page and contact one click away, without playing */}
 				<nav aria-label="Accès rapide" className="mt-5 flex flex-wrap items-center justify-center gap-2 text-sm">
-					<span className="text-white/60">Pressé ?</span>
+					<span className="text-white/60">Pressé ?</span>
 					<Pitch30Button className="rounded-full border border-[#7dd3fc]/60 bg-black/45 px-4 py-2 font-semibold text-[#7dd3fc] backdrop-blur-md hover:bg-black/70" />
 					<a href={hero_.secondaryCta.href} download className="rounded-full border border-[#ffd9a0]/50 bg-black/45 px-4 py-2 text-[#ffd9a0] backdrop-blur-md hover:bg-black/70">
 						Télécharger le CV

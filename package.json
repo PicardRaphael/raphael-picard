@@ -37,6 +37,7 @@
 		"eslint": "^9",
 		"eslint-config-next": "16.4.1",
 		"eslint-config-prettier": "^10.1.8",
+		"pdf-lib": "^1.17.1",
 		"prettier-plugin-tailwindcss": "^0.8.1",
 		"tailwindcss": "^4.3.3",
 		"typescript": "^5.9",

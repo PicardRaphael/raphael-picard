@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import localFont from 'next/font/local';
 
 import { cvExperiences, cvHeader, cvLanguages, cvProjectNotes, cvSkills, cvStats, cvSummary } from '@/content/cv';
 import { certifications, education, projects } from '@/content/work';
@@ -10,10 +11,23 @@ import { site } from '@/lib/site';
  *
  * Built for applicant tracking systems as much as for people: real words in the titles (no letter-spacing that splits
  * them), list markers drawn by the browser (no positioned pseudo-elements, which Chrome paints and extracts after the
- * text), every link a real link.
+ * text), every link a real link, static fonts (a variable font is written as Type3 glyphs that extractors misread),
+ * straight apostrophes (the curly one is extracted as a letter, U+02BC, gluing « d’IA » into one word).
  */
+const inter = localFont({
+	src: [
+		{ path: './fonts/inter-latin-400-normal.woff2', weight: '400', style: 'normal' },
+		{ path: './fonts/inter-latin-400-italic.woff2', weight: '400', style: 'italic' },
+		{ path: './fonts/inter-latin-600-normal.woff2', weight: '600', style: 'normal' },
+		{ path: './fonts/inter-latin-700-normal.woff2', weight: '700', style: 'normal' },
+		{ path: './fonts/inter-latin-800-normal.woff2', weight: '800', style: 'normal' },
+	],
+	display: 'block',
+});
+const sora = localFont({ src: [{ path: './fonts/sora-latin-800-normal.woff2', weight: '800', style: 'normal' }], display: 'block' });
+
 export const metadata: Metadata = {
-	title: `${site.name} — CV Senior AI Engineer & Responsable IA`,
+	title: { absolute: `${site.name} — CV Senior AI Engineer & Responsable IA` },
 	description: 'CV de Raphaël Picard : Senior AI Engineer & Responsable IA, agents LLM en production, RAG, LLMOps, Python, TypeScript.',
 	robots: { index: false, follow: false },
 };
@@ -30,7 +44,10 @@ const display = (url: string) => url.replace(/^https:\/\/(www\.)?/, '').replace(
  */
 function typo(text: string) {
 	return text
-		.replace(/ :/g, ' :')
+		.replace(/’/g, "'")
+		// product names and the job title never break across lines
+		.replace(/Claude Code/g, 'Claude\u00a0Code')
+		.replace(/ :/g, ' :')
 		.replace(/ ([;%×→])/g, ' $1')
 		.replace(/([×→]) /g, '$1 ')
 		.replace(/(\d) (\d{3})\b/g, '$1 $2');
@@ -80,14 +97,14 @@ export default function CvPage() {
 	const others = certifications.filter((c) => c.issuer !== 'Anthropic Academy' && !c.name.includes('RNCP'));
 	const contact = [
 		{ label: site.email, href: `mailto:${site.email}` },
-		{ label: cvHeader.phone.label, href: cvHeader.phone.href },
+		site.phone,
 		{ label: display(site.url), href: site.url },
 		{ label: display(site.social.linkedin), href: site.social.linkedin },
 		{ label: display(site.social.github), href: site.social.github },
 	];
 
 	return (
-		<main lang="fr" className="cv mx-auto max-w-[210mm] bg-white px-[13mm] py-[12mm] text-[11.5px] leading-[1.4] text-[#1b1530]">
+		<main lang="fr" className={`${inter.className} cv mx-auto max-w-[210mm] bg-white px-[13mm] py-[12mm] text-[11.5px] leading-[1.4] text-[#1b1530]`}>
 			<style>{`
 				@page { size: A4; margin: 11mm 13mm 13mm; }
 				html, body { background: #fff !important; color-scheme: light; }
@@ -105,7 +122,7 @@ export default function CvPage() {
 
 			<header className="flex items-start justify-between gap-6 border-b-2 pb-[10px]" style={{ borderColor: accent }}>
 				<div>
-					<h1 className="font-display text-[27px] leading-none font-extrabold">{site.name}</h1>
+					<h1 className={`${sora.className} text-[27px] leading-none font-extrabold`}>{site.name}</h1>
 					<p className="mt-[6px] text-[14px] font-semibold" style={{ color: accent }}>
 						{site.role}
 					</p>
@@ -140,14 +157,14 @@ export default function CvPage() {
 			</ul>
 
 			<Title>Compétences clés</Title>
-			<dl className="grid grid-cols-[132px_1fr] gap-x-3 gap-y-[2px]">
+			<ul className="cv-list space-y-[2px]">
 				{cvSkills.map((s) => (
-					<div key={s.label} className="contents">
-						<dt className="font-semibold">{s.label}</dt>
-						<dd>{typo(s.items)}</dd>
-					</div>
+					<li key={s.label}>
+						<strong>{s.label}</strong>
+						{'\u00a0'}: {typo(s.items)}
+					</li>
 				))}
-			</dl>
+			</ul>
 
 			<Title>Expérience professionnelle</Title>
 			<div className="space-y-[11px]">
@@ -156,8 +173,9 @@ export default function CvPage() {
 						<div className="keep flex items-baseline justify-between gap-4">
 							<h3 className="text-[12.5px] font-bold">
 								{e.role} · <span style={{ color: accent }}>{e.company}</span>
+								{e.client && <span className="font-semibold"> ({e.client})</span>}
 							</h3>
-							<span className="shrink-0 text-[10.5px] font-semibold tabular-nums">{e.period}</span>
+							<span className="shrink-0 text-[10.5px] font-semibold tabular-nums">{typo(e.period)}</span>
 						</div>
 						<p className="keep text-[10.5px] italic" style={{ color: muted }}>
 							{typo(e.context)}
@@ -170,7 +188,7 @@ export default function CvPage() {
 										<h4 className="text-[11.5px] font-bold">{typo(b.title)}</h4>
 										{b.period && (
 											<span className="shrink-0 text-[10.5px] tabular-nums" style={{ color: muted }}>
-												{b.period}
+												{typo(b.period)}
 											</span>
 										)}
 									</div>
@@ -182,7 +200,7 @@ export default function CvPage() {
 				))}
 			</div>
 
-			<Title>Projets open source</Title>
+			<Title>Projets personnels open source, en parallèle du poste (2026)</Title>
 			<ul className="cv-list space-y-[2px]">
 				{openSource.map((p) => (
 					<li key={p.name}>
@@ -195,11 +213,11 @@ export default function CvPage() {
 			</ul>
 
 			<div className="avoid">
-				<Title>Formation et certifications</Title>
+				<Title>Formation et certificats</Title>
 				<ul className="cv-list space-y-[2px]">
 					{education.map((d) => (
 						<li key={d.name}>
-							<span className="font-semibold">{d.name}</span>, {d.title} · {d.school}, <span className="whitespace-nowrap">{d.years}</span>
+							<span className="font-semibold">{d.name}</span>, {d.title} · {typo(d.school)}, <span className="whitespace-nowrap">{d.years}</span>
 						</li>
 					))}
 					<li>
@@ -208,14 +226,14 @@ export default function CvPage() {
 						{anthropic.map((c, i) => (
 							<span key={c.name}>
 								{i > 0 && ' · '}
-								<em className="whitespace-nowrap">{c.name}</em>
+								<em className="whitespace-nowrap">{typo(c.name)}</em>
 							</span>
 						))}
 					</li>
 					{others.map((c) => (
 						<li key={c.name}>
 							<span className="font-semibold">{c.issuer}</span>
-							{' '}: <em>{c.name}</em>
+							{' '}: <em>{typo(c.name)}</em>
 						</li>
 					))}
 				</ul>
@@ -225,7 +243,7 @@ export default function CvPage() {
 						<span key={l.label}>
 							{i > 0 && ' · '}
 							<strong>{l.label}</strong>
-							{' '}: {l.level}
+							{' '}: {typo(l.level)}
 						</span>
 					))}
 				</p>

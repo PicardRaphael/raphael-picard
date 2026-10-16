@@ -56,7 +56,7 @@ export function EndCard() {
 					Tu connais maintenant Raphaël.
 				</h2>
 				<p className="mx-auto mt-2 max-w-md text-sm text-white/80">
-					Du val des origines aux agents en production : 8+ ans de code, 7 agents IA en service, et chaque panne apprivoisée. Le prochain chapitre peut s’écrire avec ton équipe.
+					Du val des origines aux agents en production : 8+ ans de code, 7 agents IA en service, et chaque panne apprivoisée. Le prochain chapitre peut s’écrire avec ton équipe.
 				</p>
 				<ul className="mt-4 grid grid-cols-3 gap-2 [@media(max-height:500px)]:mt-2">
 					{stats.map((s) => (

@@ -17,6 +17,7 @@ export const site = {
 	locale: 'fr_FR',
 	location: 'Lyon, France',
 	email: 'raphaelpicard@outlook.fr',
+	phone: { label: '06 50 93 15 73', href: 'tel:+33650931573' },
 	cv: '/raphael-picard-cv-senior-ai-engineer-responsable-ia.pdf',
 	social: {
 		linkedin: 'https://www.linkedin.com/in/raphael-picard/',

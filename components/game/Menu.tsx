@@ -91,7 +91,7 @@ function Options() {
 					onChange={(v) => game.set({ hero: v })}
 				/>
 			</Row>
-			<Row label="Je suis bloqué !">
+			<Row label="Je suis bloqué !">
 				<button
 					onClick={() => {
 						player.teleport = { ...(s.zone === 'nexus' ? { x: 0, z: -608, yaw: 0 } : SPAWN) };
@@ -179,14 +179,14 @@ function Body({ tab }: { tab: Tab }) {
 		case 'home':
 			return (
 				<div className="space-y-3 leading-relaxed text-white/85">
-					<p>Bienvenue !</p>
+					<p>Bienvenue !</p>
 					<p>
-						Je m’appelle <b className="text-white">Raphaël Picard</b>, je suis <b className="text-white">Senior AI Engineer & Responsable IA</b> chez Neoteem, à Lyon : 7 agents IA en production,
+						Je m’appelle <b className="text-white">Raphaël Picard</b>, je suis <b className="text-white">Senior AI Engineer & Responsable IA</b> chez Neoteem, à Lyon : 7 agents IA en production,
 						RAG hybride, évaluations et traces, une équipe formée.
 					</p>
 					<p>Ceci est mon portfolio. Explorez le monde, parlez à Raphy, accomplissez les quêtes et corrigez les bugs pour découvrir mon parcours.</p>
 					<p>
-						Pressé ? <Pitch30Button className="text-[#7dd3fc] underline-offset-4 hover:underline">Voir le résumé en 30 s</Pitch30Button>,{' '}
+						Pressé ? <Pitch30Button className="text-[#7dd3fc] underline-offset-4 hover:underline">Voir le résumé en 30 s</Pitch30Button>,{' '}
 						<a href="/raphael-picard-cv-senior-ai-engineer-responsable-ia.pdf" download className="text-[#7dd3fc] underline-offset-4 hover:underline">
 							Téléchargez mon CV
 						</a>
@@ -206,21 +206,21 @@ function Body({ tab }: { tab: Tab }) {
 					<div>
 						<p className="font-display mb-2 text-lg font-bold text-white">Souris & clavier</p>
 						<ul className="space-y-1.5">
-							<li>Clic : aller / parler / attaquer</li>
+							<li>Clic : aller / parler / attaquer</li>
 							<li>Glisser (clic gauche ou droit) : caméra</li>
-							<li>Molette : zoom</li>
-							<li>Flèches ou ZQSD : bouger</li>
-							<li>Espace : sauter · Maj : sprinter</li>
-							<li>F : attaquer · E : interagir</li>
-							<li>M : carte · Échap ou O : menu</li>
+							<li>Molette : zoom</li>
+							<li>Flèches ou ZQSD : bouger</li>
+							<li>Espace : sauter · Maj : sprinter</li>
+							<li>F : attaquer · E : interagir</li>
+							<li>M : carte · Échap ou O : menu</li>
 						</ul>
 					</div>
 					<div>
 						<p className="font-display mb-2 text-lg font-bold text-white">Mobile & tablette</p>
 						<ul className="space-y-1.5">
 							<li>Joystick : bouger (à fond = sprint)</li>
-							<li>Toucher : aller / parler / attaquer</li>
-							<li>Glisser : caméra · Pincer : zoom</li>
+							<li>Toucher : aller / parler / attaquer</li>
+							<li>Glisser : caméra · Pincer : zoom</li>
 							<li>⚔ attaquer · ⤒ sauter</li>
 						</ul>
 						<p className="mt-3 text-white/60">Touches par défaut : elles se reconfigurent sur l’écran d’accueil (⌨ Touches), avant de lancer la partie.</p>
@@ -252,16 +252,16 @@ function Body({ tab }: { tab: Tab }) {
 						<p className="mb-1 font-semibold text-white">Voix des quêtes (synthèse vocale hors ligne)</p>
 						<ul className="space-y-1">
 							<li>
-								Nexus : <a className="underline decoration-white/30 hover:text-white" href="https://huggingface.co/hexgrad/Kokoro-82M" target="_blank" rel="noreferrer">Kokoro-82M</a> — hexgrad, Apache-2.0 ; voix ff_siwis, corpus{' '}
+								Nexus : <a className="underline decoration-white/30 hover:text-white" href="https://huggingface.co/hexgrad/Kokoro-82M" target="_blank" rel="noreferrer">Kokoro-82M</a> — hexgrad, Apache-2.0 ; voix ff_siwis, corpus{' '}
 								<a className="underline decoration-white/30 hover:text-white" href="https://datashare.ed.ac.uk/handle/10283/2353" target="_blank" rel="noreferrer">SIWIS</a> (CC BY 4.0)
 							</li>
 							<li>
-								Val : <a className="underline decoration-white/30 hover:text-white" href="https://github.com/OHF-Voice/piper1-gpl" target="_blank" rel="noreferrer">Piper</a> — Open Home Foundation, GPL-3.0 ; voix{' '}
+								Val : <a className="underline decoration-white/30 hover:text-white" href="https://github.com/OHF-Voice/piper1-gpl" target="_blank" rel="noreferrer">Piper</a> — Open Home Foundation, GPL-3.0 ; voix{' '}
 								<a className="underline decoration-white/30 hover:text-white" href="https://huggingface.co/rhasspy/piper-voices/tree/main/fr/fr_FR/upmc/medium" target="_blank" rel="noreferrer">fr_FR-upmc-medium</a> (locuteur pierre), corpus{' '}
 								<a className="underline decoration-white/30 hover:text-white" href="https://github.com/marytts/upmc-pierre-data" target="_blank" rel="noreferrer">UPMC / MaryTTS</a> (CC BY-SA 4.0)
 							</li>
 						</ul>
-						<p className="mt-1 text-white/60">Répliques générées hors ligne ; les enregistrements des voix du val sont partagés sous CC BY-SA 4.0.</p>
+						<p className="mt-1 text-white/60">Répliques générées hors ligne ; les enregistrements des voix du val sont partagés sous CC BY-SA 4.0.</p>
 					</div>
 					<div>
 						<p className="mb-1 font-semibold text-white">Modèles 3D Sketchfab — licence CC BY 4.0</p>
@@ -280,7 +280,7 @@ function Body({ tab }: { tab: Tab }) {
 							<li><a className="underline decoration-white/30 hover:text-white" href="https://sketchfab.com/3d-models/c91524e74c8c463ca3ddf71bc73911db" target="_blank" rel="noreferrer">Japanese Neon Street Sign</a> — mcmanusmedia</li>
 							<li><a className="underline decoration-white/30 hover:text-white" href="https://sketchfab.com/3d-models/58d2570e88c642bba8ef92f3175391cf" target="_blank" rel="noreferrer">Sci-Fi Portal Gateway (porte du Nexus)</a> — Sam54123</li>
 						</ul>
-						<p className="mt-1 text-white/60">Modèles adaptés : découpés, optimisés, enseignes de marques repeintes.</p>
+						<p className="mt-1 text-white/60">Modèles adaptés : découpés, optimisés, enseignes de marques repeintes.</p>
 					</div>
 					<p>Robots, armes et skin de squelette : Quaternius et KayKit (CC0). Eau : normal map three.js (MIT).</p>
 					<p>
@@ -295,9 +295,9 @@ function Body({ tab }: { tab: Tab }) {
 		case 'help':
 			return (
 				<div className="space-y-3 text-sm leading-relaxed text-white/85">
-					<p>Suis les « ! » jaunes : ils donnent des quêtes. Les « ? » dorés marquent les lieux à visiter et les quêtes à rendre.</p>
+					<p>Suis les « ! » jaunes : ils donnent des quêtes. Les « ? » dorés marquent les lieux à visiter et les quêtes à rendre.</p>
 					<p>La grande porte au nord du val mène au Nexus, le monde des agents IA.</p>
-					<p>Ça rame ? La version classique du portfolio contient exactement les mêmes informations.</p>
+					<p>Ça rame ? La version classique du portfolio contient exactement les mêmes informations.</p>
 				</div>
 			);
 	}
@@ -387,7 +387,7 @@ export function AchievementWatcher() {
 		const fresh = list.find((id) => !prev.includes(id));
 		const a = ACHIEVEMENTS.find((x) => x.id === fresh);
 		// a quest reward already announced itself when the quest was handed in
-		if (a && !QUESTS.some((q) => q.reward.title === a.title)) game.toast(`Haut fait : ${a.title}`, a.text);
+		if (a && !QUESTS.some((q) => q.reward.title === a.title)) game.toast(`Haut fait : ${a.title}`, a.text);
 	}, [key]);
 	return null;
 }

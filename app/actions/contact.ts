@@ -26,7 +26,7 @@ export async function sendContact(_prev: ContactState, formData: FormData): Prom
 	}
 	const key = process.env.WEB3_FORMS_API_KEY;
 	if (!key) {
-		return { message: 'Le formulaire n’est pas encore configuré : écrivez-moi directement par e-mail.', values: raw };
+		return { message: 'Le formulaire n’est pas encore configuré : écrivez-moi directement par e-mail.', values: raw };
 	}
 	try {
 		const { name, email, subject, message } = parsed.data;

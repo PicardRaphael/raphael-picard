@@ -184,7 +184,8 @@ def main():
 			audio = polish(audio, sr)
 			sf.write(file, audio, sr, **ENCODER)
 			seconds = round(len(audio) / sr, 2)
-			clips[clip] = {'text': fnv1a(text), 'key': key, 'voice': voice, 'seconds': seconds, 'bytes': file.stat().st_size}
+			# typographic spaces (no-break, thin) do not change what is said: same hash as lib/voice.ts
+			clips[clip] = {'text': fnv1a(text.replace('\u00a0', ' ').replace('\u202f', ' ')), 'key': key, 'voice': voice, 'seconds': seconds, 'bytes': file.stat().st_size}
 			print(f'{clip:22} {voice:6} {seconds:6.2f}s {file.stat().st_size / 1024:6.1f} KB  {len(say) / seconds:4.1f} chars/s  « {say} »')
 
 	for stale in OUT_DIR.glob('*.mp3'):

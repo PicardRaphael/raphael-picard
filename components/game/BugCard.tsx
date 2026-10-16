@@ -52,11 +52,11 @@ export function BugCard() {
 			{expanded ? (
 				<div className="mt-2 space-y-2 text-sm leading-relaxed text-white/90">
 					<p>
-						<b className="text-[#f87171]">Le problème : </b>
+						<b className="text-[#f87171]">Le problème : </b>
 						{m.problem}
 					</p>
 					<p>
-						<b className="text-[#4ade80]">La parade de Raphaël : </b>
+						<b className="text-[#4ade80]">La parade de Raphaël : </b>
 						{m.lesson}
 					</p>
 				</div>

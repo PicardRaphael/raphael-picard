@@ -11,6 +11,7 @@ const field = 'w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 te
 
 const channels = [
 	{ href: `mailto:${site.email}`, glyph: '@', label: site.email, external: false },
+	{ href: site.phone.href, glyph: 'tel', label: site.phone.label, external: false },
 	{ href: site.social.linkedin, glyph: 'in', label: 'LinkedIn · Raphaël Picard', external: true },
 	{ href: site.social.github, glyph: 'gh', label: 'GitHub · PicardRaphael', external: true },
 ];
@@ -37,10 +38,10 @@ export function Contact() {
 				<Reveal>
 					<p className="eyebrow">VIII — Balise de contact</p>
 					<h2 id="contact-title" className="font-display mt-4 text-4xl leading-tight font-bold text-balance sm:text-6xl">
-						Un poste IA à pourvoir ? Parlons <span className="text-gradient">production</span>, pas POC.
+						Un poste IA à pourvoir ? Parlons <span className="text-gradient">production</span>, pas POC.
 					</h2>
 					<p className="text-mist mt-6 max-w-lg text-lg leading-relaxed">
-						Poste de Senior AI Engineer ou de Responsable IA, projet d’agent ou de RAG, équipe à former à Claude Code : écrivez-moi.
+						Poste de Senior AI Engineer ou de Responsable IA, projet d’agent ou de RAG, équipe à former à Claude Code : écrivez-moi.
 					</p>
 					<ul className="mt-8 space-y-3">
 						{channels.map((c) => (

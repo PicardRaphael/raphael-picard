@@ -23,7 +23,8 @@ function voiceHash(text: string) {
 /** Clip recorded for this exact text, or null (not generated yet, or the text changed since). */
 export function voiceClip(id: string, text: string): string | null {
 	const c = CLIPS[id];
-	return c && c.text === voiceHash(text) ? id : null;
+	// typographic spaces (no-break, thin) do not change what is said
+	return c && c.text === voiceHash(text.replace(/[\u00a0\u202f]/g, ' ')) ? id : null;
 }
 
 let audio: HTMLAudioElement | null = null;

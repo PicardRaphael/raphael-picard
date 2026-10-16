@@ -7,23 +7,21 @@ import * as THREE from 'three';
 
 import { player } from '@/lib/player-state';
 
-/** First-person rifle (Quaternius Sci-Fi Essentials, CC0) glued to the camera, with sway, bob, recoil and muzzle flash. */
+/**
+ * First-person rifle (Quaternius Sci-Fi Essentials, CC0) held by gloved arms (para's "fps arms", CC0, MakeHuman mesh,
+ * posed on the rifle and baked in the weapon frame), glued to the camera with sway, bob, recoil and muzzle flash.
+ */
 useGLTF.preload('/models/rifle.glb');
+useGLTF.preload('/models/fps/arms.glb');
 
-export function FpsWeapon() {
-	const { scene } = useGLTF('/models/rifle.glb');
-	const { camera } = useThree();
-	const root = useRef<THREE.Group>(null);
-	const flash = useRef<THREE.Mesh>(null);
-	const kick = useRef(0);
-	const sway = useRef({ x: 0, y: 0 });
-	const gun = useMemo(() => {
+/** Copy of a model drawn over the world (no culling, after the scene) so it never clips into walls. */
+function useViewModel(scene: THREE.Object3D) {
+	return useMemo(() => {
 		const g = scene.clone(true);
 		g.traverse((o) => {
 			const m = o as THREE.Mesh;
 			if (m.isMesh) {
 				m.frustumCulled = false;
-				// always drawn over the world so it never clips into walls
 				const mat = (m.material as THREE.MeshStandardMaterial).clone();
 				mat.depthTest = true;
 				m.material = mat;
@@ -32,6 +30,16 @@ export function FpsWeapon() {
 		});
 		return g;
 	}, [scene]);
+}
+
+export function FpsWeapon() {
+	const gun = useViewModel(useGLTF('/models/rifle.glb').scene);
+	const arms = useViewModel(useGLTF('/models/fps/arms.glb').scene);
+	const { camera } = useThree();
+	const root = useRef<THREE.Group>(null);
+	const flash = useRef<THREE.Mesh>(null);
+	const kick = useRef(0);
+	const sway = useRef({ x: 0, y: 0 });
 
 	useEffect(() => {
 		const on = () => {
@@ -53,14 +61,14 @@ export function FpsWeapon() {
 		const fov = (camera as THREE.PerspectiveCamera).fov ?? 72;
 		const k = Math.tan(THREE.MathUtils.degToRad(fov) / 2) / Math.tan(THREE.MathUtils.degToRad(72) / 2);
 		g.scale.setScalar(k);
-		// local offset: lower right, close to the eye like a modern FPS; bob while running; recoil pushes back and up
-		g.translateX((0.165 + Math.sin(t * 5.5) * 0.012 * run) * k);
-		g.translateY((-0.205 + Math.abs(Math.cos(t * 5.5)) * 0.018 * run + Math.sin(t * 1.4) * 0.004) * k);
-		g.translateZ((-0.44 + kick.current * 0.08) * k);
-		// the barrel converges toward the crosshair
-		g.rotateY(0.07);
-		g.rotateZ(-0.03);
-		g.rotateX(kick.current * 0.12);
+		// local offset: lower right, stock off screen, hands in view (Valorant-like framing); bob while running; recoil pushes back and up
+		g.translateX((0.2 + Math.sin(t * 5.5) * 0.012 * run) * k);
+		g.translateY((-0.2 + Math.abs(Math.cos(t * 5.5)) * 0.018 * run + Math.sin(t * 1.4) * 0.004) * k);
+		g.translateZ((-0.36 + kick.current * 0.06) * k);
+		// the barrel converges toward the crosshair; the arms are baked for exactly this pose
+		g.rotateY(0.12);
+		g.rotateZ(-0.05);
+		g.rotateX(0.03 + kick.current * 0.1);
 		// the weapon lags a little behind fast mouse movements
 		sway.current.x += (THREE.MathUtils.clamp(player.camera.swayX * 0.004, -0.12, 0.12) - sway.current.x) * Math.min(1, dt * 10);
 		sway.current.y += (THREE.MathUtils.clamp(player.camera.swayY * 0.004, -0.1, 0.1) - sway.current.y) * Math.min(1, dt * 10);
@@ -79,9 +87,11 @@ export function FpsWeapon() {
 			<group rotation={[0, -Math.PI / 2, 0]} scale={0.62}>
 				<primitive object={gun} />
 			</group>
-			<mesh ref={flash} position={[0, 0.03, -0.72]} visible={false}>
-				<circleGeometry args={[0.09, 6]} />
-				<meshBasicMaterial color="#ffd38a" toneMapped={false} transparent opacity={0.95} />
+			{/* right hand on the grip, left hand on the handguard, forearms leaving the bottom of the screen */}
+			<primitive object={arms} />
+			<mesh ref={flash} position={[0, 0.117, -0.48]} visible={false} renderOrder={11}>
+				<circleGeometry args={[0.05, 6]} />
+				<meshBasicMaterial color="#ffd38a" toneMapped={false} transparent opacity={0.95} blending={THREE.AdditiveBlending} depthWrite={false} />
 			</mesh>
 		</group>
 	);

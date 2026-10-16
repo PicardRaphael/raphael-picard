@@ -283,6 +283,13 @@ function Body({ tab }: { tab: Tab }) {
 						<p className="mt-1 text-white/60">Modèles adaptés : découpés, optimisés, enseignes de marques repeintes.</p>
 					</div>
 					<p>Robots, armes et skin de squelette : Quaternius et KayKit (CC0). Eau : normal map three.js (MIT).</p>
+					<p>
+						Bras gantés de la vue FPS :{' '}
+						<a className="underline decoration-white/30 hover:text-white" href="https://opengameart.org/content/fps-arms-rigged-only" target="_blank" rel="noreferrer">
+							fps arms (rigged only)
+						</a>{' '}
+						— para, maillage MakeHuman, CC0 (posés sur le fusil et retexturés).
+					</p>
 				</div>
 			);
 		case 'help':

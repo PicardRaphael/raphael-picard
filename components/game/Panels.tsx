@@ -105,7 +105,7 @@ function raphyLine(g: ReturnType<typeof game.get>) {
 	if (g.quests.origines === 'ready' || g.quests.parcours === 'ready') return 'Tu as tout vu ! Termine la quête ci-dessus, la suite t’attend.';
 	if (g.quests.origines === 'active') {
 		const left = ['forge', 'tower', 'stones'].filter((id) => !g.visited.includes(id)).map((id) => landmark(id).name);
-		return left.length ? `Il te reste à voir : ${left.join(', ')}. Suis les « ? » dorés.` : 'Tu as tout vu ! Reviens me parler pour terminer la quête.';
+		return left.length ? `Il te reste à voir : ${left.join(', ')}. Suis les losanges dorés.` : 'Tu as tout vu ! Reviens me parler pour terminer la quête.';
 	}
 	if (g.quests.parcours === 'active') {
 		const left = ['leasys', 'schoolmouv', 'royal'].filter((id) => !g.visited.includes(id)).map((id) => landmark(id).name);

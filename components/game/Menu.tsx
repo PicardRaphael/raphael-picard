@@ -295,7 +295,7 @@ function Body({ tab }: { tab: Tab }) {
 		case 'help':
 			return (
 				<div className="space-y-3 text-sm leading-relaxed text-white/85">
-					<p>Suis les « ! » jaunes : ils donnent des quêtes. Les « ? » dorés marquent les lieux à visiter et les quêtes à rendre.</p>
+					<p>Suis les « ! » jaunes : ils donnent des quêtes. Les losanges dorés marquent les lieux à visiter, les « ? » dorés les quêtes à rendre.</p>
 					<p>La grande porte au nord du val mène au Nexus, le monde des agents IA.</p>
 					<p>Ça rame ? La version classique du portfolio contient exactement les mêmes informations.</p>
 				</div>

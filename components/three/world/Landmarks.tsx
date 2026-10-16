@@ -137,6 +137,26 @@ function Glyph({ kind }: { kind: '!' | '?' | '?grey' }) {
 	);
 }
 
+/** A place to visit for an active quest: a spinning golden gem, distinct from the « ? » of a quest to hand in. */
+const gemMat = new THREE.MeshBasicMaterial({ color: new THREE.Color('#ffd100').multiplyScalar(1.5), toneMapped: false });
+const gemEdge = new THREE.MeshBasicMaterial({ color: '#1a0f00', side: THREE.BackSide });
+function Gem() {
+	const ref = useRef<THREE.Group>(null);
+	useFrame((_, dt) => {
+		if (ref.current) ref.current.rotation.y += dt * 1.8;
+	});
+	return (
+		<group ref={ref} scale={[0.75, 1.15, 0.75]}>
+			<mesh material={gemMat}>
+				<octahedronGeometry args={[1, 0]} />
+			</mesh>
+			<mesh material={gemEdge} scale={1.12}>
+				<octahedronGeometry args={[1, 0]} />
+			</mesh>
+		</group>
+	);
+}
+
 export function QuestMarker({ id, height }: { id: string; height: number }) {
 	const quests = useGame((s) => s.quests);
 	const visited = useGame((s) => s.visited);
@@ -154,8 +174,7 @@ export function QuestMarker({ id, height }: { id: string; height: number }) {
 	return (
 		<>
 			<group ref={ref} position={[0, height, 0]}>
-				{/* objectives use the same golden glyph as the quest givers, so every marker reads alike */}
-				<Glyph kind={kind === 'objective' ? '?' : kind} />
+				{kind === 'objective' ? <Gem /> : <Glyph kind={kind} />}
 			</group>
 
 		</>

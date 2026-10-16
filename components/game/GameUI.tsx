@@ -332,6 +332,14 @@ function Controls() {
 
 export function GameUI() {
 	const started = useGame((s) => s.started);
+	const zone = useGame((s) => s.zone);
+	// the mouse cursor follows the realm: golden in the val, neon in the Nexus (styles in globals.css)
+	useEffect(() => {
+		document.documentElement.dataset.cursor = zone;
+		return () => {
+			delete document.documentElement.dataset.cursor;
+		};
+	}, [zone]);
 	return (
 		<>
 			<StartScreen />

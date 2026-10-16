@@ -227,3 +227,35 @@
 .panel-sections .eyebrow:not(.eyebrow-keep) {
 	display: none;
 }
+
+/* Themed cursors (mouse and trackpad only): violet on the classic page, golden in the val, neon in the Nexus.
+   The game sets html[data-cursor] to the realm the hero stands in; links and buttons get a lit variant. */
+@media (pointer: fine) {
+	html,
+	html * {
+		cursor: url('/cursors/classic.svg') 3 2, auto;
+	}
+	html :is(a, button, [role='button'], summary, label, select),
+	html :is(a, button, [role='button'], summary, label, select) * {
+		cursor: url('/cursors/classic-pointer.svg') 3 2, pointer;
+	}
+	html[data-cursor='val'],
+	html[data-cursor='val'] * {
+		cursor: url('/cursors/val.svg') 3 2, auto;
+	}
+	html[data-cursor='val'] :is(a, button, [role='button'], summary, label, select),
+	html[data-cursor='val'] :is(a, button, [role='button'], summary, label, select) * {
+		cursor: url('/cursors/val-pointer.svg') 3 2, pointer;
+	}
+	html[data-cursor='nexus'],
+	html[data-cursor='nexus'] * {
+		cursor: url('/cursors/nexus.svg') 3 2, auto;
+	}
+	html[data-cursor='nexus'] :is(a, button, [role='button'], summary, label, select),
+	html[data-cursor='nexus'] :is(a, button, [role='button'], summary, label, select) * {
+		cursor: url('/cursors/nexus-pointer.svg') 3 2, pointer;
+	}
+	html :is(input, textarea) {
+		cursor: text;
+	}
+}

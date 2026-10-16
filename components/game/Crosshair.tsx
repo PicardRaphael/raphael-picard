@@ -47,7 +47,7 @@ export function Crosshair() {
 				<circle cx="12.5" cy="12.5" r="2" fill="#ff4fd8" />
 			</svg>
 			{(free || !locked) && (
-				<p className="pointer-events-none fixed top-[57%] left-1/2 z-20 -translate-x-1/2 rounded-full bg-black/60 px-4 py-1.5 font-mono text-xs text-[#5ef2ff] pointer-coarse:hidden">
+				<p className="pointer-events-none fixed bottom-16 left-1/2 z-20 -translate-x-1/2 rounded-full bg-black/60 px-4 py-1.5 font-mono text-xs text-[#5ef2ff] pointer-coarse:hidden">
 					{free ? `Souris libre · ${keyName} pour reprendre la visée` : `Souris = visée · ${keyName} pour libérer la souris`}
 				</p>
 			)}

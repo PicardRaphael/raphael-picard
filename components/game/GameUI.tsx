@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
-import { game, useGame } from '@/lib/game-store';
+import { game, useGame, useScreenFree } from '@/lib/game-store';
 import { player } from '@/lib/player-state';
 import { mobs } from '@/lib/mobs';
 import { music } from '@/lib/music';
@@ -58,7 +58,9 @@ function Warp() {
 /** "Forge examinée ✓ · 1/3": the small line that rewards each step of a quest. */
 function Ticker() {
 	const ticker = useGame((s) => s.ticker);
-	if (!ticker) return null;
+	// never over the zone banner or the portal whirl: it waits its turn
+	const free = useScreenFree(ticker?.id ?? null);
+	if (!ticker || !free) return null;
 	return (
 		<div key={ticker.id} role="status" className="pointer-events-none fixed inset-x-0 top-[30vh] z-30 flex animate-[zone-in_3s_ease-out_forwards] justify-center px-4 [@media(max-height:500px)]:top-[34vh]">
 			<p className="rounded-full border border-[#ffd100]/40 bg-black/70 px-4 py-1.5 font-mono text-sm text-[#ffe9a3] backdrop-blur-md">{ticker.text}</p>

@@ -8,6 +8,7 @@ import { game, useGame } from '@/lib/game-store';
 import { mobs } from '@/lib/mobs';
 import { QUESTS } from '@/lib/quests';
 import { site } from '@/lib/site';
+import { LANDMARKS } from '@/lib/world';
 
 const share = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(site.url)}`;
 
@@ -38,7 +39,10 @@ export function EndCard() {
 	const feats = unlocked(g).length;
 	const stats = [
 		{ value: `${done}/${QUESTS.length}`, label: 'quêtes accomplies' },
-		{ value: `${Math.min(g.kills, mobs.length)}/${mobs.length}`, label: 'pannes d’IA corrigées' },
+		// bugs if the visitor hunted, otherwise the places explored: never a bare « 0/19 »
+		g.kills > 0
+			? { value: `${Math.min(g.kills, mobs.length)}/${mobs.length}`, label: 'pannes d’IA corrigées' }
+			: { value: `${LANDMARKS.filter((l) => g.visited.includes(l.id)).length}/${LANDMARKS.length}`, label: 'lieux explorés' },
 		{ value: `${feats}/${ACHIEVEMENTS.length}`, label: 'hauts faits' },
 	];
 	const close = () => game.set({ ending: false });

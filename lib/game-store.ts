@@ -1,6 +1,6 @@
 'use client';
 
-import { useSyncExternalStore } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 
 import { type Zone, landmark } from './world';
 import { QUESTS, type QuestStatus, initialQuests, objectiveDone, quest } from './quests';
@@ -148,7 +148,7 @@ if (typeof window !== 'undefined') {
 		clearTimeout(timer);
 		timer = window.setTimeout(() => {
 			try {
-				window.localStorage.setItem(SAVE_KEY, JSON.stringify(Object.fromEntries(SAVED.map((k) => [k, state[k]]))));
+				window.localStorage.setItem(SAVE_KEY, JSON.stringify(Object.fromEntries(SAVED.map((k) => [k, k === 'zone' && !state.started ? state.resume : state[k]]))));
 			} catch {
 				// storage full or blocked: progress simply isn't kept
 			}
@@ -224,7 +224,7 @@ export const game = {
 		game.visit(undefined, before);
 	},
 	accept(id: string) {
-		game.set((s) => ({ quests: { ...s.quests, [id]: 'active' }, progress: { ...s.progress, [id]: 0 }, tracked: s.tracked && s.quests[s.tracked] === 'active' ? s.tracked : id }));
+		game.set((s) => ({ quests: { ...s.quests, [id]: 'active' }, progress: { ...s.progress, [id]: 0 }, tracked: s.tracked && s.quests[s.tracked] && s.quests[s.tracked] !== 'done' ? s.tracked : id }));
 		game.visit();
 	},
 	complete(id: string) {
@@ -246,6 +246,25 @@ export const game = {
 		}
 	},
 };
+
+/**
+ * Whether the screen is free for a passing note (objective ticker, bug card): false while the zone banner or a portal
+ * crossing owns it, true once they are over. `key` identifies the note waiting to show (null: nothing waits).
+ */
+export function useScreenFree(key: number | null) {
+	const [free, setFree] = useState<number | null>(null);
+	useEffect(() => {
+		if (key === null) return;
+		let t = 0;
+		const check = () => {
+			if (state.warp === null && Date.now() >= bannerUntil) setFree(key);
+			else t = window.setTimeout(check, 300);
+		};
+		t = window.setTimeout(check, 0);
+		return () => clearTimeout(t);
+	}, [key]);
+	return key !== null && free === key;
+}
 
 export function useGame<T>(selector: (s: GameState) => T): T {
 	return useSyncExternalStore(

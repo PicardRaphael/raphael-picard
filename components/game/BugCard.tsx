@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-import { game, useGame } from '@/lib/game-store';
+import { game, useGame, useScreenFree } from '@/lib/game-store';
 import { mobs } from '@/lib/mobs';
 
 /** « Bornée, pas vaincue : les chiffres viennent… ; … » → the verdict and the first measure, for a glance mid-fight. */
@@ -21,12 +21,14 @@ export function BugCard() {
 	const id = useGame((s) => s.bugCard);
 	const [open, setOpen] = useState<number | null>(null);
 	const expanded = open !== null && open === id;
+	// a bug beaten just before the portal waits for the zone banner
+	const free = useScreenFree(id);
 	useEffect(() => {
-		if (id === null || expanded) return;
+		if (id === null || expanded || !free) return;
 		const t = setTimeout(() => game.set({ bugCard: null }), 7000);
 		return () => clearTimeout(t);
-	}, [id, expanded]);
-	if (id === null) return null;
+	}, [id, expanded, free]);
+	if (id === null || !free) return null;
 	const m = mobs[id];
 	const nexus = m.zone === 'nexus';
 	const g = gist(m.lesson);
@@ -34,7 +36,7 @@ export function BugCard() {
 		<div
 			key={id}
 			role="status"
-			className={`fixed top-16 left-3 z-30 w-[min(88vw,24rem)] rounded-xl border p-3 shadow-2xl backdrop-blur-xl max-sm:top-14 [@media(max-height:500px)]:top-12 [@media(max-height:500px)]:w-[min(46vw,22rem)] [@media(max-height:500px)]:p-2.5 ${
+			className={`fixed top-16 left-3 z-30 w-[min(88vw,24rem)] rounded-xl border p-3 shadow-2xl backdrop-blur-xl max-sm:top-14 pointer-coarse:top-14 pointer-coarse:left-[104px] pointer-coarse:w-[min(38vw,20rem)] [@media(max-height:500px)]:p-2.5 ${
 				expanded ? 'max-h-[70vh] overflow-y-auto' : 'animate-[zone-in_7s_ease-out_forwards]'
 			} ${nexus ? 'border-[#ff4fd8]/60 bg-[#0b0614]/90' : 'border-[#c8a35a]/70 bg-[#1a1209]/90'}`}
 		>

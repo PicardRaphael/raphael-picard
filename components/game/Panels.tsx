@@ -70,7 +70,7 @@ function QuestBlock({ id }: { id: string }) {
 			)}
 			{(offer || ready) && (
 				// stays in sight at the bottom of the panel on short (phone) screens; focused, so Enter accepts
-				<div className="sticky bottom-0 -mx-5 mt-5 bg-gradient-to-t from-black/90 via-black/70 to-transparent px-5 pt-3 pb-1 sm:-mx-6 sm:px-6">
+				<div className="sticky bottom-0 -mx-5 mt-5 [@media(max-height:500px)]:static bg-gradient-to-t from-black/90 via-black/70 to-transparent px-5 pt-3 pb-1 sm:-mx-6 sm:px-6">
 					<button
 						autoFocus
 						onClick={() => (ready ? game.complete(ready.id) : offer && game.accept(offer.id))}

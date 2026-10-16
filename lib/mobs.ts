@@ -61,7 +61,7 @@ const SPECS: { name: string; lesson: string; zone: Zone; x: number; z: number }[
 	{ name: 'Contexte obèse', lesson: 'Dégonflé : context caching (−33 % de coûts d’inférence) et condensés courts des résultats d’outils pour les tours suivants.', zone: 'val', x: 14, z: 28 },
 	{ name: 'Golden set biaisé', lesson: 'Évité : les traces de production et les retours utilisateurs révèlent ce que le golden set ne couvre pas.', zone: 'val', x: -44, z: -10 },
 	{ name: 'Boucle infinie', lesson: 'Cassée : jeu d’outils fixe, invariants vérifiés avant chaque appel d’outil, délais bornés. DeepEval vérifie que l’agent appelle les bons outils.', zone: 'val', x: 30, z: -28 },
-	{ name: 'Test LLM instable', lesson: 'Apprivoisé : chaque cas du golden set est rejoué 5 fois pour séparer une vraie régression de la variance. Le contrôle des outils appelés reste déterministe.', zone: 'val', x: -12, z: -74 },
+	{ name: 'Test LLM instable', lesson: 'Apprivoisé : chaque cas du golden set est rejoué 5 fois pour séparer une vraie régression de la variance. Le contrôle des outils appelés reste déterministe.', zone: 'val', x: -30, z: -72 },
 	{ name: 'Liste tronquée', lesson: 'Corrigée : pagination par curseur opaque que le modèle ne voit jamais. Une liste incomplète n’est jamais présentée comme complète.', zone: 'val', x: 44, z: 30 },
 	{ name: 'Échec silencieux', lesson: 'Démasqué : une panne n’est jamais déguisée en « rien trouvé », et un outil manquant fait échouer l’agent explicitement.', zone: 'val', x: -58, z: 14 },
 	{ name: 'SQL sauvage', lesson: 'Impossible ici : 5 outils génériques sur 42 vues, colonnes validées, opérateurs en liste fermée, paramètres liés, SELECT uniquement, une base par client.', zone: 'val', x: 16, z: -76 },

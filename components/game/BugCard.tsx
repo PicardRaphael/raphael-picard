@@ -1,48 +1,74 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { game, useGame } from '@/lib/game-store';
 import { mobs } from '@/lib/mobs';
 
-/** "Problem → fix" card shown when a bug is defeated. Stays until closed (or 14 s). */
+/** « Bornée, pas vaincue : les chiffres viennent… ; … » → the verdict and the first measure, for a glance mid-fight. */
+function gist(lesson: string) {
+	const clip = (t: string) => (t.length > 130 ? `${t.slice(0, 127).trimEnd()}…` : t);
+	const [head, ...rest] = lesson.split(' : ');
+	if (!rest.length) return { head: '', first: clip(lesson.split(/ ; |\. /)[0] ?? lesson) };
+	return { head, first: clip(rest.join(' : ').split(/ ; |\. /)[0] ?? '') };
+}
+
+/**
+ * "Problem → fix" card when a bug is defeated: a compact note in the top-left corner (never over the crosshair or the
+ * touch controls) that fades after 7 s; « Détails » unfolds the full problem and fix and keeps it open.
+ */
 export function BugCard() {
 	const id = useGame((s) => s.bugCard);
+	const [open, setOpen] = useState<number | null>(null);
+	const expanded = open !== null && open === id;
 	useEffect(() => {
-		if (id === null) return;
-		const t = setTimeout(() => game.set({ bugCard: null }), window.matchMedia('(pointer: coarse)').matches ? 9000 : 14000);
+		if (id === null || expanded) return;
+		const t = setTimeout(() => game.set({ bugCard: null }), 7000);
 		return () => clearTimeout(t);
-	}, [id]);
+	}, [id, expanded]);
 	if (id === null) return null;
 	const m = mobs[id];
 	const nexus = m.zone === 'nexus';
+	const g = gist(m.lesson);
 	return (
 		<div
 			key={id}
 			role="status"
-			className={`fixed bottom-24 left-1/2 z-30 w-[min(92vw,30rem)] -translate-x-1/2 animate-[zone-in_14s_ease-out_forwards] rounded-2xl border-2 p-5 shadow-2xl backdrop-blur-xl [@media(max-height:500px)]:bottom-2 [@media(max-height:500px)]:max-h-[52vh] [@media(max-height:500px)]:w-[min(80vw,36rem)] [@media(max-height:500px)]:overflow-y-auto [@media(max-height:500px)]:p-3 ${
-				nexus ? 'border-[#ff4fd8]/60 bg-[#0b0614]/92 shadow-[#ff4fd8]/20' : 'border-[#c8a35a]/70 bg-[#1a1209]/92 shadow-[#c8a35a]/20'
-			}`}
+			className={`fixed top-16 left-3 z-30 w-[min(88vw,24rem)] rounded-xl border p-3 shadow-2xl backdrop-blur-xl max-sm:top-14 [@media(max-height:500px)]:top-12 [@media(max-height:500px)]:w-[min(46vw,22rem)] [@media(max-height:500px)]:p-2.5 ${
+				expanded ? 'max-h-[70vh] overflow-y-auto' : 'animate-[zone-in_7s_ease-out_forwards]'
+			} ${nexus ? 'border-[#ff4fd8]/60 bg-[#0b0614]/90' : 'border-[#c8a35a]/70 bg-[#1a1209]/90'}`}
 		>
-			<div className="flex items-start justify-between gap-3">
-				<div>
-					<p className="font-mono text-[0.65rem] tracking-[0.25em] text-[#a3e635] uppercase">Bug corrigé ✓</p>
-					<p className={`font-display mt-1 text-2xl font-bold ${nexus ? 'text-[#ff7ae6]' : 'text-[#ffd100]'}`}>{m.name}</p>
-				</div>
-				<button onClick={() => game.set({ bugCard: null })} className="rounded-md border border-white/20 px-2 py-0.5 text-sm text-white/80 hover:bg-white/10" aria-label="Fermer la fiche">
+			<div className="flex items-start justify-between gap-2">
+				<p className="min-w-0">
+					<span className="font-mono text-[0.6rem] tracking-[0.22em] text-[#a3e635] uppercase">Bug corrigé ✓</span>
+					<span className={`font-display block text-lg leading-tight font-bold ${nexus ? 'text-[#ff7ae6]' : 'text-[#ffd100]'}`}>{m.name}</span>
+				</p>
+				<button onClick={() => game.set({ bugCard: null })} className="shrink-0 rounded-md border border-white/20 px-2 py-0.5 text-sm text-white/80 hover:bg-white/10" aria-label="Fermer la fiche">
 					✕
 				</button>
 			</div>
-			<div className="mt-4 grid gap-3 sm:grid-cols-2 [@media(max-height:500px)]:mt-2 [@media(max-height:500px)]:grid-cols-2 [@media(max-height:500px)]:text-xs">
-				<div className="rounded-xl bg-[#ef4444]/10 p-3">
-					<p className="text-xs font-bold tracking-wider text-[#f87171] uppercase">Le problème</p>
-					<p className="mt-1 text-sm leading-relaxed text-white/90">{m.problem}</p>
+			{expanded ? (
+				<div className="mt-2 space-y-2 text-sm leading-relaxed text-white/90">
+					<p>
+						<b className="text-[#f87171]">Le problème : </b>
+						{m.problem}
+					</p>
+					<p>
+						<b className="text-[#4ade80]">La parade de Raphaël : </b>
+						{m.lesson}
+					</p>
 				</div>
-				<div className="rounded-xl bg-[#22c55e]/10 p-3">
-					<p className="text-xs font-bold tracking-wider text-[#4ade80] uppercase">La parade de Raphaël</p>
-					<p className="mt-1 text-sm leading-relaxed text-white/90">{m.lesson}</p>
-				</div>
-			</div>
+			) : (
+				<p className="mt-1.5 text-sm leading-snug text-white/90 [@media(max-height:500px)]:text-xs">
+					{g.head && <b className="text-[#4ade80]">{g.head}. </b>}
+					{g.first}
+				</p>
+			)}
+			{!expanded && (
+				<button onClick={() => setOpen(id)} className="mt-1.5 text-xs text-[#7dd3fc] underline-offset-4 hover:underline">
+					Détails (aussi dans le Bestiaire du menu)
+				</button>
+			)}
 		</div>
 	);
 }

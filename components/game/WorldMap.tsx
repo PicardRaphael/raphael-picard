@@ -117,17 +117,37 @@ export function WorldMap() {
 			}
 			ctx.font = `700 ${Math.round(14 * k)}px sans-serif`;
 			ctx.textAlign = 'center';
-			for (const l of LANDMARKS) {
-				if (l.zone !== zone) continue;
+			ctx.textBaseline = 'middle';
+			// each label takes the first free spot around its place (above, below, right, left): none overlaps another
+			const taken: { x0: number; y0: number; x1: number; y1: number }[] = [];
+			const free = (r: (typeof taken)[number]) => taken.every((t) => r.x1 < t.x0 || r.x0 > t.x1 || r.y1 < t.y0 || r.y0 > t.y1);
+			const places = LANDMARKS.filter((l) => l.zone === zone);
+			for (const l of places) {
 				const [x, y] = toPx(l.x, l.z);
 				const marker = markerFor(l.id, quests, visited);
 				drawMarker(ctx, x, y, marker, k);
+				taken.push({ x0: x - 11 * k, y0: y - 11 * k, x1: x + 11 * k, y1: y + 11 * k });
+			}
+			for (const l of places) {
+				const [x, y] = toPx(l.x, l.z);
+				const marker = markerFor(l.id, quests, visited);
+				const label = k > 1.4 ? l.name.split(',')[0].replace(/^(La |Le |Les )/, '') : l.name;
+				const w = ctx.measureText(label).width + 6 * k;
+				const h = 18 * k;
+				const spots = [
+					[x, y - 19 * k],
+					[x, y + 19 * k],
+					[x + 14 * k + w / 2, y],
+					[x - 14 * k - w / 2, y],
+				];
+				const box = (sx: number, sy: number) => ({ x0: sx - w / 2, y0: sy - h / 2, x1: sx + w / 2, y1: sy + h / 2 });
+				const [sx, sy] = spots.find(([sx, sy]) => free(box(sx, sy))) ?? spots[0];
+				taken.push(box(sx, sy));
 				ctx.fillStyle = marker === 'objective' ? '#ffd100' : '#fff';
 				ctx.strokeStyle = 'rgba(0,0,0,0.8)';
 				ctx.lineWidth = 4 * k;
-				const label = k > 1.4 ? l.name.split(',')[0].replace(/^(La |Le |Les )/, '') : l.name;
-				ctx.strokeText(label, x, y - 17 * k);
-				ctx.fillText(label, x, y - 17 * k);
+				ctx.strokeText(label, sx, sy);
+				ctx.fillText(label, sx, sy);
 			}
 			const [px, py] = toPx(player.x, player.z);
 			ctx.save();

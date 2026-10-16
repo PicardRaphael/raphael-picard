@@ -16,7 +16,7 @@ import { Soundtrack } from './Soundtrack';
 import { BugCard } from './BugCard';
 import { EndCard } from './EndCard';
 import { Crosshair } from './Crosshair';
-import { ControlsCard, KeyHints } from './KeyHints';
+import { ActionBar, ControlsCard } from './KeyHints';
 import { StartScreen } from './StartScreen';
 import { HurtFlash, TouchControls, ZoomButtons } from './TouchControls';
 import { WorldMap } from './WorldMap';
@@ -399,11 +399,28 @@ function RotateHint() {
 	);
 }
 
-/** Key hints, bottom-right, desktop only: a large card for the first steps, then a compact row. */
+/**
+ * Controls, bottom-right, desktop only: the full card for the first steps (until the hero has left the start and
+ * opened a place, or « Compris »), then the action bar, whose « Aide » button brings the card back.
+ */
 function Controls() {
-	const learnt = useGame((s) => s.flags.includes('left_spawn') && s.visited.length > 0);
-	if (!learnt) return <ControlsCard className="pointer-events-none fixed right-4 bottom-4 z-20 hidden pointer-fine:sm:block" />;
-	return <KeyHints className="pointer-events-none fixed right-4 bottom-4 z-20 hidden justify-end pointer-fine:sm:flex" />;
+	const learnt = useGame((s) => (s.flags.includes('left_spawn') && s.visited.length > 0) || s.flags.includes('controls_ok'));
+	const busy = useGame((s) => s.panel !== null || s.overlay !== null);
+	// null: the card follows the first steps; true / false: the visitor asked for it or put it away
+	const [open, setOpen] = useState<boolean | null>(null);
+	if (busy) return null;
+	if (open ?? !learnt)
+		return (
+			<ControlsCard
+				onClose={() => {
+					game.flag('controls_ok');
+					setOpen(false);
+				}}
+				// clear of the zoom buttons (right edge, mid-height) and of the minimap (bottom left)
+				className="pointer-events-none fixed right-16 bottom-4 z-20 hidden max-w-[calc(100vw-15rem)] pointer-fine:sm:block"
+			/>
+		);
+	return <ActionBar onHelp={() => setOpen(true)} className="pointer-events-none fixed right-4 bottom-4 z-20 hidden pointer-fine:sm:flex" />;
 }
 
 export function GameUI() {

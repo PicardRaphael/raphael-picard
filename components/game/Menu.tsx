@@ -366,9 +366,16 @@ export function AchievementWatcher() {
 	const key = unlocked(s).join(',');
 	useEffect(() => {
 		const list = key ? key.split(',') : [];
+		// the baseline is the real state (a game restored from this browser included), not the first render:
+		// hydration starts from the initial state, and the restored save must not look like new unlocks
+		if (seen.current === null) {
+			seen.current = unlocked(game.get());
+			return;
+		}
 		const prev = seen.current;
 		seen.current = list;
-		if (prev === null) return;
+		// nothing is announced on the start screen
+		if (!game.get().started) return;
 		const fresh = list.find((id) => !prev.includes(id));
 		const a = ACHIEVEMENTS.find((x) => x.id === fresh);
 		// a quest reward already announced itself when the quest was handed in

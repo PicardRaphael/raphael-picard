@@ -18,7 +18,8 @@ export function Soundtrack() {
 	}, [sound]);
 
 	useEffect(() => {
-		if (sound) game.flag(zone === 'val' ? 'music_val' : 'music_nexus');
+		// heard in the game only (not while the start screen still plays the intro)
+		if (sound && game.get().started) game.flag(zone === 'val' ? 'music_val' : 'music_nexus');
 	}, [sound, zone]);
 
 	useEffect(() => {

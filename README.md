@@ -1,36 +1,77 @@
-# Portfolio de Raphaël Picard
+# Raphaël Picard · portfolio
 
-Bienvenue dans mon portfolio, développé pour présenter mes compétences en tant que développeur full-stack freelance. Ce projet utilise Next.js, React.js, TypeScript, Tailwind CSS, Framer Motion, et Sanity pour créer une solution web moderne et performante.
+Portfolio de Raphaël Picard, Senior AI Engineer & Responsable IA à Lyon : [www.raphaelpicard.com](https://www.raphaelpicard.com).
 
-## Aperçu du Projet
+Le site existe en deux versions, qui lisent le même contenu.
 
-Ce portfolio illustre une application web haute performance construite avec les technologies les plus récentes, garantissant des temps de chargement rapides, une optimisation SEO et un design réactif.
+- **`/` : le portfolio est un jeu 3D.** Le Val des Origines (fantasy peinte) raconte la carrière, un portail mène au Nexus (ville néon façon Hong Kong) où vivent les agents IA en production. Quêtes, personnages qui parlent, bugs à corriger (chaque bug est une vraie panne d'IA avec sa parade), carte, hauts faits, cinéma qui projette le résumé vidéo, carte de fin. Deux héros : le chevalier (3ᵉ personne) et le Runner (vue FPS). Jouable au clavier, à la souris et au tactile (téléphone en paysage).
+- **`/portfolio` : la version classique**, une page lisible en deux minutes pour les recruteurs pressés.
+- **`/cv`** génère le CV (non indexé), imprimé en PDF dans `public/raphael-picard-cv-senior-ai-engineer-responsable-ia.pdf`.
 
-## Architecture du Projet
+## Stack
 
-Le projet est structuré selon une architecture modulaire et maintenable, facilitant l'évolutivité et la séparation des préoccupations :
+- Next.js 16 (App Router, Turbopack), React 19, TypeScript, Tailwind CSS v4
+- React Three Fiber 9, drei 10, three.js, postprocessing (bloom, tone mapping ACES)
+- motion et Lenis pour la version classique
+- Vitest (tests unitaires) et Playwright (tests de bout en bout)
+- Déploiement sur Vercel, avec Vercel Analytics et Speed Insights
 
-- **Couche de Présentation** : Gère les interactions utilisateur, les composants UI et les routes API dans une application Next.js 15. Utilise des composants tels que `ClientLayout`, `Header`, et `Footer` pour structurer l'interface utilisateur.
-- **Couche Domaine** : Contient la logique métier principale, incluant les entités (par exemple, `ProductEntity`, `SkillEntity`) et les mappers (par exemple, `SkillsMapper`, `ProjectMapper`) pour transformer les données entre les formats de l'application et ceux de la base de données.
-- **Couche Application** : Orchestration de la logique métier, gestion des cas d'utilisation et des règles d'application. Utilise des services pour encapsuler la logique métier complexe.
-- **Couche Infrastructure** : Intégration avec les systèmes externes, gestion des accès aux données et des adaptateurs. Utilise des configurations pour gérer les connexions aux bases de données et autres services externes.
+## Structure
 
-## Technologies Utilisées
+| Dossier | Rôle |
+| --- | --- |
+| `content/` | Tous les textes du site : `profile.ts` (profil, chiffres, expertise), `work.ts` (expériences, projets, diplômes), `cv.ts` (détails propres au CV) |
+| `lib/` | Logique du jeu sans rendu : quêtes, bugs, hauts faits, sauvegarde (`game-store.ts`), monde et collisions (`world.ts`), musique et voix |
+| `components/three/world/` | Le monde 3D : val, Nexus, héros, bugs, portails, cinéma, arme FPS |
+| `components/game/` | L'interface du jeu : écran d'accueil, quêtes, menu, carte, fiches de bug, carte de fin |
+| `components/sections/` | Les sections de la version classique |
+| `components/ui/` | Éléments partagés, dont la fenêtre « Raphaël en 30 secondes » |
+| `app/` | Routes, métadonnées SEO, données structurées, sitemap, robots, image Open Graph |
+| `public/` | Modèles 3D compressés, textures, musiques, voix, vidéo, CV |
+| `scripts/` | Génération du CV, des voix, de la vidéo et des bras FPS |
 
-- **Next.js 15** : Framework moderne pour le développement d'applications web avec rendu côté serveur et génération de sites statiques.
-- **React.js 19** : Bibliothèque JavaScript pour construire des interfaces utilisateur dynamiques et interactives.
-- **TypeScript** : Sur-ensemble typé de JavaScript qui améliore la qualité et la maintenabilité du code.
-- **Tailwind CSS v4** : Framework CSS utilitaire pour créer rapidement des designs personnalisés.
-- **Framer Motion** : Utilisé pour créer des animations fluides et interactives dans l'application.
-- **Sanity** : Plateforme de gestion de contenu utilisée pour gérer et mettre à jour dynamiquement les données affichées sur le site.
+Pour modifier un texte, il suffit presque toujours d'éditer `content/`. Les chiffres viennent de faits vérifiés : aucun n'est arrondi ni estimé.
 
-## Fonctionnalités
+## Démarrer
 
-- **Optimisation SEO** : Fonctionnalités intégrées pour améliorer la visibilité sur les moteurs de recherche.
-- **Design Réactif** : Assure une expérience fluide sur tous les appareils.
-- **Intégration IA** : Intègre un chatbot interactif utilisant `@ai-sdk/react` pour améliorer l'engagement utilisateur. Le composant `ChatButton` permet aux utilisateurs d'interagir avec le chatbot de manière fluide et intuitive.
-- **Gestion de Contenu** : Utilise Sanity pour la gestion de contenu, permettant une mise à jour facile et dynamique des données affichées sur le site.
+Node 24 est recommandé.
+
+```sh
+npm install
+npm run dev          # http://localhost:3000
+```
+
+| Commande | Effet |
+| --- | --- |
+| `npm run build` | Build de production |
+| `npm run lint` | ESLint |
+| `npm run typecheck` | Vérification TypeScript |
+| `npm test` | Tests unitaires (quêtes, collisions, sauvegarde, cohérence du contenu) |
+| `npm run test:e2e` | Tests Playwright (jeu sur ordinateur, téléphone, tablette, version classique) |
+
+En développement, le jeu expose des crochets de test (`window.__game`, `window.__player`…) qui n'existent pas en production.
+
+## Régénérer les contenus produits
+
+- **CV** : avec le serveur de dev lancé, `node scripts/cv/print.mjs` imprime `/cv` en PDF balisé (polices incorporées, métadonnées, lisible par les logiciels de tri des recruteurs).
+- **Voix des quêtes** : `scripts/voices/generate.py` génère les répliques hors ligne avec des moteurs libres (Piper et Kokoro). Voir `scripts/voices/README.md`.
+- **Vidéo « Raphaël en 30 secondes »** : filmée dans le jeu avec Playwright, montée avec Remotion. Voir `scripts/video/README.md`.
+- **Bras de la vue FPS** : pipeline de pose et de cuisson dans `scripts/fps-arms/`.
+
+## Déploiement
+
+Vercel déploie la branche `master` en production. Une seule variable d'environnement :
+
+| Variable | Usage |
+| --- | --- |
+| `WEB3_FORMS_API_KEY` | Clé Web3Forms du formulaire de contact. Sans elle, le formulaire invite à écrire par e-mail. |
+
+Le domaine nu `raphaelpicard.com` redirige vers `www.raphaelpicard.com`, et l'ancienne adresse du CV (`/cv-RaphaelPICARD-IA.pdf`) redirige vers la nouvelle.
+
+## Crédits
+
+Tous les modèles, musiques et voix sont gratuits et sous licence libre (CC0, CC BY, CC BY-SA, Apache-2.0). La liste complète, avec les auteurs, est dans le menu du jeu (onglet Crédits) et en pied de page de la version classique.
 
 ## Contact
 
-Pour en savoir plus sur mes projets et compétences, vous pouvez me contacter au 06 50 93 15 73.
+[raphaelpicard@outlook.fr](mailto:raphaelpicard@outlook.fr) · [LinkedIn](https://www.linkedin.com/in/raphael-picard/) · [GitHub](https://github.com/PicardRaphael)

@@ -1,7 +1,8 @@
 'use client';
 
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Bloom, EffectComposer, Vignette } from '@react-three/postprocessing';
+import { Bloom, EffectComposer, ToneMapping, Vignette } from '@react-three/postprocessing';
+import { ToneMappingMode } from 'postprocessing';
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 
@@ -180,6 +181,8 @@ export default function WorldScene() {
 			{q.post && (
 				<EffectComposer multisampling={4}>
 					<Bloom mipmapBlur intensity={0.75} luminanceThreshold={0.85} luminanceSmoothing={0.2} radius={0.65} />
+					{/* the composer turns the renderer's tone mapping off: ACES here, so desktop matches phones and neon no longer clips to white */}
+					<ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
 					<Vignette eskil={false} offset={0.3} darkness={0.6} />
 				</EffectComposer>
 			)}

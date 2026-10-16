@@ -105,6 +105,7 @@ export function StartScreen() {
 	const [keys, setKeys] = useState(false);
 	const ready = useGame((s) => s.ready);
 	const loading = useGame((s) => s.loading);
+	const saved = useGame((s) => s.saved);
 	// a click before the world is ready is remembered: the game starts by itself once the shaders are warm
 	const [queued, setQueued] = useState(false);
 	useEffect(() => {
@@ -175,8 +176,14 @@ export function StartScreen() {
 					>
 						{/* the download fills the button from the left while the world loads */}
 						{!ready && <span className="absolute inset-y-0 left-0 bg-white/15 transition-[width] duration-300" style={{ width: `${loading}%` }} aria-hidden />}
-						<span className="relative">{ready || !queued ? 'Jouer' : loading > 0 ? `Le monde arrive… ${loading} %` : 'Le monde arrive…'}</span>
+						<span className="relative">{ready || !queued ? (saved ? 'Continuer la partie' : 'Jouer') : loading > 0 ? `Le monde arrive… ${loading} %` : 'Le monde arrive…'}</span>
 					</button>
+					{/* a game restored from this browser: continue it, or start from the beginning */}
+					{saved && (
+						<button onClick={() => game.newGame()} className="rounded-full border border-white/30 bg-black/40 px-5 py-3 text-sm text-white hover:bg-black/60">
+							Nouvelle partie
+						</button>
+					)}
 					<button onClick={() => setKeys(true)} className="pointer-coarse:hidden rounded-full border border-white/30 bg-black/40 px-5 py-3 text-sm text-white hover:bg-black/60">
 						⌨ Touches
 					</button>

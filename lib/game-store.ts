@@ -50,6 +50,8 @@ type GameState = {
 	toast: { id: number; title: string; text: string } | null;
 	/** Small line announcing an objective reached or a quest to hand in. */
 	ticker: { id: number; text: string } | null;
+	/** A previous game was restored from this browser: the start screen offers to continue it or start over. */
+	saved: boolean;
 	banner: { id: number; title: string; subtitle: string } | null;
 };
 
@@ -80,6 +82,7 @@ let state: GameState = {
 	race: { status: 'idle', checkpoint: 0, total: 0, startedAt: 0, time: 0 },
 	toast: null,
 	ticker: null,
+	saved: false,
 	banner: null,
 };
 
@@ -115,6 +118,7 @@ if (typeof window !== 'undefined') {
 			const saved = JSON.parse(raw) as Partial<GameState>;
 			// quests added since the save start from their initial status
 			state = { ...state, ...saved, quests: { ...state.quests, ...saved.quests } };
+			state.saved = (state.visited?.length ?? 0) > 0 || state.kills > 0 || Object.values(state.quests).some((v) => v !== 'available' && v !== 'locked');
 		}
 	} catch {
 		// private mode or corrupt save: a fresh game
@@ -147,6 +151,10 @@ export const game = {
 	},
 	flag(name: string) {
 		if (!state.flags.includes(name)) game.set((s) => ({ flags: [...s.flags, name] }));
+	},
+	/** Starts over: quests, bugs and achievements back to the beginning (the hero and the options stay). */
+	newGame() {
+		game.set({ quests: initialQuests(), progress: {}, tracked: null, visited: [], kills: 0, defeated: [], flags: [], jumps: 0, zone: 'val', overlay: null, saved: false });
 	},
 	/** Toasts wait their turn: one at a time, never on top of another. */
 	toast(title: string, text: string) {

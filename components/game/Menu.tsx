@@ -8,7 +8,7 @@ import { game, useGame } from '@/lib/game-store';
 import { mobs } from '@/lib/mobs';
 import { keymap } from '@/lib/keymap';
 import { player } from '@/lib/player-state';
-import { QUESTS, initialQuests } from '@/lib/quests';
+import { QUESTS } from '@/lib/quests';
 import { site } from '@/lib/site';
 import { SPAWN } from '@/lib/world';
 
@@ -104,18 +104,7 @@ function Options() {
 			<Row label="Progression">
 				<button
 					onClick={() => {
-						game.set({
-							quests: initialQuests(),
-								progress: {},
-								tracked: null,
-							visited: [],
-							kills: 0,
-							defeated: [],
-							flags: [],
-							jumps: 0,
-							zone: 'val',
-							overlay: null,
-						});
+						game.newGame();
 						player.teleport = { ...SPAWN };
 					}}
 					className="rounded-lg border border-white/20 px-3 py-1.5 text-sm text-white/80 hover:bg-white/10"

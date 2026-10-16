@@ -41,7 +41,7 @@ export function Contact() {
 						Un poste IA à pourvoir ? Parlons <span className="text-gradient">production</span>, pas POC.
 					</h2>
 					<p className="text-mist mt-6 max-w-lg text-lg leading-relaxed">
-						Poste de Senior AI Engineer ou de Responsable IA, projet d’agent ou de RAG, équipe à former à Claude Code : écrivez-moi.
+						Poste de Senior AI Engineer ou de Responsable IA à Lyon ou en télétravail, projet d’agents LLM ou de RAG, équipe à former à Claude Code : écrivez-moi.
 					</p>
 					<ul className="mt-8 space-y-3">
 						{channels.map((c) => (

@@ -34,8 +34,8 @@ const nextConfig: NextConfig = {
 				],
 			},
 			{
-				// heavy game assets (models, audio, textures): cached a day, refreshed in the background for a week
-				source: '/:dir(models|audio|textures)/:path*',
+				// heavy game assets (models, audio, textures, video): cached a day, refreshed in the background for a week
+				source: '/:dir(models|audio|textures|video)/:path*',
 				headers: [{ key: 'Cache-Control', value: 'public, max-age=86400, stale-while-revalidate=604800' }],
 			},
 		];

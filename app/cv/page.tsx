@@ -29,7 +29,7 @@ const sora = localFont({ src: [{ path: './fonts/sora-latin-800-normal.woff2', we
 export const metadata: Metadata = {
 	title: { absolute: `${site.name} — CV Senior AI Engineer & Responsable IA` },
 	description: 'CV de Raphaël Picard : Senior AI Engineer & Responsable IA, agents LLM en production, RAG, LLMOps, Python, TypeScript.',
-	robots: { index: false, follow: false },
+	robots: { index: false, follow: true },
 };
 
 const accent = '#651fff';

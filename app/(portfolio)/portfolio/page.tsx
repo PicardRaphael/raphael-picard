@@ -14,9 +14,9 @@ import { pageMetadata } from '@/lib/site';
 
 const page = {
 	path: '/portfolio',
-	title: 'Raphaël Picard, ingénieur IA à Lyon : agents, RAG, MCP',
+	title: 'Ingénieur IA à Lyon, agents LLM, RAG, MCP · Raphaël Picard',
 	description:
-		'Raphaël Picard, ingénieur IA à Lyon : 7 agents IA LangGraph en production, RAG hybride, serveurs MCP, Claude Code. Parcours, projets, CV et contact.',
+		'Raphaël Picard, Senior AI Engineer et Responsable IA à Lyon. 7 agents LLM en production avec LangGraph, RAG hybride, serveurs MCP et Claude Code. Parcours, projets et CV.',
 };
 
 export const metadata: Metadata = pageMetadata(page);

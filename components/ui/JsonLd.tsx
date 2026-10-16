@@ -49,7 +49,7 @@ export function SiteJsonLd() {
 			occupationLocation: { '@type': 'City', name: 'Lyon' },
 			skills: stack.join(', '),
 		},
-		alumniOf: { '@type': 'EducationalOrganization', name: "O'clock" },
+		alumniOf: { '@type': 'EducationalOrganization', name: 'O’clock' },
 		knowsLanguage: ['fr', 'en'],
 		knowsAbout,
 		hasCredential: certifications.map((c) => ({ '@type': 'EducationalOccupationalCredential', name: c.name, recognizedBy: { '@type': 'Organization', name: c.issuer } })),
@@ -75,7 +75,7 @@ export function PageJsonLd({ type, path, name, description }: { type: 'ProfilePa
 				dateModified: site.updatedAt,
 				isPartOf: { '@id': WEBSITE_ID },
 				about: { '@id': PERSON_ID },
-				...(type === 'ProfilePage' ? { mainEntity: { '@id': PERSON_ID } } : {}),
+				...(type === 'ProfilePage' ? { mainEntity: { '@type': 'Person', '@id': PERSON_ID, name: site.name, url: site.url } } : {}),
 			}}
 		/>
 	);

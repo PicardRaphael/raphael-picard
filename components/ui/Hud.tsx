@@ -148,7 +148,7 @@ export function Hud() {
 				aria-label={sound ? 'Couper la musique' : 'Activer la musique'}
 				className="fixed right-4 bottom-4 z-30 grid h-11 w-11 place-items-center rounded-full border border-white/15 bg-[#0a0716]/90 font-mono text-sm backdrop-blur-xl lg:hidden"
 			>
-				{sound ? '♪' : '✕'}
+				{sound ? '♪' : '♪ off'}
 			</button>
 		</>
 	);

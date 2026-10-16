@@ -136,7 +136,7 @@ export const expertise: Expertise[] = [
 			'2 serveurs MCP maison (base de connaissances de 989 notes, PostgreSQL) au service des assistants IA de l’équipe',
 		],
 		tags: ['Claude Code', 'MCP', 'Hooks', 'Plugins'],
-		metric: '162 skills',
+		metric: '38 skills · 162 au total',
 	},
 	{
 		id: 'llmops',

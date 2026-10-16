@@ -151,7 +151,7 @@ export function StartScreen() {
 				}`}
 				aria-hidden={started}
 			>
-				<div className="mt-auto rounded-3xl bg-black/45 px-6 py-5 shadow-[0_0_60px_30px_rgba(0,0,0,0.35)] backdrop-blur-[3px] [@media(max-height:500px)]:py-3">
+				<div className="order-1 mt-auto rounded-3xl bg-black/45 px-6 py-5 shadow-[0_0_60px_30px_rgba(0,0,0,0.35)] backdrop-blur-[3px] [@media(max-height:500px)]:py-3">
 					<p className="font-mono text-sm tracking-[0.22em] text-[#ffd9a0] uppercase [@media(max-height:500px)]:text-xs">Senior AI Engineer & Responsable IA · Neoteem · Lyon</p>
 					<h1 className="font-display mt-2 text-5xl font-extrabold tracking-tight text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.6)] sm:text-7xl [@media(max-height:500px)]:text-4xl">
 						Raphaël Picard<span className="sr-only">, Senior AI Engineer &amp; Responsable IA à Lyon</span>
@@ -161,9 +161,11 @@ export function StartScreen() {
 						<br />
 						Choisissez un héros et explorez mon parcours en jouant, ou lisez la version classique en 2 minutes.
 					</p>
+					{/* phones held sideways: the proof stays, in one line */}
+					<p className="mt-1 hidden text-sm font-semibold text-[#ffe9a3] [@media(max-height:500px)]:block">7 agents IA en production chez Neoteem.</p>
 				</div>
 
-				<div className="mt-7 grid w-full max-w-xl grid-cols-2 gap-3 [@media(max-height:500px)]:mt-4" role="radiogroup" aria-label="Choix du personnage">
+				<div className="order-3 mt-7 grid w-full max-w-xl grid-cols-2 gap-3 pointer-coarse:mt-4 [@media(max-height:500px)]:mt-4" role="radiogroup" aria-label="Choix du personnage">
 					{HEROES.map((h) => (
 						<button
 							key={h.id}
@@ -177,12 +179,12 @@ export function StartScreen() {
 								{h.tag}
 							</p>
 							<p className="font-display mt-1 text-lg font-bold text-white">{h.name}</p>
-							<p className="mt-1 text-xs leading-snug text-white/70 [@media(max-height:500px)]:hidden">{h.text}</p>
+							<p className="mt-1 text-xs leading-snug text-white/70 pointer-coarse:hidden [@media(max-height:500px)]:hidden">{h.text}</p>
 						</button>
 					))}
 				</div>
 
-				<div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+				<div className="order-4 mt-6 flex flex-wrap items-center justify-center gap-3 pointer-coarse:mt-4">
 					<button
 						data-play
 						onClick={() => {
@@ -217,14 +219,14 @@ export function StartScreen() {
 					</button>
 				</div>
 				{!ready && (
-					<p className="mt-3 font-mono text-xs text-white/60" role="status">
+					<p className="order-5 mt-3 font-mono text-xs text-white/60" role="status">
 						Chargement du monde{loading > 0 ? ` : ${loading} %` : '…'}
 					</p>
 				)}
-				<KeyHints withMouse className="mt-5 max-w-xl justify-center pointer-coarse:hidden" />
-				<p className="mt-5 hidden text-sm text-white/75 pointer-coarse:block">Joystick pour bouger, ⚔ attaquer, ⤒ sauter, touchez un lieu pour y aller ou parler. Glissez pour la caméra, pincez pour zoomer.</p>
+				<KeyHints withMouse className="order-6 mt-5 max-w-xl justify-center pointer-coarse:hidden" />
+				<p className="order-6 mt-5 hidden text-sm text-white/75 pointer-coarse:block">Joystick pour bouger, ⚔ attaquer, ⤒ sauter, touchez un lieu pour y aller ou parler. Glissez pour la caméra, pincez pour zoomer.</p>
 				{/* the recruiter's way: CV, classic page and contact one click away, without playing */}
-				<nav aria-label="Accès rapide" className="mt-5 flex flex-wrap items-center justify-center gap-2 text-sm">
+				<nav aria-label="Accès rapide" className="order-7 mt-5 flex flex-wrap items-center justify-center gap-2 text-sm pointer-coarse:order-2 pointer-coarse:mt-3">
 					<span className="text-white/60">Pressé ?</span>
 					<Pitch30Button className="rounded-full border border-[#7dd3fc]/60 bg-black/45 px-4 py-2 font-semibold text-[#7dd3fc] backdrop-blur-md hover:bg-black/70" />
 					<a href={hero_.secondaryCta.href} download className="rounded-full border border-[#ffd9a0]/50 bg-black/45 px-4 py-2 text-[#ffd9a0] backdrop-blur-md hover:bg-black/70">

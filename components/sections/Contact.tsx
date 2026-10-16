@@ -22,7 +22,7 @@ export function Contact() {
 	// « Écrire à Raphaël » (résumé 30 s, fin du jeu) lands on /portfolio#ecrire: the form opens by itself
 	useEffect(() => {
 		const on = () => {
-			if (window.location.hash === '#ecrire') setOpen(true);
+			if (window.location.hash === '#ecrire' || window.location.hash === '#contact') setOpen(true);
 		};
 		const t = setTimeout(on, 0);
 		window.addEventListener('hashchange', on);
@@ -68,7 +68,7 @@ export function Contact() {
 										<span className="from-violet to-magenta absolute inset-9 rounded-full bg-gradient-to-br opacity-80 blur-md transition-all duration-500 group-hover:inset-6 group-hover:opacity-100" />
 										<span className="font-display relative text-sm font-bold tracking-widest uppercase">Activer</span>
 									</button>
-									<p className="text-mist mt-6 text-sm">Activez la balise pour ouvrir un canal.</p>
+									<p className="text-mist mt-6 text-sm">Activez la balise pour m’écrire.</p>
 								</motion.div>
 							) : state.ok ? (
 								<motion.div key="ok" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="py-14 text-center" role="status">

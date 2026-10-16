@@ -2,8 +2,8 @@ import { Reveal } from '@/components/ui/Reveal';
 
 const steps = [
 	{ year: '2018', text: 'Première intégration d’IA en production : l’API Google Vision analyse des documents dans une PWA React.' },
-	{ year: '2024', text: 'Agents autonomes, multi-agents et premier serveur MCP en indépendant.' },
-	{ year: '2025', text: 'Responsable IA chez Neoteem : le code devient le socle, les agents deviennent le métier.' },
+	{ year: 'Mars 2025', text: 'Projets d’IA appliquée en indépendant : systèmes multi-agents et premier serveur MCP, publiés en open source.' },
+	{ year: 'Nov. 2025', text: 'Responsable IA chez Neoteem : le code devient le socle, les agents deviennent le métier.' },
 ];
 
 /** Interlude between the two realms: the pivot from software craft to AI engineering. */

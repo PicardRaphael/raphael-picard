@@ -12,7 +12,7 @@ const page = {
 	path: '/',
 	title: site.title,
 	description:
-		'Raphaël Picard, Senior AI Engineer & Responsable IA à Lyon : portfolio 3D jouable pour découvrir ses agents IA en production, son parcours et ses projets.',
+		'Raphaël Picard, Senior AI Engineer et Responsable IA à Lyon. 7 agents IA en production chez Neoteem, −33 % de coûts d’inférence. CV, résumé vidéo ou portfolio 3D jouable.',
 };
 
 export const metadata: Metadata = pageMetadata(page);

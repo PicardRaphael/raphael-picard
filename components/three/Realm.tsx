@@ -6,7 +6,7 @@ import * as THREE from 'three';
 
 import { sceneState } from '@/lib/scene-state';
 import { PORTAL_INDEX, STATIONS } from '@/lib/stations';
-import { LEG, frameAt, stationAnchor, stationU } from './route';
+import { LEG, portalGate, stationAnchor } from './route';
 import { mulberry32 } from './shapes';
 
 /**
@@ -162,18 +162,7 @@ function Fireflies({ count, pixelRatio }: { count: number; pixelRatio: number })
 
 /** Huge stone arch standing across the flight path at the portal station: the ship flies through its centre. */
 function PortalArch({ route }: { route: THREE.CatmullRomCurve3 }) {
-	const frame = useMemo(() => {
-		const pos = new THREE.Vector3();
-		const f = new THREE.Vector3();
-		const r = new THREE.Vector3();
-		const u = new THREE.Vector3();
-		frameAt(route, stationU(PORTAL_INDEX) + 22 / route.getLength(), pos, f, r, u);
-		// the arch's circle is centred 0.6 units above its origin (× scale): lift it so the ship passes mid-gate
-		const scale = 2.3;
-		const at = pos.clone().addScaledVector(u, 0.6 * scale);
-		const look = at.clone().add(f);
-		return { at, look, scale };
-	}, [route]);
+	const frame = useMemo(() => portalGate(route), [route]);
 	const ref = useRef<THREE.Group>(null);
 	useFrame(() => {
 		ref.current?.lookAt(frame.look);

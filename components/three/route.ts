@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-import { STATIONS } from '@/lib/stations';
+import { PORTAL_INDEX, STATIONS } from '@/lib/stations';
 
 /** Distance between two stations along the route. */
 export const LEG = 70;
@@ -42,6 +42,22 @@ export function frameAt(curve: THREE.CatmullRomCurve3, u: number, pos: THREE.Vec
 	forward.copy(tmpTangent).normalize();
 	right.crossVectors(forward, UP).normalize();
 	up.crossVectors(right, forward).normalize();
+}
+
+/**
+ * The stone gate of the portal station, on the flight path (the ship flies through it): centre, a point it faces
+ * along the route, and the arch's scale. The particle vortex of the portal station fills it.
+ */
+export function portalGate(curve: THREE.CatmullRomCurve3) {
+	const pos = new THREE.Vector3();
+	const f = new THREE.Vector3();
+	const r = new THREE.Vector3();
+	const u = new THREE.Vector3();
+	frameAt(curve, stationU(PORTAL_INDEX) + 22 / curve.getLength(), pos, f, r, u);
+	// the arch's circle is centred 0.6 units above its origin (× scale): lifted so the ship passes mid-gate
+	const scale = 2.3;
+	const at = pos.clone().addScaledVector(u, 0.6 * scale);
+	return { at, look: at.clone().add(f), scale };
 }
 
 /** Stations sit a little ahead of the ship's resting point, off to the side so the content column stays clear. */

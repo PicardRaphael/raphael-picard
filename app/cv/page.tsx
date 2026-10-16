@@ -78,12 +78,15 @@ function Rich({ text }: { text: string }) {
 		});
 }
 
+/** Every bullet and description is a sentence: it ends with a period. */
+const sentence = (t: string) => (/[.!?…]$/.test(t.trim()) ? t : `${t.trim()}.`);
+
 function Bullets({ points }: { points: string[] }) {
 	return (
 		<ul className="cv-list mt-[2px] space-y-[2px]">
 			{points.map((p) => (
 				<li key={p}>
-					<Rich text={p} />
+					<Rich text={sentence(p)} />
 				</li>
 			))}
 		</ul>
@@ -207,7 +210,7 @@ export default function CvPage() {
 						<a href={p.url} className="font-bold" style={{ color: accent }}>
 							{p.name}
 						</a>{' '}
-						: {typo(cvProjectNotes[p.name])}
+						: {typo(sentence(cvProjectNotes[p.name]))}
 					</li>
 				))}
 			</ul>

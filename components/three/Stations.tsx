@@ -6,7 +6,7 @@ import * as THREE from 'three';
 
 import { sceneState } from '@/lib/scene-state';
 import { STATIONS, type StationShape } from '@/lib/stations';
-import { stationAnchor } from './route';
+import { portalGate, stationAnchor } from './route';
 import { constellation, galaxy, helix, knot, mulberry32, portal, sampleLogo, sphere, tree } from './shapes';
 
 const vertexShader = /* glsl */ `
@@ -83,7 +83,9 @@ function Station({ index, shape, count, wide, route, pixelRatio }: StationProps)
 	const group = useRef<THREE.Group>(null);
 	const ring = useRef<THREE.Mesh>(null);
 	const geometry = useRef<THREE.BufferGeometry>(null);
-	const anchor = useMemo(() => stationAnchor(route, index, wide, new THREE.Vector3()), [route, index, wide]);
+	// the portal's vortex fills the stone arch on the flight path; the other worlds sit beside the route
+	const gate = useMemo(() => (shape === 'portal' ? portalGate(route) : null), [route, shape]);
+	const anchor = useMemo(() => (gate ? gate.at.clone() : stationAnchor(route, index, wide, new THREE.Vector3())), [gate, route, index, wide]);
 
 	const data = useMemo(() => {
 		const rng = mulberry32(100 + index * 17);
@@ -124,7 +126,11 @@ function Station({ index, shape, count, wide, route, pixelRatio }: StationProps)
 		// cull far stations: they would only cost fill-rate
 		g.visible = state.camera.position.distanceTo(anchor) < 190;
 		const t = uniforms.uTime.value;
-		if (shape === 'logo' || shape === 'portal') {
+		if (gate) {
+			// in the arch's plane, slowly turning like a vortex
+			g.lookAt(gate.look);
+			g.rotateZ(t * 0.25);
+		} else if (shape === 'logo') {
 			// face the incoming ship, with a gentle sway
 			g.lookAt(state.camera.position);
 			g.rotateY(Math.sin(t * 0.4) * 0.25);
@@ -138,7 +144,7 @@ function Station({ index, shape, count, wide, route, pixelRatio }: StationProps)
 		}
 	});
 
-	const scale = shape === 'logo' ? 2.3 : shape === 'galaxy' ? 1.3 : 1.6;
+	const scale = shape === 'logo' ? 2.3 : shape === 'portal' ? 3.05 : shape === 'galaxy' ? 1.3 : 1.6;
 
 	return (
 		<group ref={group} position={anchor} scale={scale}>

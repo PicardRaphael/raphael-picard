@@ -15,7 +15,7 @@ import { HOUSES, LAKE, LANDMARKS, NEXUS_CENTER, NEXUS_LAMPS, NEXUS_RADIUS, NEXUS
 import { FpsWeapon } from './FpsWeapon';
 import { STONES as STONE_RING } from './Landmarks';
 import { HeroModel } from './Hero';
-import { fireBolt } from './Lasers';
+import { fireBolt, fpsMuzzle } from './Lasers';
 
 const RUN = 10;
 const SPRINT = 15;
@@ -89,11 +89,100 @@ function fpsShot() {
 			best = m;
 		}
 	}
-	const muzzle = eye.clone().addScaledVector(dir, 0.9).add(new THREE.Vector3(Math.cos(yaw) * 0.25, -0.2, -Math.sin(yaw) * 0.25));
+	// the shot leaves the rifle's barrel on screen and converges on what the reticle covers
+	const muzzle = fpsMuzzle.ok
+		? new THREE.Vector3(fpsMuzzle.x, fpsMuzzle.y, fpsMuzzle.z)
+		: eye
+				.clone()
+				.addScaledVector(dir, 0.9)
+				.add(new THREE.Vector3(Math.cos(yaw) * 0.25, -0.2, -Math.sin(yaw) * 0.25));
 	const target = best;
 	if (target) fireBolt(muzzle, target, () => damage(target));
-	else fireBolt(muzzle, eye.clone().addScaledVector(dir, 40), () => undefined);
+	else {
+		const hit = traceDecor(eye, dir, 45);
+		if (hit) fireBolt(muzzle, hit.point, () => undefined, { impact: true, normal: hit.normal });
+		else fireBolt(muzzle, eye.clone().addScaledVector(dir, 45), () => undefined);
+	}
 	window.dispatchEvent(new CustomEvent('fps:recoil'));
+}
+
+/** Val obstacles a shot can hit (trees, houses, rocks; not the lake's walking ring), built on the first shot. */
+let shotDecor: { x: number; z: number; r: number }[] | null = null;
+
+/**
+ * Where a shot from `eye` along `dir` (unit) meets the decor within `max` metres: the ground, the lake's surface, the
+ * Nexus facades (outside the streets), the val's trees and houses (as cylinders up to 7 m). Null when nothing is hit.
+ */
+function traceDecor(eye: THREE.Vector3, dir: THREE.Vector3, max: number) {
+	const nexus = eye.z < -300;
+	let best = max;
+	const normal = { x: 0, y: 1, z: 0 };
+	if (!nexus) {
+		shotDecor ??= [...OBSTACLES.filter((o) => o.r < 8), ...vegetationObstacles()];
+		const a = dir.x * dir.x + dir.z * dir.z;
+		if (a > 1e-8)
+			for (const o of shotDecor) {
+				const fx = eye.x - o.x;
+				const fz = eye.z - o.z;
+				const b = fx * dir.x + fz * dir.z;
+				const c = fx * fx + fz * fz - o.r * o.r;
+				const disc = b * b - a * c;
+				if (c < 0 || disc < 0) continue;
+				const t = (-b - Math.sqrt(disc)) / a;
+				if (t <= 0 || t >= best) continue;
+				const px = eye.x + dir.x * t;
+				const pz = eye.z + dir.z * t;
+				if (eye.y + dir.y * t > groundAt(px, pz) + 7) continue;
+				best = t;
+				Object.assign(normal, { x: (px - o.x) / o.r, y: 0, z: (pz - o.z) / o.r });
+			}
+	}
+	// the shopfronts stand a sidewalk (~3 m) beyond the walkable streets
+	const S = 3.2;
+	// (the walls closing the side streets stand right at their end)
+	const facade = (x: number, z: number) =>
+		Math.abs(x) >= NEXUS_STREET_END ||
+		(!nexusWalkable(x, z) && !nexusWalkable(x + S, z) && !nexusWalkable(x - S, z) && !nexusWalkable(x, z + S) && !nexusWalkable(x, z - S));
+	const solid = (t: number) => {
+		const x = eye.x + dir.x * t;
+		const y = eye.y + dir.y * t;
+		const z = eye.z + dir.z * t;
+		if (y < groundAt(x, z)) return 'ground';
+		if (!nexus && y < LAKE.level && Math.hypot(x - LAKE.x, z - LAKE.z) < LAKE.r) return 'water';
+		if (nexus && facade(x, z)) return 'wall';
+		return null;
+	};
+	const step = 0.4;
+	for (let t = step; t < best; t += step) {
+		const kind = solid(t);
+		if (!kind) continue;
+		// refine the crossing between the last free point and this one
+		let lo = t - step;
+		let hi = t;
+		for (let i = 0; i < 6; i++) {
+			const mid = (lo + hi) / 2;
+			if (solid(mid)) hi = mid;
+			else lo = mid;
+		}
+		best = lo;
+		const x = eye.x + dir.x * best;
+		const z = eye.z + dir.z * best;
+		if (kind === 'wall') {
+			// the facade faces the street the shot came from: across x if stepping in x alone hits it, else across z
+			const ahead = hi - lo + 0.05;
+			if (facade(x + dir.x * ahead, z)) Object.assign(normal, { x: -Math.sign(dir.x) || 1, y: 0, z: 0 });
+			else Object.assign(normal, { x: 0, y: 0, z: -Math.sign(dir.z) || 1 });
+		} else if (kind === 'ground') {
+			const h = 0.3;
+			const nx = groundAt(x - h, z) - groundAt(x + h, z);
+			const nz = groundAt(x, z - h) - groundAt(x, z + h);
+			const l = Math.hypot(nx, 2 * h, nz) || 1;
+			Object.assign(normal, { x: nx / l, y: (2 * h) / l, z: nz / l });
+		} else Object.assign(normal, { x: 0, y: 1, z: 0 });
+		break;
+	}
+	if (best >= max) return null;
+	return { point: eye.clone().addScaledVector(dir, best), normal };
 }
 
 export function attack() {
@@ -114,7 +203,7 @@ export function attack() {
 	if (ranged) {
 		const fx = -Math.sin(player.yaw);
 		const fz = -Math.cos(player.yaw);
-		setTimeout(() => fireBolt({ x: player.x + fx * 0.8, y: player.y + 1.4, z: player.z + fz * 0.8 }, target, () => damage(target)), 120);
+		setTimeout(() => fireBolt({ x: player.x + fx * 0.8, y: player.y + 1.4, z: player.z + fz * 0.8 }, target, () => damage(target), { flash: true }), 120);
 	} else
 		// the blade lands mid-swing: every bug in the arc in front of the knight takes the blow
 		setTimeout(() => {

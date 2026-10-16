@@ -7,6 +7,8 @@ import * as THREE from 'three';
 
 import { player } from '@/lib/player-state';
 
+import { fpsMuzzle, glowTexture } from './Lasers';
+
 /**
  * First-person rifle (Quaternius Sci-Fi Essentials, CC0) held by gloved arms (para's "fps arms", CC0, MakeHuman mesh,
  * posed on the rifle and baked in the weapon frame), glued to the camera with sway, bob, recoil and muzzle flash.
@@ -38,12 +40,41 @@ export function FpsWeapon() {
 	const { camera } = useThree();
 	const root = useRef<THREE.Group>(null);
 	const flash = useRef<THREE.Mesh>(null);
+	const glow = useRef<THREE.Mesh>(null);
 	const kick = useRef(0);
 	const sway = useRef({ x: 0, y: 0 });
+	const shot = useRef({ roll: 0, size: 1 });
+	// muzzle flash: a white-hot star with a cyan glow, the same energy as the tracer it launches
+	const fx = useMemo(() => {
+		const star = glowTexture(1.1);
+		const soft = glowTexture(0);
+		const mat = (map: THREE.Texture, r: number, g: number, b: number) =>
+			new THREE.MeshBasicMaterial({
+				map,
+				color: new THREE.Color(r, g, b),
+				transparent: true,
+				blending: THREE.AdditiveBlending,
+				depthWrite: false,
+				toneMapped: false,
+				fog: false,
+			});
+		return { star: mat(star, 3.2, 3.0, 2.8), soft: mat(soft, 0.6, 1.6, 2.4), textures: [star, soft] };
+	}, []);
+	useEffect(
+		() => () => {
+			fx.star.dispose();
+			fx.soft.dispose();
+			fx.textures.forEach((t) => t.dispose());
+			fpsMuzzle.ok = false;
+		},
+		[fx],
+	);
 
 	useEffect(() => {
 		const on = () => {
 			kick.current = 1;
+			shot.current.roll = Math.random() * Math.PI;
+			shot.current.size = 0.8 + Math.random() * 0.45;
 		};
 		window.addEventListener('fps:recoil', on);
 		return () => window.removeEventListener('fps:recoil', on);
@@ -76,9 +107,24 @@ export function FpsWeapon() {
 		player.camera.swayY *= Math.exp(-dt * 18);
 		g.rotateY(sway.current.x);
 		g.rotateX(sway.current.y);
-		if (flash.current) {
-			flash.current.visible = kick.current > 0.75;
-			flash.current.rotation.z = t * 40;
+		const f = flash.current;
+		if (f) {
+			// two frames of star, a soft glow fading a little longer
+			f.visible = kick.current > 0.74;
+			f.rotation.z = shot.current.roll;
+			f.scale.setScalar(0.15 * shot.current.size * (0.7 + 0.3 * kick.current));
+			// the barrel's end in the world, where the tracers leave from
+			g.updateMatrixWorld(true);
+			fpsMuzzle.x = f.matrixWorld.elements[12];
+			fpsMuzzle.y = f.matrixWorld.elements[13];
+			fpsMuzzle.z = f.matrixWorld.elements[14];
+			fpsMuzzle.ok = Number.isFinite(fpsMuzzle.x + fpsMuzzle.y + fpsMuzzle.z);
+		}
+		if (glow.current) {
+			const k = Math.max(0, (kick.current - 0.45) / 0.55);
+			glow.current.visible = k > 0;
+			glow.current.scale.setScalar(0.12 + 0.1 * k);
+			(glow.current.material as THREE.MeshBasicMaterial).opacity = k * k;
 		}
 	});
 
@@ -89,9 +135,11 @@ export function FpsWeapon() {
 			</group>
 			{/* right hand on the grip, left hand on the handguard, forearms leaving the bottom of the screen */}
 			<primitive object={arms} />
-			<mesh ref={flash} position={[0, 0.117, -0.48]} visible={false} renderOrder={11}>
-				<circleGeometry args={[0.05, 6]} />
-				<meshBasicMaterial color="#ffd38a" toneMapped={false} transparent opacity={0.95} blending={THREE.AdditiveBlending} depthWrite={false} />
+			<mesh ref={flash} position={[0, 0.117, -0.48]} visible={false} renderOrder={11} material={fx.star}>
+				<planeGeometry args={[1, 1]} />
+			</mesh>
+			<mesh ref={glow} position={[0, 0.117, -0.47]} visible={false} renderOrder={11} material={fx.soft}>
+				<planeGeometry args={[1, 1]} />
 			</mesh>
 		</group>
 	);

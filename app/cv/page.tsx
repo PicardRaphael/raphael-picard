@@ -220,7 +220,7 @@ export default function CvPage() {
 				<ul className="cv-list space-y-[2px]">
 					{education.map((d) => (
 						<li key={d.name}>
-							<span className="font-semibold">{d.name}</span>, {d.title} · {typo(d.school)}, <span className="whitespace-nowrap">{d.years}</span>.
+							<span className="font-semibold">{d.name}</span>, {typo(d.title)} · {typo(d.school)}, <span className="whitespace-nowrap">{d.years}</span>.
 						</li>
 					))}
 					<li>
@@ -228,7 +228,7 @@ export default function CvPage() {
 						{' '}:{' '}
 						{anthropic.map((c, i) => (
 							<span key={c.name}>
-								{i > 0 && ' · '}
+								{i > 0 && ', '}
 								<em className="whitespace-nowrap">{typo(c.name)}</em>
 							</span>
 						))}

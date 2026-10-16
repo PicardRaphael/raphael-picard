@@ -24,11 +24,11 @@ export const cvStats = [
 export type CvSkill = { label: string; items: string };
 
 export const cvSkills: CvSkill[] = [
-	{ label: 'Agents et IA générative', items: 'LangGraph, agents ReAct, systèmes multi-agents, human-in-the-loop, Gemini (Vertex AI), Claude, prompt engineering' },
-	{ label: 'RAG et données', items: 'RAG hybride (plein texte et pgvector, fusion RRF), reranking, embeddings, ingestion de documents (Unstructured)' },
+	{ label: 'Agents et IA générative', items: 'LangGraph, LangChain, CrewAI, agents ReAct, systèmes multi-agents, human-in-the-loop, Gemini (Vertex AI), Claude, prompt engineering' },
+	{ label: 'RAG et données', items: 'RAG hybride (plein texte et pgvector, fusion RRF), reranking, embeddings, Qdrant, ingestion de documents (Unstructured)' },
 	{ label: 'Évaluation et LLMOps', items: 'DeepEval (LLM-as-judge), golden sets, observabilité Langfuse (traces, coûts, latence)' },
-	{ label: 'Qualité logicielle', items: 'Pytest, Vitest, mutation testing, architecture hexagonale, CI/CD' },
-	{ label: 'Back-end et cloud', items: 'Python (FastAPI, Pydantic), TypeScript (Bun, Hono, Zod), PostgreSQL, OpenAPI, Google Cloud (Cloud Run), Docker' },
+	{ label: 'Qualité logicielle', items: 'Pytest, Vitest, Jest, mutation testing, architecture hexagonale, CI/CD' },
+	{ label: 'Back-end et cloud', items: 'Python (FastAPI, Pydantic), TypeScript (Bun, Hono, Zod, Node.js), PostgreSQL, OpenAPI, GraphQL, Google Cloud (Cloud Run), Docker' },
 	{ label: 'Outillage et front-end', items: 'Claude Code, serveurs MCP (FastMCP), n8n ; React, Next.js, Storybook' },
 ];
 
@@ -64,7 +64,7 @@ export const cvExperiences: CvExperience[] = [
 				title: '3 assistants IA en production (7 agents)',
 				points: [
 					'**NeoChat** : répond aux gestionnaires à partir de leurs données, courriels et documents ; un agent ReAct couvre 42 vues métier avec seulement 5 outils génériques',
-					'**NeoSupport** : répond aux questions sur le logiciel à partir de sa documentation (RAG hybride) ; demande une précision si la question est ambiguë et signale les manques de la documentation plutôt que d’inventer',
+					'**NeoSupport** : répond aux questions sur le logiciel à partir de sa documentation (RAG hybride) ; demande une précision si la question est ambiguë et signale les sujets non documentés plutôt que d’inventer une réponse',
 					'**NeoAgent** : compare les devis PDF et signale leurs incohérences (extraction multimodale) ; rédige annonces immobilières et documents',
 					'Gouvernance dès la conception : données métier en lecture seule ; envoi de courriel et suppression de document soumis à 5 points de validation humaine (interruptions LangGraph)',
 				],
@@ -105,9 +105,9 @@ export const cvExperiences: CvExperience[] = [
 				title: 'Projets d’IA appliquée, en open source sur GitHub',
 				period: 'Mars 2025 – nov. 2025',
 				points: [
-					'[mcp-server-documentation](https://github.com/PicardRaphael/mcp-server-documentation) : serveur MCP (FastMCP) qui donne aux agents un accès unifié et à jour à la documentation de LangChain, LangGraph, Next.js et Tailwind CSS',
-					'[coder-crew](https://github.com/PicardRaphael/coder-crew) : 4 agents CrewAI (lead, back-end, front-end, tests) qui conçoivent, codent et testent une application ensemble ; un LLM par rôle, coûts suivis avec AgentOps',
-					'[job-booster](https://github.com/PicardRaphael/job-booster) : application RAG (FastAPI, Next.js, LangChain, Qdrant et reranker BGE) qui rédige des courriels et des lettres de motivation à partir d’une offre d’emploi ; plusieurs LLM au choix, traces Langfuse',
+					'[mcp-server-documentation](https://github.com/PicardRaphael/mcp-server-documentation) : serveur MCP (FastMCP) qui donne aux agents un accès unifié et actualisé à la documentation de LangChain, LangGraph, Next.js et Tailwind CSS',
+					'[coder-crew](https://github.com/PicardRaphael/coder-crew) : 4 agents CrewAI (lead, back-end, front-end, tests) qui conçoivent, codent et testent ensemble une application ; un LLM par rôle, coûts suivis avec AgentOps',
+					'[job-booster](https://github.com/PicardRaphael/job-booster) : application RAG (FastAPI, Next.js, LangChain, Qdrant, reranker BGE) qui rédige des courriels et des lettres de motivation à partir d’une offre d’emploi ; plusieurs LLM au choix, traces Langfuse',
 					'Autres projets : agents LangGraph et OpenAI Agents SDK, API FastAPI et Node.js en Clean Architecture, automatisations n8n',
 				],
 			},
@@ -122,8 +122,8 @@ export const cvExperiences: CvExperience[] = [
 			{
 				points: [
 					'Conception et développement du MVP de zéro (React, Next.js, TypeScript), en architecture hexagonale',
-					'Bibliothèque Storybook de composants ; API REST Express documentée avec Swagger',
-					'Encadrement technique de développeurs juniors ; coordination avec le PMO et le produit (priorités du MVP, jalons, livrables)',
+					'Bibliothèque de composants Storybook, API REST Express documentée avec Swagger',
+					'Encadrement technique de développeurs juniors ; coordination avec le PMO et l’équipe produit (priorités du MVP, jalons, livrables)',
 				],
 			},
 		],
@@ -137,9 +137,9 @@ export const cvExperiences: CvExperience[] = [
 		blocks: [
 			{
 				points: [
-					'Dès 2018, PWA React (MUI) d’analyse automatique de documents avec l’API Google Vision',
+					'Création, dès 2018, d’une PWA React (MUI) d’analyse automatique de documents avec l’API Google Vision',
 					'Refonte complète du front-end et création d’un BFF GraphQL (Node.js, Apollo) devant les microservices',
-					'Monorepo Lerna et CI/CD GitLab pour une équipe de 7 développeurs ; migration des API de Symfony 3 à Symfony 5 et sécurisation',
+					'Mise en place d’un monorepo Lerna et de la CI/CD GitLab pour une équipe de 7 développeurs ; migration des API de Symfony 3 à Symfony 5 et sécurisation',
 				],
 			},
 		],
@@ -155,5 +155,5 @@ export const cvProjectNotes: Record<string, string> = {
 
 export const cvLanguages = [
 	{ label: 'Français', level: 'langue maternelle' },
-	{ label: 'Anglais', level: 'B1, lecture technique courante (documentation et formations suivies en anglais)' },
+	{ label: 'Anglais', level: 'B1, lecture technique courante (documentation lue et formations suivies en anglais)' },
 ];

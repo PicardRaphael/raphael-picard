@@ -55,22 +55,25 @@ export function Hero() {
 
 					{/* the 30-second film, the same as in the game's cinema: one click, with the sound */}
 					<Pitch30Button className="group border-signal/30 hover:border-signal/70 relative mt-10 block w-full max-w-xl overflow-hidden rounded-2xl border text-left shadow-[0_0_60px_-20px_rgb(56_189_248_/_0.6)] transition-colors lg:mt-0">
-						<Image
-							src={PITCH_POSTER}
-							alt=""
-							width={1280}
-							height={720}
-							sizes="(min-width: 1024px) 34rem, 100vw"
-							className="block aspect-video w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-						/>
-						<span
-							className="bg-signal/90 absolute top-[calc(50%-1.6rem)] left-1/2 grid h-16 w-16 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full pl-1 text-2xl text-black shadow-[0_0_30px_rgb(56_189_248_/_0.7)] transition-transform group-hover:scale-110"
-							aria-hidden
-						>
-							▶
+						<span className="relative block overflow-hidden">
+							<Image
+								src={PITCH_POSTER}
+								alt=""
+								width={1280}
+								height={720}
+								sizes="(min-width: 1024px) 34rem, 100vw"
+								className="block aspect-video w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+							/>
+							{/* on the neon half of the poster, clear of the name written on the left */}
+							<span
+								className="bg-signal/90 absolute top-1/2 left-[74%] grid h-16 w-16 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full pl-1 text-2xl text-black shadow-[0_0_30px_rgb(56_189_248_/_0.7)] ring-4 ring-black/30 transition-transform group-hover:scale-110"
+								aria-hidden
+							>
+								▶
+							</span>
 						</span>
 						<span className="flex items-baseline justify-between gap-3 bg-black/70 px-4 py-3">
-							<span className="font-display font-bold text-white sm:text-lg">▶ Raphaël en 30 secondes</span>
+							<span className="font-display font-bold text-white sm:text-lg">Regarder la vidéo · 30 s</span>
 							<span className="font-mono text-xs whitespace-nowrap text-white/70">avec le son</span>
 						</span>
 					</Pitch30Button>

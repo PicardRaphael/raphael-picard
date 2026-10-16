@@ -5,7 +5,7 @@
  */
 import { rmSync } from 'node:fs';
 
-import { launch, openGame, placeHero, settle, hideHero, shoot } from './lib.mjs';
+import { launch, openGame, placeHero, settle, hideHero, shoot, pixelRatio } from './lib.mjs';
 import { SHOTS, FPS } from './shots.mjs';
 
 const args = process.argv.slice(2);
@@ -32,7 +32,7 @@ const { browser, page } = await launch(size);
 await openGame(page, { timeMode: 'dusk' });
 let zone = 'val';
 for (const s of list) {
-	console.log(`▶ ${s.name} (${s.frames} frames)`);
+	console.log(`▶ ${s.name} (${s.frames} frames, pixel ratio ${await pixelRatio(page)})`);
 	if (s.timeMode) await page.evaluate((t) => window.__game.set({ timeMode: t }), s.timeMode);
 	await placeHero(page, s.hero);
 	const z = s.hero.z < -300 ? 'nexus' : 'val';

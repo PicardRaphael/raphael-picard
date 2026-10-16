@@ -15,14 +15,14 @@ const RW = resolve(work, 'remotion');
 const HERE = resolve(new URL('.', import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1'));
 mkdirSync(join(RW, 'src'), { recursive: true });
 for (const f of readdirSync(join(HERE, 'remotion'))) copyFileSync(join(HERE, 'remotion', f), join(RW, 'src', f));
-copyFileSync(join(HERE, 'cues.json'), join(RW, 'src', 'cues.json'));
+for (const f of ['cues.json', 'viral.json']) copyFileSync(join(HERE, f), join(RW, 'src', f));
 
 const req = createRequire(join(RW, 'package.json'));
 const { bundle } = await import(pathToFileURL(req.resolve('@remotion/bundler')).href);
 const { renderStill, selectComposition } = await import(pathToFileURL(req.resolve('@remotion/renderer')).href);
 
 const serveUrl = await bundle({ entryPoint: join(RW, 'src', 'index.jsx'), publicDir: resolve(work, 'pub') });
-const inputProps = { audio: null, framesDir: comp === 'resume-vertical' ? 'frames-portrait' : 'frames' };
+const inputProps = comp === 'viral' ? { audio: null } : { audio: null, framesDir: comp === 'resume-vertical' ? 'frames-portrait' : 'frames' };
 const browserExecutable = process.env.REMOTION_BROWSER ?? null;
 const composition = await selectComposition({ serveUrl, id: comp, inputProps, browserExecutable });
 mkdirSync(out, { recursive: true });

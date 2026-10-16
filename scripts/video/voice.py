@@ -1,8 +1,8 @@
-"""Voice-over of the 30 s video: one WAV per segment of cues.json (`vo.say`), Kokoro-82M voice ff_siwis
+"""Voice-over of the 30 s film: one WAV per line of cues.json (`segments[].vo[].say`), Kokoro-82M voice ff_siwis
 (the Raphy·OS voice of the Nexus, see scripts/voices/README.md: Apache-2.0, SIWIS corpus CC BY 4.0).
 
 Usage: python -I scripts/video/voice.py --models <dir with kokoro/> --out <dir>
-Prints each clip's length and the room left before the next segment's voice.
+Writes <out>/<segment>-<n>.wav and <out>/durations.json, and prints the room left before the next line.
 """
 
 from __future__ import annotations
@@ -18,6 +18,12 @@ ROOT = Path(__file__).resolve().parents[2]
 CUES = json.loads((ROOT / 'scripts' / 'video' / 'cues.json').read_text(encoding='utf-8'))
 
 
+def lines():
+	for s in CUES['segments']:
+		for n, vo in enumerate(s.get('vo', [])):
+			yield f"{s['id']}-{n}", vo
+
+
 def main() -> None:
 	ap = argparse.ArgumentParser()
 	ap.add_argument('--models', type=Path, required=True)
@@ -28,10 +34,9 @@ def main() -> None:
 
 	k = Kokoro(str(args.models / 'kokoro' / 'kokoro-v1.0.onnx'), str(args.models / 'kokoro' / 'voices-v1.0.bin'))
 	args.out.mkdir(parents=True, exist_ok=True)
-	segs = [s for s in CUES['segments'] if s.get('vo')]
+	todo = list(lines())
 	report = {}
-	for i, s in enumerate(segs):
-		vo = s['vo']
+	for i, (key, vo) in enumerate(todo):
 		audio, sr = k.create(vo['say'], voice='ff_siwis', speed=vo.get('speed', args.speed), lang='fr-fr')
 		audio = np.asarray(audio, dtype=np.float32)
 		# trim the model's leading / trailing silence
@@ -41,12 +46,12 @@ def main() -> None:
 		# -20 dB RMS, like the quest voices
 		rms = np.sqrt(np.mean(audio**2)) + 1e-9
 		audio = np.clip(audio * (10 ** (-20 / 20) / rms), -0.98, 0.98)
-		sf.write(args.out / f"{s['id']}.wav", audio, sr)
+		sf.write(args.out / f'{key}.wav', audio, sr)
 		dur = len(audio) / sr
-		nxt = segs[i + 1]['vo']['at'] if i + 1 < len(segs) else CUES['duration'] / CUES['fps']
+		nxt = todo[i + 1][1]['at'] if i + 1 < len(todo) else CUES['duration'] / CUES['fps']
 		room = nxt - vo['at'] - dur
-		report[s['id']] = {'at': vo['at'], 'dur': round(dur, 2)}
-		print(f"{s['id']:8s} at {vo['at']:5.2f}s  {dur:4.2f}s  room {room:+.2f}s  {'OVERLAP' if room < 0.15 else ''}")
+		report[key] = {'at': vo['at'], 'dur': round(dur, 2)}
+		print(f"{key:9s} at {vo['at']:5.2f}s  {dur:4.2f}s  room {room:+.2f}s  {'OVERLAP' if room < 0.15 else ''}")
 	(args.out / 'durations.json').write_text(json.dumps(report, indent=1), encoding='utf-8')
 
 

@@ -86,4 +86,43 @@ mkdirSync(out, { recursive: true });
 	}
 	wav('impact.wav', l);
 }
+// laser shot of the runner: a fast downward chirp with a bright attack
+{
+	const len = Math.round(0.32 * SR);
+	const l = new Float32Array(len);
+	let phase = 0;
+	for (let i = 0; i < len; i++) {
+		const t = i / SR;
+		phase += (2 * Math.PI * (1900 * Math.exp(-t * 14) + 180)) / SR;
+		const tone = Math.sign(Math.sin(phase)) * 0.25 + Math.sin(phase) * 0.35;
+		l[i] = (tone + noise() * 0.18 * Math.exp(-t * 60)) * Math.exp(-t * 11) * Math.min(1, t / 0.002);
+	}
+	wav('zap.wav', l);
+}
+
+// a bolt landing on a bug: a short crunchy hit
+{
+	const len = Math.round(0.25 * SR);
+	const l = new Float32Array(len);
+	let phase = 0;
+	for (let i = 0; i < len; i++) {
+		const t = i / SR;
+		phase += (2 * Math.PI * (140 * Math.exp(-t * 9) + 60)) / SR;
+		l[i] = (Math.sin(phase) * 0.7 + noise() * 0.5 * Math.exp(-t * 35)) * Math.exp(-t * 14);
+	}
+	wav('hit.wav', l);
+}
+
+// « bug corrigé » : two bright bell notes (E6 then B6)
+{
+	const len = Math.round(1.2 * SR);
+	const l = new Float32Array(len);
+	for (let i = 0; i < len; i++) {
+		const t = i / SR;
+		const note = (f, t0) =>
+			t < t0 ? 0 : (Math.sin(2 * Math.PI * f * (t - t0)) + 0.35 * Math.sin(2 * Math.PI * f * 2.01 * (t - t0))) * Math.exp(-(t - t0) * 4.5);
+		l[i] = 0.32 * (note(1318.5, 0) + note(1975.5, 0.09));
+	}
+	wav('chime.wav', l);
+}
 console.log('sfx →', out);

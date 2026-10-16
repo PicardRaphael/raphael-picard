@@ -1,52 +1,59 @@
 /**
- * The soundtrack, mixed from cues.json: the lute of the val until the portal, a whoosh and an impact on the crossing,
- * then « Chillwave Nightdrive » from its first downbeat (100 BPM: one bar = 2.4 s = 72 frames), ducked under the voice.
- *   node scripts/video/mix.mjs <workDir> [--no-voice]   (reads <workDir>/vo/*.wav and <workDir>/sfx/*.wav, writes <workDir>/mix.wav)
+ * The soundtrack of a cue sheet (cues.json for the 16:9 film, viral.json for the vertical cut): its `audio` events
+ * (music, sound effects, voice clips) plus the voice-over lines of its segments (<workDir>/vo/<segment>-<n>.wav),
+ * the music ducked under every voice, normalised to −15 LUFS.
+ *   node scripts/video/mix.mjs <workDir> [cues.json|viral.json] [--no-voice]   → <workDir>/pub/mix.wav (or mix-viral.wav)
+ * « Chillwave Nightdrive » runs at 100 BPM: one beat = 0.6 s = 18 frames, the cuts land on it.
  * Needs an ffmpeg with the usual audio filters (FFMPEG env var, else "ffmpeg").
  */
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const work = process.argv[2];
+const [work, sheetArg = 'cues.json'] = process.argv.slice(2).filter((a) => !a.startsWith('--'));
 const voice = !process.argv.includes('--no-voice');
 const ff = process.env.FFMPEG ?? 'ffmpeg';
-const cues = JSON.parse(readFileSync(new URL('./cues.json', import.meta.url), 'utf8'));
+const cues = JSON.parse(readFileSync(new URL(`./${sheetArg}`, import.meta.url), 'utf8'));
 const total = cues.duration / cues.fps;
-const { intro, main } = cues.music;
 
-const inputs = [];
-const add = (args) => inputs.push(...args) && inputs.filter((a) => a === '-i').length - 1;
-const iIntro = add(['-ss', String(intro.offset), '-t', String(intro.to - intro.from + 0.4), '-i', intro.file]);
-const iMain = add(['-ss', String(main.offset), '-t', String(total - main.from + 0.5), '-i', main.file]);
-const iWhoosh = add(['-i', join(work, 'sfx', 'whoosh.wav')]);
-const iImpact = add(['-i', join(work, 'sfx', 'impact.wav')]);
-const vo = voice ? cues.segments.filter((s) => s.vo && existsSync(join(work, 'vo', `${s.id}.wav`))) : [];
-const iVo = vo.map((s) => add(['-i', join(work, 'vo', `${s.id}.wav`)]));
+const events = cues.audio.map((e) => ({ ...e, file: e.file.replace('{work}', work) })).filter((e) => voice || e.role !== 'voice');
+if (voice)
+	for (const s of cues.segments)
+		(s.vo ?? []).forEach((vo, n) => {
+			const file = join(work, 'vo', `${s.id}-${n}.wav`);
+			if (existsSync(file)) events.push({ file, role: 'voice', at: vo.at, vol: 1.5 });
+		});
 
-const ms = (s) => Math.round(s * 1000);
 const fmt = 'aformat=sample_rates=48000:channel_layouts=stereo';
-const f = [
-	`[${iIntro}:a]${fmt},afade=t=in:st=0:d=0.3,afade=t=out:st=${intro.to - 0.55}:d=0.5,volume=0.55[intro]`,
-	`[${iMain}:a]${fmt},afade=t=in:st=0:d=0.02,afade=t=out:st=${main.fadeOut[0] - main.from}:d=${main.fadeOut[1] - main.fadeOut[0]},volume=0.8,adelay=${ms(main.from)}:all=1[main]`,
-	`[intro][main]amix=inputs=2:normalize=0:duration=longest[music]`,
-	`[${iWhoosh}:a]${fmt},volume=0.55,adelay=${ms(intro.to - 1.5)}:all=1[whoosh]`,
-	`[${iImpact}:a]${fmt},volume=0.9,adelay=${ms(intro.to - 0.02)}:all=1[impact]`,
-];
-let musicOut = '[music]';
-if (vo.length) {
-	vo.forEach((s, k) => f.push(`[${iVo[k]}:a]${fmt},volume=1.5,adelay=${ms(s.vo.at)}:all=1[v${k}]`));
-	f.push(`${vo.map((_, k) => `[v${k}]`).join('')}amix=inputs=${vo.length}:normalize=0:duration=longest,asplit=2[vo][key]`);
-	f.push(`[music][key]sidechaincompress=threshold=0.04:ratio=5:attack=15:release=350:makeup=1[ducked]`);
-	musicOut = '[ducked]';
-}
-f.push(
-	`${musicOut}[whoosh][impact]${vo.length ? '[vo]' : ''}amix=inputs=${vo.length ? 4 : 3}:normalize=0:duration=longest,` +
-		`atrim=0:${total},apad=whole_dur=${total},loudnorm=I=-15:TP=-1.5:LRA=9,${fmt}[out]`,
-);
+const inputs = [];
+const chains = [];
+events.forEach((e, i) => {
+	if (e.offset) inputs.push('-ss', String(e.offset));
+	if (e.dur) inputs.push('-t', String(e.dur));
+	inputs.push('-i', e.file);
+	const f = [fmt];
+	if (e.fadeIn) f.push(`afade=t=in:st=0:d=${e.fadeIn}`);
+	if (e.fadeOut) f.push(`afade=t=out:st=${(e.fadeOut[0] - e.at).toFixed(3)}:d=${e.fadeOut[1]}`);
+	f.push(`volume=${e.vol ?? 1}`, `adelay=${Math.round(e.at * 1000)}:all=1`, `apad=whole_dur=${total}`);
+	chains.push(`[${i}:a]${f.join(',')}[e${i}]`);
+});
+const bus = (role) => events.map((e, i) => (e.role === role ? `[e${i}]` : '')).join('');
+const count = (role) => events.filter((e) => e.role === role).length;
+const mix = (labels, n, out) => (n === 1 ? `${labels}anull[${out}]` : `${labels}amix=inputs=${n}:normalize=0:duration=longest[${out}]`);
 
-const outFile = join(work, voice ? 'mix.wav' : 'mix-music.wav');
-execFileSync(ff, ['-y', '-loglevel', 'error', ...inputs, '-filter_complex', f.join(';'), '-map', '[out]', '-c:a', 'pcm_s16le', outFile], {
+chains.push(mix(bus('music'), count('music'), 'music'));
+chains.push(mix(bus('sfx'), count('sfx'), 'sfx'));
+let last = ['[music]', '[sfx]'];
+if (count('voice')) {
+	chains.push(`${mix(bus('voice'), count('voice'), 'vox')}`, '[vox]asplit=2[vo][key]');
+	chains.push('[music][key]sidechaincompress=threshold=0.04:ratio=5:attack=15:release=350:makeup=1[ducked]');
+	last = ['[ducked]', '[sfx]', '[vo]'];
+}
+chains.push(`${last.join('')}amix=inputs=${last.length}:normalize=0:duration=longest,atrim=0:${total},loudnorm=I=-15:TP=-1.5:LRA=9,${fmt}[out]`);
+
+mkdirSync(join(work, 'pub'), { recursive: true });
+const outFile = join(work, 'pub', sheetArg === 'cues.json' ? 'mix.wav' : `mix-${sheetArg.replace('.json', '')}.wav`);
+execFileSync(ff, ['-y', '-loglevel', 'error', ...inputs, '-filter_complex', chains.join(';'), '-map', '[out]', '-c:a', 'pcm_s16le', outFile], {
 	stdio: 'inherit',
 });
-console.log('mix →', outFile, `(${total.toFixed(2)} s, ${vo.length} voice clips)`);
+console.log('mix →', outFile, `(${total.toFixed(2)} s, ${count('voice')} voix, ${count('sfx')} effets)`);

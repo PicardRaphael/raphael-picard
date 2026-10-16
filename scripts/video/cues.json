@@ -1,11 +1,26 @@
 {
 	"fps": 30,
-	"duration": 1110,
-	"music": {
-		"intro": { "file": "public/audio/music/val-bards-tale.mp3", "offset": 2.0, "from": 0, "to": 3.0 },
-		"main": { "file": "public/audio/music/nexus-nightdrive.mp3", "offset": 0.151, "from": 3.0, "fadeOut": [35.2, 37.0] },
-		"credit": "Musique : « Chillwave Nightdrive » — Bogart VGM, CC BY 3.0 · voix de synthèse Kokoro (ff_siwis)"
-	},
+	"duration": 900,
+	"audio": [
+		{
+			"file": "public/audio/music/val-bards-tale.mp3",
+			"role": "music",
+			"at": 0,
+			"offset": 2.0,
+			"dur": 3.4,
+			"vol": 0.55,
+			"fadeIn": 0.3,
+			"fadeOut": [2.5, 0.5]
+		},
+		{ "file": "{work}/sfx/whoosh.wav", "role": "sfx", "at": 1.5, "vol": 0.55 },
+		{ "file": "{work}/sfx/impact.wav", "role": "sfx", "at": 2.98, "vol": 0.9 },
+		{ "file": "public/audio/music/nexus-nightdrive.mp3", "role": "music", "at": 3.0, "offset": 0.151, "vol": 0.8, "fadeOut": [28.4, 1.6] },
+		{ "file": "{work}/sfx/zap.wav", "role": "sfx", "at": 18.73, "vol": 0.5 },
+		{ "file": "{work}/sfx/zap.wav", "role": "sfx", "at": 19.13, "vol": 0.5 },
+		{ "file": "{work}/sfx/zap.wav", "role": "sfx", "at": 19.53, "vol": 0.5 },
+		{ "file": "{work}/sfx/chime.wav", "role": "sfx", "at": 19.67, "vol": 0.6 }
+	],
+	"credit": "Musique : « Chillwave Nightdrive », Bogart VGM, CC BY 3.0 · voix de synthèse Kokoro (ff_siwis)",
 	"segments": [
 		{
 			"id": "val",
@@ -14,8 +29,9 @@
 			"len": 90,
 			"shots": [{ "src": "val-dive", "len": 90, "grade": "val" }],
 			"eyebrow": "Val des Origines",
-			"lines": ["8+ ans d’ingénierie", "logicielle…"],
-			"vo": { "at": 0.25, "say": "Huit ans à forger du logiciel…", "text": "Huit ans à forger du logiciel…" }
+			"lines": ["Ce portfolio", "est un jeu."],
+			"accent": 1,
+			"vo": [{ "at": 0.3, "say": "Ce portfolio est un jeu vidéo.", "text": "Ce portfolio est un jeu vidéo." }]
 		},
 		{
 			"id": "emerge",
@@ -24,125 +40,114 @@
 			"len": 72,
 			"shots": [{ "src": "nexus-emerge", "len": 72, "grade": "nexus" }],
 			"eyebrow": "Le Nexus",
-			"lines": ["…puis l’ère", "des agents IA."],
-			"vo": { "at": 3.25, "say": "puis, l’ère des agents.", "text": "…puis l’ère des agents." }
+			"lines": ["Derrière le portail,", "l’ère des agents IA."],
+			"accent": 1,
+			"vo": [{ "at": 3.2, "speed": 1.08, "say": "Derrière le portail, l’ère des agents.", "text": "Derrière le portail, l’ère des agents." }]
 		},
 		{
 			"id": "title",
 			"kind": "title",
 			"from": 162,
-			"len": 108,
-			"shots": [{ "src": "nexus-crane", "len": 108, "grade": "nexus" }],
-			"eyebrow": "Senior AI Engineer & Responsable IA",
+			"len": 90,
+			"shots": [{ "src": "nexus-crane", "len": 90, "grade": "nexus" }],
 			"name": "Raphaël Picard",
-			"sub": "Neoteem · Lyon",
-			"vo": {
-				"at": 5.6,
-				"say": "Raphaël Picard. Responsable i a chez Néotime, à Lyon.",
-				"text": "Raphaël Picard. Responsable IA chez Neoteem, à Lyon."
-			}
+			"role": "Senior AI Engineer & Responsable IA",
+			"sub": "Neoteem · Lyon · 8+ ans d’ingénierie",
+			"vo": [
+				{
+					"at": 5.5,
+					"speed": 1.06,
+					"say": "Raphaël Picard. Responsable i a chez Néotime.",
+					"text": "Raphaël Picard, Responsable IA chez Neoteem."
+				}
+			]
 		},
 		{
 			"id": "agents7",
 			"kind": "stat",
-			"from": 270,
+			"from": 252,
 			"len": 72,
 			"shots": [{ "src": "kiosk", "len": 72, "grade": "nexus" }],
 			"value": 7,
-			"display": "7",
 			"label": "agents IA en production",
 			"sub": "NeoChat · NeoSupport · NeoAgent",
-			"vo": { "at": 9.1, "say": "Sept agents i a en production.", "text": "Sept agents IA en production." }
+			"vo": [{ "at": 8.5, "say": "Sept agents i a en production.", "text": "Sept agents IA en production." }]
 		},
 		{
 			"id": "hitl",
 			"kind": "stat",
-			"from": 342,
+			"from": 324,
 			"len": 72,
 			"shots": [{ "src": "holo", "len": 72, "grade": "nexus" }],
 			"value": 5,
-			"display": "5",
-			"label": "contrôles humains",
+			"label": "points de contrôle humain",
 			"sub": "avant toute action engageante",
-			"vo": {
-				"at": 11.5,
-				"speed": 1.05,
-				"say": "Cinq contrôles humains avant toute action.",
-				"text": "Cinq contrôles humains avant toute action."
-			}
+			"vo": [{ "at": 10.9, "speed": 1.05, "say": "Cinq points de contrôle humain.", "text": "Cinq points de contrôle humain." }]
 		},
 		{
 			"id": "cost",
 			"kind": "stat",
-			"from": 414,
+			"from": 396,
 			"len": 72,
 			"shots": [{ "src": "street", "len": 72, "grade": "nexus" }],
 			"value": 33,
-			"display": "−33 %",
 			"prefix": "−",
 			"suffix": " %",
-			"label": "de coûts d’inférence",
+			"label": "de coût d’inférence",
 			"sub": "grâce au context caching",
-			"vo": { "at": 13.85, "speed": 1.08, "say": "Moins trente-trois pour cent de coûts d’inférence.", "text": "−33 % de coûts d’inférence." }
+			"vo": [{ "at": 13.3, "speed": 1.08, "say": "Moins trente-trois pour cent de coût d’inférence.", "text": "−33 % de coût d’inférence." }]
 		},
 		{
 			"id": "tests",
 			"kind": "stat",
-			"from": 486,
+			"from": 468,
 			"len": 72,
 			"shots": [{ "src": "kiosk2", "len": 72, "grade": "nexus" }],
 			"value": 7000,
-			"display": "7 000+",
 			"suffix": "+",
 			"label": "tests automatisés",
 			"sub": "chaque version évaluée avant sa mise en ligne",
-			"vo": { "at": 16.4, "say": "Plus de sept mille tests.", "text": "Plus de 7 000 tests." }
+			"vo": [{ "at": 15.7, "say": "Plus de sept mille tests.", "text": "Plus de 7 000 tests." }]
 		},
 		{
-			"id": "archi",
-			"kind": "archi",
-			"from": 558,
-			"len": 216,
-			"shots": [{ "src": "agents", "len": 216, "grade": "dim" }],
-			"eyebrow": "Comment je construis",
-			"rows": [
-				{ "k": "Agents ReAct", "v": "ils raisonnent, puis agissent" },
-				{ "k": "RAG hybride", "v": "des réponses ancrées dans la doc" },
-				{ "k": "MCP", "v": "outils et connaissances branchés" },
-				{ "k": "Garde-fous", "v": "lecture seule, validation humaine" },
-				{ "k": "LLMOps", "v": "évals, traces, coûts suivis" }
-			],
+			"id": "fight",
+			"kind": "fight",
+			"from": 540,
+			"len": 144,
+			"shots": [{ "src": "h-fight", "len": 144, "grade": "game" }],
+			"card": 50,
+			"lines": ["Chaque risque de l’IA", "a sa parade."],
+			"eyebrow": "Bug « Prompt injection »",
 			"motto": "L’agent propose, l’humain décide.",
-			"vo": {
-				"at": 18.8,
-				"say": "Agents ri-akte, ragg, M C P, garde-fous, elle elle aime ops. L’agent propose. L’humain décide.",
-				"text": "Agents ReAct, RAG, MCP, garde-fous, LLMOps. L’agent propose, l’humain décide."
-			}
+			"keywords": "Agents ReAct · RAG hybride · MCP · garde-fous · LLMOps",
+			"vo": [
+				{ "at": 18.1, "say": "Chaque risque de l’IA a sa parade.", "text": "Chaque risque de l’IA a sa parade." },
+				{ "at": 20.6, "say": "L’agent propose. L’humain décide.", "text": "L’agent propose, l’humain décide." }
+			]
 		},
 		{
 			"id": "game",
 			"kind": "game",
-			"from": 774,
-			"len": 144,
+			"from": 684,
+			"len": 72,
 			"shots": [
 				{ "src": "game-val", "len": 36, "grade": "val", "tag": "Val des Origines · la carrière" },
-				{ "src": "game-portal", "len": 36, "grade": "val", "tag": "Le portail" },
-				{ "src": "game-nexus", "len": 36, "grade": "nexus", "tag": "Le Nexus · les agents en production" },
-				{ "src": "game-gallery", "len": 36, "grade": "nexus", "tag": "La galerie des projets" }
+				{ "src": "game-nexus", "len": 36, "grade": "nexus", "tag": "Le Nexus · les agents en production" }
 			],
-			"lines": ["Ce portfolio", "est un jeu."],
-			"vo": { "at": 26.0, "say": "Et ce portfolio ? C’est un jeu.", "text": "Et ce portfolio ? C’est un jeu." }
+			"lines": ["Jouable dans le navigateur,", "même sur téléphone."],
+			"vo": [{ "at": 22.8, "speed": 1.06, "say": "Jouable même sur téléphone.", "text": "Jouable même sur téléphone." }]
 		},
 		{
 			"id": "cta",
 			"kind": "cta",
-			"from": 918,
-			"len": 192,
-			"shots": [{ "src": "beacon", "len": 192, "grade": "nexus" }],
+			"from": 756,
+			"len": 144,
+			"shots": [{ "src": "beacon", "len": 144, "grade": "nexus", "offset": 44 }],
 			"main": "Discutons.",
 			"url": "raphaelpicard.com",
-			"sub": "Jouez au portfolio · CV · contact",
-			"vo": { "at": 30.9, "say": "Venez jouer. Et discutons.", "text": "Venez jouer. Et discutons." }
+			"email": "raphaelpicard@outlook.fr",
+			"links": "CV · LinkedIn",
+			"vo": [{ "at": 25.4, "say": "Venez jouer. Et discutons.", "text": "Venez jouer. Et discutons." }]
 		}
 	]
 }

@@ -45,6 +45,58 @@ const CLOCK = () => {
 		else rCAF(id);
 	};
 	performance.now = () => (on ? t : rNow());
+	// timers created while `virtualTimers` is on follow the virtual clock too (the game's 620 ms portal teleport,
+	// the bug card's 7 s, the trace that streams in the orchestration core…)
+	const rST = window.setTimeout.bind(window);
+	const rCT = window.clearTimeout.bind(window);
+	const rSI = window.setInterval.bind(window);
+	const rCI = window.clearInterval.bind(window);
+	const timers = new Map();
+	let timerSeq = 2e9;
+	const addTimer = (fn, ms, every) => {
+		const id = ++timerSeq;
+		timers.set(id, { fn, due: t + Math.max(0, ms || 0), every: every ? Math.max(1, ms || 0) : 0 });
+		return id;
+	};
+	window.setTimeout = (fn, ms, ...a) =>
+		on && window.__cine.virtualTimers && typeof fn === 'function' ? addTimer(() => fn(...a), ms, false) : rST(fn, ms, ...a);
+	window.setInterval = (fn, ms, ...a) =>
+		on && window.__cine.virtualTimers && typeof fn === 'function' ? addTimer(() => fn(...a), ms, true) : rSI(fn, ms, ...a);
+	window.clearTimeout = (id) => (timers.has(id) ? timers.delete(id) : rCT(id));
+	window.clearInterval = (id) => (timers.has(id) ? timers.delete(id) : rCI(id));
+	const runTimers = () => {
+		for (;;) {
+			let next = null;
+			for (const [id, x] of timers) if (x.due <= t && (!next || x.due < next[1].due)) next = [id, x];
+			if (!next) return;
+			const [id, x] = next;
+			if (x.every) x.due += x.every;
+			else timers.delete(id);
+			try {
+				x.fn();
+			} catch (e) {
+				console.error(e);
+			}
+		}
+	};
+	/** HUD filter: everything fixed over the canvas is hidden, except the kept overlays (bug card, crosshair, panels). */
+	const KEEP = (el) =>
+		el.matches('[role="dialog"], svg.fixed') ||
+		(el.getAttribute('role') === 'status' && /Bug corrigé/.test(el.textContent ?? '')) ||
+		!!el.querySelector('canvas');
+	const cleanHud = () => {
+		for (const el of document.body.querySelectorAll('*')) {
+			if (el.dataset.cine) continue;
+			const fixed = getComputedStyle(el).position === 'fixed';
+			if (!fixed) continue;
+			el.dataset.cine = KEEP(el) ? 'keep' : 'hide';
+		}
+	};
+	const style = document.createElement('style');
+	style.textContent = `nextjs-portal{display:none!important}
+html.cine-clean [data-cine="hide"]{visibility:hidden!important}
+html.cine-clean [data-cine="keep"]{visibility:visible!important}
+html.cine-clean [role="status"][data-cine="keep"]{zoom:var(--cine-card-zoom,1);animation:none!important;opacity:1!important}`;
 	const cam = { shot: null, patched: false };
 	window.__cine = {
 		enable() {
@@ -54,15 +106,36 @@ const CLOCK = () => {
 		get time() {
 			return t;
 		},
-		/** Advances the virtual clock and runs one frame (R3F renders synchronously inside its rAF callback). */
+		virtualTimers: false,
 		hideMobs: true,
+		/** The one bug left alive when set (the others stay hidden). */
+		keepMob: null,
+		/** Hides the HUD (except the bug card, the crosshair and the panels); `cardZoom` enlarges the bug card. */
+		clean(on = true, cardZoom = 1) {
+			if (!style.isConnected) document.head.append(style);
+			document.documentElement.classList.toggle('cine-clean', on);
+			document.documentElement.style.setProperty('--cine-card-zoom', String(cardZoom));
+			this.cleaning = on;
+		},
+		cleaning: false,
+		/** Advances the virtual clock and runs one frame (R3F renders synchronously inside its rAF callback). */
 		step(ms) {
 			// the roaming "bugs" (and their name tags) stay out of the shots: dead and sunk, never respawned
-			if (this.hideMobs && window.__mobs) for (const m of window.__mobs) Object.assign(m, { state: 'dead', t: 6 });
-			t += ms;
-			const cbs = [...queue.values()];
-			queue.clear();
-			for (const cb of cbs) cb(t);
+			if (this.hideMobs && window.__mobs) for (const m of window.__mobs) if (m.id !== this.keepMob) Object.assign(m, { state: 'dead', t: 6 });
+			// sub-frames at ~45 per virtual second on average: the game's adaptive quality (drei PerformanceMonitor, bounds
+			// 40–60 fps) then measures a frame rate inside its bounds and never moves the resolution. At 30 fps it would lower
+			// the pixel ratio, and at 60 fps or more every « incline » counts as a flip-flop, until its fallback halves it.
+			this.acc = (this.acc ?? 0) + (ms * 45) / 1000;
+			const n = Math.max(1, Math.floor(this.acc));
+			this.acc = Math.max(0, this.acc - n);
+			for (let k = 0; k < n; k++) {
+				t += ms / n;
+				runTimers();
+				const cbs = [...queue.values()];
+				queue.clear();
+				for (const cb of cbs) cb(t);
+			}
+			if (this.cleaning) cleanHud();
 		},
 		/** {pos:[x,y,z], look:[x,y,z], fov, roll} or null to give the camera back to the game. */
 		setCamera(shot) {
@@ -76,9 +149,11 @@ const CLOCK = () => {
 				if (cam.shot && !busy) {
 					busy = true;
 					const s = cam.shot;
-					c.position.set(s.pos[0], s.pos[1], s.pos[2]);
+					// `rel`: positions relative to the hero (a camera that follows him)
+					const o = s.rel ? [window.__player.x, window.__player.y, window.__player.z] : [0, 0, 0];
+					c.position.set(s.pos[0] + o[0], s.pos[1] + o[1], s.pos[2] + o[2]);
 					c.up.set(Math.sin(s.roll ?? 0), Math.cos(s.roll ?? 0), 0);
-					c.lookAt(s.look[0], s.look[1], s.look[2]);
+					c.lookAt(s.look[0] + o[0], s.look[1] + o[1], s.look[2] + o[2]);
 					if (s.fov && Math.abs(c.fov - s.fov) > 1e-4) {
 						c.fov = s.fov;
 						c.updateProjectionMatrix();
@@ -127,9 +202,10 @@ export async function openGame(page, { timeMode = 'day', hero = 'knight' } = {})
 	await page.waitForFunction(() => '__game' in window && '__player' in window && '__camera' in window, null, { timeout: 180_000 });
 	await page.evaluate(({ timeMode, hero }) => window.__game.set({ timeMode, hero, sound: false }), { timeMode, hero });
 	await page.waitForFunction(() => window.__game.get().ready === true, null, { timeout: 180_000 });
-	await sleep(1500);
+	// virtual clock at once: the adaptive quality must only ever see the virtual frame rate
 	await page.evaluate(() => window.__cine.enable());
 	page.__frozen = true;
+	await settle(page, 1500);
 }
 
 /** Moves the (unseen) hero: the realm, the fog, the shadows and the city loading all follow him. */
@@ -236,4 +312,12 @@ export async function shoot(page, { name, frames, fps = 30, camera, outDir, warm
 		saveDataUrl(`${outDir}/${name}/${String(i + startIndex).padStart(4, '0')}.jpg`, data);
 		if (i % 30 === 0) process.stdout.write(`  ${name} ${i}/${frames}\n`);
 	}
+}
+
+/** Rendered pixels per CSS pixel of the WebGL canvas (1 = full resolution at deviceScaleFactor 1). */
+export function pixelRatio(page) {
+	return page.evaluate(() => {
+		const c = document.querySelector('canvas');
+		return c ? +(c.width / c.clientWidth).toFixed(2) : null;
+	});
 }

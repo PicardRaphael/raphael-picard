@@ -1,0 +1,98 @@
+{
+	"fps": 30,
+	"duration": 560,
+	"teleport": 56,
+	"audio": [
+		{
+			"file": "public/audio/music/val-bards-tale.mp3",
+			"role": "music",
+			"at": 0,
+			"offset": 2.0,
+			"dur": 2.4,
+			"vol": 0.55,
+			"fadeIn": 0.05,
+			"fadeOut": [1.45, 0.45]
+		},
+		{ "file": "{work}/sfx/whoosh.wav", "role": "sfx", "at": 0.37, "vol": 0.55 },
+		{ "file": "{work}/sfx/impact.wav", "role": "sfx", "at": 1.85, "vol": 0.9 },
+		{ "file": "public/audio/music/nexus-nightdrive.mp3", "role": "music", "at": 1.867, "offset": 0.151, "vol": 0.8, "fadeOut": [17.6, 1.07] },
+		{ "file": "{work}/sfx/zap.wav", "role": "sfx", "at": 5.6, "vol": 0.55 },
+		{ "file": "{work}/sfx/hit.wav", "role": "sfx", "at": 5.75, "vol": 0.5 },
+		{ "file": "{work}/sfx/zap.wav", "role": "sfx", "at": 6.0, "vol": 0.55 },
+		{ "file": "{work}/sfx/hit.wav", "role": "sfx", "at": 6.15, "vol": 0.5 },
+		{ "file": "{work}/sfx/zap.wav", "role": "sfx", "at": 6.4, "vol": 0.55 },
+		{ "file": "{work}/sfx/hit.wav", "role": "sfx", "at": 6.55, "vol": 0.5 },
+		{ "file": "{work}/sfx/chime.wav", "role": "sfx", "at": 6.53, "vol": 0.6 },
+		{ "file": "public/audio/voice/bug-11-f.mp3", "role": "voice", "at": 6.8, "vol": 1.4 }
+	],
+	"credit": "Musique : « Chillwave Nightdrive », Bogart VGM, CC BY 3.0 · voix du jeu Kokoro (ff_siwis)",
+	"segments": [
+		{
+			"id": "cross",
+			"from": 0,
+			"len": 146,
+			"src": "viral/v-cross",
+			"texts": [
+				{ "from": 2, "to": 54, "pos": "top", "lines": ["J’ai transformé", "mon CV", "en jeu vidéo."], "accent": 2, "size": 128 },
+				{
+					"from": 66,
+					"to": 144,
+					"pos": "top",
+					"eyebrow": "Val des Origines → Nexus",
+					"lines": ["8+ ans de code,", "puis 7 agents IA", "en production."],
+					"accent": 2,
+					"size": 96
+				}
+			]
+		},
+		{
+			"id": "fight",
+			"from": 146,
+			"len": 216,
+			"src": "viral/v-fight",
+			"texts": [
+				{
+					"from": 2,
+					"to": 48,
+					"pos": "bottom",
+					"eyebrow": "Le Runner contre un bug",
+					"lines": ["Chaque bug est", "un vrai risque de l’IA…"],
+					"accent": 1,
+					"size": 84
+				},
+				{ "from": 54, "to": 214, "pos": "mid", "lines": ["…et sa vraie parade."], "accent": 0, "size": 84 }
+			],
+			"captions": [
+				{ "at": 6.8, "to": 8.55, "text": "Prompt injection. Contenue par construction, pas par le prompt." },
+				{ "at": 8.55, "to": 9.85, "text": "Identité tirée du jeton vérifié, jeu d’outils fixe," },
+				{ "at": 9.85, "to": 11.4, "text": "invariants avant chaque appel, passerelle en lecture seule," },
+				{ "at": 11.4, "to": 12.93, "text": "aucun envoi ni suppression sans validation humaine." }
+			]
+		},
+		{
+			"id": "core",
+			"from": 362,
+			"len": 90,
+			"src": "viral/v-core",
+			"texts": [
+				{
+					"from": 4,
+					"to": 88,
+					"pos": "mid",
+					"eyebrow": "Noyau d’orchestration",
+					"lines": ["Chaque étape de l’agent,", "tracée."],
+					"accent": 1,
+					"size": 84
+				}
+			]
+		},
+		{
+			"id": "end",
+			"from": 452,
+			"len": 108,
+			"src": "frames-portrait/beacon",
+			"offset": 60,
+			"texts": [{ "from": 4, "to": 999, "pos": "end", "url": "raphaelpicard.com", "lines": ["Jouable sur téléphone."], "size": 72 }]
+		}
+	]
+}

@@ -146,7 +146,7 @@ export function StartScreen() {
 	return (
 		<>
 			<div
-				className={`fixed inset-0 z-30 flex flex-col items-center overflow-y-auto bg-gradient-to-t from-black/85 via-black/35 to-transparent px-4 pt-6 pb-[6vh] text-center transition-opacity duration-700 ${
+				className={`fixed inset-0 z-30 flex flex-col items-center overflow-y-auto bg-gradient-to-t from-black/85 via-black/35 to-transparent px-4 pt-6 pb-[6vh] text-center [@media(max-height:500px)]:pt-2 [@media(max-height:500px)]:pb-2 transition-opacity duration-700 ${
 					started ? 'pointer-events-none opacity-0' : 'opacity-100'
 				}`}
 				aria-hidden={started}
@@ -172,19 +172,19 @@ export function StartScreen() {
 							role="radio"
 							aria-checked={hero === h.id}
 							onClick={() => game.set({ hero: h.id })}
-							className="rounded-2xl border-2 bg-black/55 p-4 text-left backdrop-blur-md transition-all hover:-translate-y-0.5"
+							className="rounded-2xl border-2 bg-black/55 p-4 text-left backdrop-blur-md transition-all hover:-translate-y-0.5 [@media(max-height:500px)]:px-3 [@media(max-height:500px)]:py-2"
 							style={{ borderColor: hero === h.id ? h.ring : 'rgba(255,255,255,0.15)', boxShadow: hero === h.id ? `0 0 30px -8px ${h.ring}` : undefined }}
 						>
-							<p className="font-mono text-[0.65rem] tracking-widest uppercase" style={{ color: h.ring }}>
+							<p className="font-mono text-[0.65rem] tracking-widest uppercase [@media(max-height:500px)]:hidden" style={{ color: h.ring }}>
 								{h.tag}
 							</p>
-							<p className="font-display mt-1 text-lg font-bold text-white">{h.name}</p>
+							<p className="font-display mt-1 text-lg font-bold text-white [@media(max-height:500px)]:mt-0 [@media(max-height:500px)]:text-base">{h.name}</p>
 							<p className="mt-1 text-xs leading-snug text-white/70 pointer-coarse:hidden [@media(max-height:500px)]:hidden">{h.text}</p>
 						</button>
 					))}
 				</div>
 
-				<div className="order-4 mt-6 flex flex-wrap items-center justify-center gap-3 pointer-coarse:mt-4">
+				<div className="order-4 mt-6 flex flex-wrap items-center justify-center gap-3 pointer-coarse:mt-4 [@media(max-height:500px)]:mt-2">
 					<button
 						data-play
 						onClick={() => {
@@ -219,14 +219,14 @@ export function StartScreen() {
 					</button>
 				</div>
 				{!ready && (
-					<p className="order-5 mt-3 font-mono text-xs text-white/60" role="status">
+					<p className="order-5 mt-3 font-mono text-xs text-white/60 [@media(max-height:500px)]:hidden" role="status">
 						Chargement du monde{loading > 0 ? ` : ${loading} %` : '…'}
 					</p>
 				)}
 				<KeyHints withMouse className="order-6 mt-5 max-w-xl justify-center pointer-coarse:hidden" />
-				<p className="order-6 mt-5 hidden text-sm text-white/75 pointer-coarse:block">Joystick pour bouger, ⚔ attaquer, ⤒ sauter, touchez un lieu pour y aller ou parler. Glissez pour la caméra, pincez pour zoomer.</p>
+				<p className="order-6 mt-5 hidden text-sm text-white/75 [@media(pointer:coarse)_and_(min-height:501px)]:block">Joystick pour bouger, ⚔ attaquer, ⤒ sauter, touchez un lieu pour y aller ou parler. Glissez pour la caméra, pincez pour zoomer.</p>
 				{/* the recruiter's way: CV, classic page and contact one click away, without playing */}
-				<nav aria-label="Accès rapide" className="order-7 mt-5 flex flex-wrap items-center justify-center gap-2 text-sm pointer-coarse:order-2 pointer-coarse:mt-3">
+				<nav aria-label="Accès rapide" className="order-7 mt-5 flex flex-wrap items-center justify-center gap-2 text-sm [@media(pointer:coarse)_and_(min-height:501px)]:order-2 [@media(pointer:coarse)_and_(min-height:501px)]:mt-3 [@media(max-height:500px)]:mt-2">
 					<span className="text-white/60">Pressé ?</span>
 					<Pitch30Button className="rounded-full border border-[#7dd3fc]/60 bg-black/45 px-4 py-2 font-semibold text-[#7dd3fc] backdrop-blur-md hover:bg-black/70" />
 					<a href={hero_.secondaryCta.href} download className="rounded-full border border-[#ffd9a0]/50 bg-black/45 px-4 py-2 text-[#ffd9a0] backdrop-blur-md hover:bg-black/70">

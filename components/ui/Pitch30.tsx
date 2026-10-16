@@ -129,7 +129,7 @@ export function Pitch30Dialog() {
 							preload="metadata"
 							onError={() => setVideo(false)}
 						>
-							<track kind="captions" src={PITCH_CAPTIONS} srcLang="fr" label="Français" default />
+							<track kind="captions" src={PITCH_CAPTIONS} srcLang="fr" label="Français" />
 						</video>
 						{big ? (
 							<button type="button" onClick={() => setBig(false)} className="absolute top-3 right-3 rounded-full bg-black/70 px-4 py-2 text-sm font-semibold text-white hover:bg-black">

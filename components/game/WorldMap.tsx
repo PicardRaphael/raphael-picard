@@ -209,7 +209,8 @@ export function WorldMap() {
 			player.teleport = { x: l.x, z: l.z - 9, yaw: Math.PI };
 			return;
 		}
-		player.teleport = { x: l.x, z: l.z + Math.max(l.solid + 3, 5), yaw: 0 };
+		// the cinema faces its screen (west, on the facade at the end of the street)
+		player.teleport = l.id === 'cinema' ? { x: l.x + 8, z: l.z, yaw: Math.PI / 2 } : { x: l.x, z: l.z + Math.max(l.solid + 3, 5), yaw: 0 };
 		// arrived: the place opens as a click in the world would open it
 		if (l.id === 'cinema') openPitch30();
 		else {

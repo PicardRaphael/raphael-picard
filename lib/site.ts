@@ -64,11 +64,11 @@ export const site = {
 /**
  * Per-page metadata. Next.js replaces (it does not deep-merge) a layout's openGraph and twitter objects,
  * so each page gets complete ones: its own URL, title and description plus the shared fields.
- * The share image is app/opengraph-image.tsx; it is named explicitly because a nested route that sets
- * its own openGraph does not inherit the root's file-based image.
+ * The share image is public/og-raphael-picard.jpg (the poster of the video, « Ce portfolio est un jeu vidéo »);
+ * it is named explicitly on every page so a nested route never loses it.
  */
 export function pageMetadata({ path, title, description }: { path: string; title: string; description: string }): Metadata {
-	const images = [{ url: '/opengraph-image', width: 1200, height: 630, alt: `${site.name}, ${site.role} à Lyon` }];
+	const images = [{ url: '/og-raphael-picard.jpg', width: 1200, height: 630, alt: `${site.name}, ${site.role} à Lyon : ce portfolio est un jeu vidéo` }];
 	return {
 		title: { absolute: title },
 		description,

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
 import { ACHIEVEMENTS, unlocked } from '@/lib/achievements';
+import { Pitch30Button } from '@/components/ui/Pitch30';
 import { game, useGame } from '@/lib/game-store';
 import { mobs } from '@/lib/mobs';
 import { keymap } from '@/lib/keymap';
@@ -185,7 +186,7 @@ function Body({ tab }: { tab: Tab }) {
 					</p>
 					<p>Ceci est mon portfolio. Explorez le monde, parlez à Raphy, accomplissez les quêtes et corrigez les bugs pour découvrir mon parcours.</p>
 					<p>
-						Pressé ?{' '}
+						Pressé ? <Pitch30Button className="text-[#7dd3fc] underline-offset-4 hover:underline">Voir le résumé en 30 s</Pitch30Button>,{' '}
 						<a href="/cv-RaphaelPICARD-IA.pdf" download className="text-[#7dd3fc] underline-offset-4 hover:underline">
 							Téléchargez mon CV
 						</a>

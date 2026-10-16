@@ -259,3 +259,25 @@
 		cursor: text;
 	}
 }
+
+/* Portal crossing whirl (GameUI Warp): fades in, covers the screen at mid-time, fades out on the new realm. */
+@keyframes warp {
+	0% {
+		opacity: 0;
+		transform: scale(1.4);
+	}
+	45%,
+	55% {
+		opacity: 1;
+		transform: scale(1);
+	}
+	100% {
+		opacity: 0;
+		transform: scale(0.8);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.animate-\[warp_1\.3s_ease-in-out_forwards\] > div:first-child {
+		animation: none;
+	}
+}

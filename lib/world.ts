@@ -35,10 +35,12 @@ export const LANDMARKS: Landmark[] = [
 	{ id: 'stones', name: 'Le Cercle du Manifeste', hint: 'Lire les pierres', zone: 'val', x: 28, z: 20, radius: 9, solid: 0 },
 	{ id: 'portal', name: 'Le Portail arcanique', hint: 'Traverser le portail', zone: 'val', x: 0, z: -92, radius: 7, solid: 0 },
 	// career houses: each one tells a chapter of the CV
-	{ id: 'royal', name: 'Le Comptoir Royal Canin', hint: 'Entrer au Comptoir', zone: 'val', x: 17, z: -12, radius: 9.5, solid: 5.5 },
+	// walking north to the portal reads the CV in order: Leasys (2018), Schoolmouv (2022), Royal Canin (2022–2025)
+	{ id: 'royal', name: 'Le Comptoir Royal Canin', hint: 'Entrer au Comptoir', zone: 'val', x: 24, z: -52, radius: 9.5, solid: 5 },
 	{ id: 'schoolmouv', name: 'L’Atelier Schoolmouv', hint: 'Visiter l’Atelier', zone: 'val', x: -16, z: -30, radius: 9.5, solid: 5.5 },
-	{ id: 'leasys', name: 'Le Garage Leasys', hint: 'Ouvrir le Garage', zone: 'val', x: 24, z: -52, radius: 9.5, solid: 5 },
+	{ id: 'leasys', name: 'Le Garage Leasys', hint: 'Ouvrir le Garage', zone: 'val', x: 17, z: -12, radius: 9.5, solid: 5.5 },
 	// — Le Nexus (futuristic) —
+	{ id: 'cinema', name: 'Ciné Nexus', hint: 'Regarder le film', zone: 'nexus', x: -36, z: NEXUS_Z - 1.5, radius: 9, solid: 0 },
 	{ id: 'portal-back', name: 'Portail de retour', hint: 'Retourner au val', zone: 'nexus', x: 0, z: NEXUS_Z + 14, radius: 6, solid: 0 },
 	{ id: 'holo', name: 'Raphy·OS', hint: 'Parler à Raphy·OS', zone: 'nexus', x: -10, z: NEXUS_Z - 22, radius: 7, solid: 1.4 },
 	{ id: 'agents', name: 'Constellation des Agents', hint: 'Analyser la constellation', zone: 'nexus', x: -32, z: NEXUS_Z - 86, radius: 10, solid: 2.5 },
@@ -192,8 +194,11 @@ export function groundAt(x: number, z: number) {
  * The Nexus is a Hong Kong street canyon: the main avenue along the axis, and four side streets
  * (two on each side, where the city blocks leave their crossroads). Everything else is building.
  */
-const NEXUS_AVENUE = { x: 14, zMin: NEXUS_Z - 146, zMax: NEXUS_Z + 24 };
-const NEXUS_SIDE_STREETS = [
+const NEXUS_AVENUE = { x: 14, zMin: NEXUS_Z - 136, zMax: NEXUS_Z + 24 };
+/** Where the avenue ends behind the beacon, and where the side streets end: a night facade closes each one. */
+export const NEXUS_AVENUE_END = NEXUS_Z - 142;
+export const NEXUS_STREET_END = 44;
+export const NEXUS_SIDE_STREETS = [
 	{ side: -1, z0: NEXUS_Z - 8, z1: NEXUS_Z + 5 },
 	{ side: -1, z0: NEXUS_Z - 92, z1: NEXUS_Z - 79 },
 	{ side: 1, z0: NEXUS_Z - 41, z1: NEXUS_Z - 28 },
@@ -201,7 +206,7 @@ const NEXUS_SIDE_STREETS = [
 ];
 export function nexusWalkable(x: number, z: number) {
 	if (Math.abs(x) <= NEXUS_AVENUE.x && z >= NEXUS_AVENUE.zMin && z <= NEXUS_AVENUE.zMax) return true;
-	return NEXUS_SIDE_STREETS.some((s) => z >= s.z0 && z <= s.z1 && x * s.side >= 0 && Math.abs(x) <= 60);
+	return NEXUS_SIDE_STREETS.some((s) => z >= s.z0 && z <= s.z1 && x * s.side >= 0 && Math.abs(x) <= NEXUS_STREET_END - 2);
 }
 
 /**
@@ -218,8 +223,11 @@ export function nexusWaypoint(x: number, z: number, tx: number, tz: number) {
 		}
 	}
 	if (clear) return { x: tx, z: tz };
-	if (Math.abs(x) > NEXUS_AVENUE.x - 2) return { x: Math.sign(x) * (NEXUS_AVENUE.x - 4), z };
-	return { x: Math.sign(tx || 1) * (NEXUS_AVENUE.x - 4), z: tz };
+	// the walking lane runs 6 m off the axis, clear of the kiosks and of Raphy·OS (x ±10): joined square, then followed
+	if (Math.abs(x) > NEXUS_AVENUE.x - 2) return { x: Math.sign(x) * (NEXUS_AVENUE.x - 8), z };
+	const lane = Math.sign(tx || 1) * (NEXUS_AVENUE.x - 8);
+	if (Math.abs(x - lane) > 1.5) return { x: lane, z };
+	return { x: lane, z: tz };
 }
 
 /** Next waypoint toward a target in the val: straight, unless the lake is in the way — then around its shore. */

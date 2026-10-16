@@ -34,7 +34,7 @@ function litWindowsOnly(shader: { fragmentShader: string }) {
 		'#include <emissivemap_fragment>',
 		`#ifdef USE_EMISSIVEMAP
 			vec4 emissiveColor = texture2D( emissiveMap, vEmissiveMapUv );
-			float lit = mix( 0.45, 1.3, smoothstep( 0.4, 0.7, dot( emissiveColor.rgb, vec3( 0.299, 0.587, 0.114 ) ) ) );
+			float lit = mix( 0.05, 1.25, smoothstep( 0.5, 0.78, dot( emissiveColor.rgb, vec3( 0.299, 0.587, 0.114 ) ) ) );
 			totalEmissiveRadiance *= emissiveColor.rgb * lit;
 		#endif`,
 	);
@@ -56,7 +56,9 @@ export function NexusCity() {
 				if (m.map) {
 					m.emissiveMap = m.map;
 					m.emissive = new THREE.Color('#ffd9b0');
-					m.emissiveIntensity = 0.8;
+					m.emissiveIntensity = 0.85;
+					// the daylight photo walls sink into the night: only windows, shop fronts and the neon read
+					m.color.multiplyScalar(0.42);
 					m.onBeforeCompile = litWindowsOnly;
 					m.customProgramCacheKey = () => 'nexus-lit-windows';
 				}

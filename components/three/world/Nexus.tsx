@@ -9,6 +9,7 @@ import { useGame } from '@/lib/game-store';
 import { player } from '@/lib/player-state';
 import { NEXUS_CENTER, landmark } from '@/lib/world';
 import { constellation, knot, mulberry32 } from '../shapes';
+import { Cinema } from './Cinema';
 import { Street } from './Street';
 import { NexusCity } from './NexusCity';
 import { SfModel } from './SfModel';
@@ -268,6 +269,7 @@ export function Nexus({ pixelRatio }: { pixelRatio: number; reflect?: boolean })
 		<group>
 			<Suspense fallback={null}>
 				<Street />
+				<Cinema />
 			</Suspense>
 			{/* the city is heavy: fetched once the game runs, never on the start screen */}
 			{loadCity && (

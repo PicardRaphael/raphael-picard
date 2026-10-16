@@ -125,7 +125,9 @@ function MobUnit({ mob }: { mob: Mob }) {
 		g.visible = zone === mob.zone;
 		if (!g.visible) return;
 		mob.t += dt;
-		mob.cooldown = Math.max(0, mob.cooldown - dt);
+		const s = game.get();
+		const calm = s.panel !== null || s.overlay !== null || s.warp !== null;
+		mob.cooldown = calm ? Math.max(mob.cooldown, 1.5) : Math.max(0, mob.cooldown - dt);
 		const dp = Math.hypot(player.x - mob.x, player.z - mob.z);
 
 		// monsters stay on dry land and outside the houses: pushed back to the edge, and they stop wandering there
@@ -197,7 +199,7 @@ function MobUnit({ mob }: { mob: Mob }) {
 				break;
 			case 'attack':
 				mob.yaw = Math.atan2(player.x - mob.x, player.z - mob.z);
-				if (mob.t > 0.55 && mob.t - dt <= 0.55 && dp < 2.8) window.dispatchEvent(new CustomEvent('player:hit'));
+				if (!calm && mob.t > 0.55 && mob.t - dt <= 0.55 && dp < 2.8) window.dispatchEvent(new CustomEvent('player:hit'));
 				if (mob.t > 1.1) {
 					mob.state = 'chase';
 					mob.t = 0;

@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'motion/react';
-import { useActionState, useState } from 'react';
+import { useActionState, useEffect, useState } from 'react';
 
 import { type ContactState, sendContact } from '@/app/actions/contact';
 import { Reveal } from '@/components/ui/Reveal';
@@ -18,6 +18,18 @@ const channels = [
 export function Contact() {
 	const [state, action, pending] = useActionState<ContactState, FormData>(sendContact, {});
 	const [open, setOpen] = useState(false);
+	// « Écrire à Raphaël » (résumé 30 s, fin du jeu) lands on /portfolio#ecrire: the form opens by itself
+	useEffect(() => {
+		const on = () => {
+			if (window.location.hash === '#ecrire') setOpen(true);
+		};
+		const t = setTimeout(on, 0);
+		window.addEventListener('hashchange', on);
+		return () => {
+			clearTimeout(t);
+			window.removeEventListener('hashchange', on);
+		};
+	}, []);
 
 	return (
 		<section id="contact" data-station="7" aria-labelledby="contact-title" className="relative py-28 sm:py-40">
@@ -45,7 +57,7 @@ export function Contact() {
 				</Reveal>
 
 				<Reveal delay={0.1}>
-					<div className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#0a0716]/85 p-6 shadow-[0_0_90px_-30px_#c50eff] backdrop-blur-xl sm:p-8">
+					<div id="ecrire" className="relative scroll-mt-24 overflow-hidden rounded-3xl border border-white/10 bg-[#0a0716]/85 p-6 shadow-[0_0_90px_-30px_#c50eff] backdrop-blur-xl sm:p-8">
 						<AnimatePresence initial={false} mode="wait">
 							{!open ? (
 								<motion.div key="gate" exit={{ opacity: 0, scale: 1.08, filter: 'blur(10px)' }} transition={{ duration: 0.5 }} className="flex flex-col items-center py-10 text-center">

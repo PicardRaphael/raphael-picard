@@ -14,6 +14,7 @@ import { AchievementWatcher, Menu } from './Menu';
 import { drawMarker } from './mapMarkers';
 import { Soundtrack } from './Soundtrack';
 import { BugCard } from './BugCard';
+import { EndCard } from './EndCard';
 import { Crosshair } from './Crosshair';
 import { KeyHints } from './KeyHints';
 import { StartScreen } from './StartScreen';
@@ -38,6 +39,18 @@ function ZoneBanner() {
 		<div key={visible.id} className="pointer-events-none fixed inset-x-0 top-[16vh] z-20 [@media(max-height:500px)]:top-[22vh] animate-[zone-in_3.8s_ease-out_forwards] text-center">
 			<p className="font-display text-4xl font-extrabold tracking-wide text-[#ffd100] drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] sm:text-6xl [@media(max-height:500px)]:text-3xl">{visible.title}</p>
 			<p className="mt-2 font-mono text-sm tracking-[0.3em] text-white/85 uppercase drop-shadow [@media(max-height:500px)]:mt-1 [@media(max-height:500px)]:text-xs">{visible.subtitle}</p>
+		</div>
+	);
+}
+
+/** Portal crossing: a violet then white whirl fills the screen for 1.3 s while the realm changes behind it. */
+function Warp() {
+	const warp = useGame((s) => s.warp);
+	if (warp === null) return null;
+	return (
+		<div key={warp} className="pointer-events-none fixed inset-0 z-[45] animate-[warp_1.3s_ease-in-out_forwards]" aria-hidden>
+			<div className="absolute inset-[-50%] animate-[spin_1.3s_linear] bg-[conic-gradient(from_0deg,#651fff,#c50eff,#5ef2ff,#e879f9,#651fff)] opacity-70 blur-2xl" />
+			<div className="absolute inset-0 bg-[radial-gradient(circle,#ffffff_0%,rgba(255,255,255,0.6)_25%,transparent_65%)]" />
 		</div>
 	);
 }
@@ -362,6 +375,8 @@ export function GameUI() {
 			<ZoneBanner />
 			<Toast />
 			<Ticker />
+			<Warp />
+			<EndCard />
 			<BugCard />
 			<Soundtrack />
 			<HurtFlash />

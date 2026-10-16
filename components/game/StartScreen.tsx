@@ -3,10 +3,13 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
+import { Pitch30Button } from '@/components/ui/Pitch30';
 import { hero as hero_ } from '@/content/profile';
 import { game, useGame } from '@/lib/game-store';
 import { ACTIONS, type Action, keyLabel, keymap } from '@/lib/keymap';
 import { music } from '@/lib/music';
+import { player } from '@/lib/player-state';
+import { NEXUS_SPAWN } from '@/lib/world';
 import { KeyHints } from './KeyHints';
 
 type LayoutMap = Map<string, string>;
@@ -99,6 +102,16 @@ const HEROES = [
 	{ id: 'runner' as const, name: 'Runner du Nexus', tag: 'Cyberpunk', text: 'Vue à la première personne, fusil sci-fi : la ville à hauteur d’yeux.', ring: '#e879f9' },
 ];
 
+/** Starts the game, back in the realm the save was left in. */
+function begin() {
+	game.set({ started: true, sound: true });
+	if (game.get().resume === 'nexus') {
+		player.teleport = { ...NEXUS_SPAWN };
+		game.set({ zone: 'nexus', resume: 'val' });
+		game.banner('Le Nexus', 'L’ère des agents');
+	}
+}
+
 export function StartScreen() {
 	const started = useGame((s) => s.started);
 	const hero = useGame((s) => s.hero);
@@ -109,12 +122,12 @@ export function StartScreen() {
 	// a click before the world is ready is remembered: the game starts by itself once the shaders are warm
 	const [queued, setQueued] = useState(false);
 	useEffect(() => {
-		if (queued && ready) game.set({ started: true, sound: true });
+		if (queued && ready) begin();
 	}, [queued, ready]);
 	const play = () => {
 		// unlock audio inside the gesture itself (required by Safari / iOS)
 		void music.start();
-		if (ready) game.set({ started: true, sound: true });
+		if (ready) begin();
 		else setQueued(true);
 	};
 
@@ -213,6 +226,7 @@ export function StartScreen() {
 				{/* the recruiter's way: CV, classic page and contact one click away, without playing */}
 				<nav aria-label="Accès rapide" className="mt-5 flex flex-wrap items-center justify-center gap-2 text-sm">
 					<span className="text-white/60">Pressé ?</span>
+					<Pitch30Button className="rounded-full border border-[#7dd3fc]/60 bg-black/45 px-4 py-2 font-semibold text-[#7dd3fc] backdrop-blur-md hover:bg-black/70" />
 					<a href={hero_.secondaryCta.href} download className="rounded-full border border-[#ffd9a0]/50 bg-black/45 px-4 py-2 text-[#ffd9a0] backdrop-blur-md hover:bg-black/70">
 						Télécharger le CV
 					</a>

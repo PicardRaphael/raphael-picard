@@ -141,10 +141,16 @@ describe('game store', () => {
 		expect(game.get().quests).toEqual({ ...before, parcours: 'done' });
 	});
 
+	it('accept: a side quest never steals the tracking of the quest in progress', () => {
+		game.accept('parcours');
+		game.accept('chasse');
+		expect(game.get().tracked).toBe('parcours');
+	});
+
 	it('complete: untracks the completed quest but keeps another tracked one', () => {
 		game.accept('parcours');
 		game.accept('chasse');
-		expect(game.get().tracked).toBe('chasse');
+		game.set({ tracked: 'chasse' });
 		game.complete('parcours');
 		expect(game.get().tracked).toBe('chasse');
 		game.complete('chasse');

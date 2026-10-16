@@ -18,8 +18,12 @@ export function Soundtrack() {
 	}, [sound]);
 
 	useEffect(() => {
-		// heard in the game only (not while the start screen still plays the intro)
-		if (sound && game.get().started) game.flag(zone === 'val' ? 'music_val' : 'music_nexus');
+		// really listened to: 30 s of music in the realm, in the game (not under the start screen)
+		if (!sound) return;
+		const t = setTimeout(() => {
+			if (game.get().started && game.get().zone === zone) game.flag(zone === 'val' ? 'music_val' : 'music_nexus');
+		}, 30000);
+		return () => clearTimeout(t);
 	}, [sound, zone]);
 
 	useEffect(() => {

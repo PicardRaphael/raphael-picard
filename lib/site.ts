@@ -7,7 +7,7 @@ export const site = {
 	jobTitle: 'Senior AI Engineer & Responsable IA',
 	/** Last content update (sitemap, structured data); the CV PDF has its own date. */
 	updatedAt: '2026-10-15',
-	cvUpdatedAt: '2026-05-26',
+	cvUpdatedAt: '2026-10-16',
 	/** ≤ 60 characters: the search result title. */
 	title: 'Raphaël Picard · Senior AI Engineer & Responsable IA, Lyon',
 	/** ≤ 155 characters: the search result snippet. */

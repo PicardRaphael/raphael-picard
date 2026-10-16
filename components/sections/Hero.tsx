@@ -1,4 +1,5 @@
 import { Counter } from '@/components/ui/Counter';
+import { Pitch30Button } from '@/components/ui/Pitch30';
 import { PilotButton } from '@/components/ui/PilotButton';
 import { ScrambleText } from '@/components/ui/ScrambleText';
 import { hero, stack, stats } from '@/content/profile';
@@ -33,6 +34,7 @@ export function Hero() {
 						<a href={hero.secondaryCta.href} download className="glass hover:border-signal/50 rounded-full px-6 py-3 font-semibold transition-colors">
 							{hero.secondaryCta.label}
 						</a>
+						<Pitch30Button className="glass hover:border-signal/50 text-signal rounded-full px-6 py-3 font-semibold transition-colors" />
 						<PilotButton />
 					</div>
 				</div>

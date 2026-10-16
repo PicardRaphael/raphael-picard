@@ -75,7 +75,7 @@ export const projects: Project[] = [
 		kind: 'Méta-framework Claude Code',
 		pitch: 'Mon studio R&D : il conseille, génère de la configuration Claude Code conforme et capitalise chaque leçon dans un vault interrogeable par MCP.',
 		highlights: [
-			'Serveur MCP forge-brain : FastMCP + SQLite FTS5, 22 outils',
+			'Serveur MCP de connaissances : FastMCP + SQLite FTS5, 22 outils',
 			'Hooks bloquants, doctrine vivante avec validation humaine typée',
 			'Contournement documenté des MCP non chargés dans les sub-agents',
 		],
@@ -206,6 +206,12 @@ export const certifications = [
 	{ name: 'Introduction to Model Context Protocol', issuer: 'Anthropic Academy' },
 	{ name: 'AI Agents Fundamentals', issuer: 'Hugging Face / Google' },
 	{ name: 'Concepteur Développeur Web — RNCP 6 (Bac+4)', issuer: "O'clock" },
+];
+
+/** Degrees, with their years (CV). */
+export const education = [
+	{ name: 'Concepteur Développeur Web — titre RNCP niveau 6 (Bac+4)', school: 'O’clock', years: '2018 – 2019' },
+	{ name: 'Développeur Logiciel — titre RNCP niveau 5 (Bac+2)', school: 'O’clock', years: '2018' },
 ];
 
 export const testimonials = [

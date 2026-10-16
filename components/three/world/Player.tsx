@@ -4,6 +4,7 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 
+import { openPitch30 } from '@/components/ui/Pitch30';
 import { game, useGame } from '@/lib/game-store';
 import { keymap } from '@/lib/keymap';
 import { mobs, nearestMob } from '@/lib/mobs';
@@ -31,6 +32,12 @@ function resetInput() {
 /** Opens a landmark panel (and progresses quests). */
 export function interact(id: string) {
 	player.moveTarget = null;
+	// the cinema plays the 30-second film in full, with sound
+	if (id === 'cinema') {
+		game.visit(id);
+		openPitch30();
+		return;
+	}
 	game.set({ panel: id });
 	game.visit(id);
 }
@@ -54,6 +61,11 @@ function damage(target: (typeof mobs)[number]) {
 
 /** Melee for the knight (sword), ranged laser shots for the cyberpunk runner. */
 /** The runner plays in first person unless the visitor scrolled out to the third-person view. */
+/** Pointer lock refused by the browser: only then does a cursor parked at a screen edge keep turning the view. */
+let lockRefused = false;
+/** A site-wide window is open over the game (« Raphaël en 30 secondes »). */
+const modalOpen = () => typeof document !== 'undefined' && !!document.documentElement.dataset.modal;
+
 export const isFps = () => game.get().hero === 'runner' && player.camera.firstPerson;
 
 export const attackRange = () => (game.get().hero === 'runner' ? 22 : 4.6);
@@ -254,7 +266,17 @@ function usePointerControls() {
 			if (!game.get().started || game.get().panel || game.get().overlay) return;
 			if (isFps() && e.pointerType === 'mouse' && !player.camera.free) {
 				// first person: capture the mouse (unlimited turning) and shoot at the centre of the screen
-				if (document.pointerLockElement !== el) el.requestPointerLock?.()?.catch?.(() => undefined);
+				if (document.pointerLockElement !== el) {
+					if (!el.requestPointerLock) lockRefused = true;
+					else
+						el.requestPointerLock()
+							?.then?.(() => {
+								lockRefused = false;
+							})
+							?.catch?.(() => {
+								lockRefused = true;
+							});
+				}
 				attack();
 				return;
 			}
@@ -362,7 +384,9 @@ function usePointerControls() {
 				player.camera.fpsPitch = THREE.MathUtils.clamp(player.camera.fpsPitch - e.movementY * 0.002, -1.25, 1.25);
 				player.camera.swayX += e.movementX;
 				player.camera.swayY += e.movementY;
-				// remember where the cursor is: near an edge the view keeps turning on its own (no pointer lock)
+				// remember where the cursor is: near an edge the view keeps turning on its own (no pointer lock);
+				// under the lock the cursor position is frozen and meaningless
+				if (document.pointerLockElement) return;
 				const rr = el.getBoundingClientRect();
 				player.camera.lookX = THREE.MathUtils.clamp(((e.clientX - rr.left) / rr.width) * 2 - 1, -1, 1);
 				player.camera.lookY = THREE.MathUtils.clamp(((e.clientY - rr.top) / rr.height) * 2 - 1, -1, 1);
@@ -376,7 +400,7 @@ function usePointerControls() {
 		const leave = () => {
 			// first person without pointer lock: a cursor that left the window by a side keeps turning the view
 			// that way (full 360°) until it comes back; otherwise the free look recentres
-			if (isFps() && !document.pointerLockElement && Math.abs(player.camera.lookX) > 0.5) {
+			if (isFps() && lockRefused && !document.pointerLockElement && Math.abs(player.camera.lookX) > 0.5) {
 				player.camera.lookX = Math.sign(player.camera.lookX);
 				player.camera.lookY = 0;
 				return;
@@ -386,6 +410,13 @@ function usePointerControls() {
 		};
 		el.addEventListener('pointermove', look);
 		el.addEventListener('pointerleave', leave);
+		// the mouse is released (Escape, a panel, a window): the view stops where it is
+		const unlocked = () => {
+			if (document.pointerLockElement) return;
+			player.camera.lookX = 0;
+			player.camera.lookY = 0;
+		};
+		document.addEventListener('pointerlockchange', unlocked);
 		el.addEventListener('pointerdown', down);
 		el.addEventListener('pointermove', move);
 		el.addEventListener('pointerup', up);
@@ -394,6 +425,7 @@ function usePointerControls() {
 		const noMenu = (e: Event) => e.preventDefault();
 		el.addEventListener('contextmenu', noMenu);
 		return () => {
+			document.removeEventListener('pointerlockchange', unlocked);
 			el.removeEventListener('pointermove', look);
 			el.removeEventListener('pointerleave', leave);
 			el.removeEventListener('pointerdown', down);
@@ -417,6 +449,8 @@ const OBSTACLES: { x: number; z: number; r: number }[] = [
 	{ x: LAKE.x, z: LAKE.z, r: LAKE.r + 1.8 },
 	// the pedestals under the wings of the Nexus return gate (Nexus.tsx)
 	...[-9.6, 9.6].map((dx) => ({ x: landmark('portal-back').x + dx, z: landmark('portal-back').z, r: 2.7 })),
+	// the house part of the Tower of Knowledge (the landmark circle only covers the tower itself)
+	{ x: landmark('tower').x + 8.5, z: landmark('tower').z + 4, r: 5.5 },
 	// the street lamp poles of the Nexus avenue
 	...NEXUS_LAMPS.map((l) => ({ x: l.x, z: l.z, r: 0.25 })),
 ];
@@ -455,6 +489,7 @@ export function Player() {
 	usePointerControls();
 	const { camera, scene } = useThree();
 	const hero = useGame((s) => s.hero);
+	const started = useGame((s) => s.started);
 	const [firstPerson, setFirstPerson] = useState(player.camera.firstPerson);
 	useEffect(() => {
 		const on = (e: Event) => setFirstPerson((e as CustomEvent<boolean>).detail);
@@ -520,7 +555,8 @@ export function Player() {
 		const dt = Math.min(delta, 1 / 20);
 		v.time += dt;
 		const g = game.get();
-		const canMove = g.started && !g.panel && !g.overlay;
+		const modal = modalOpen() || g.ending;
+		const canMove = g.started && !g.panel && !g.overlay && g.warp === null && !modal;
 
 		if (player.teleport) {
 			player.x = player.teleport.x;
@@ -539,8 +575,8 @@ export function Player() {
 		if (canMove) player.camera.yaw += inp.turn * 2.2 * dt;
 		// free look: in first person the view keeps turning near the screen edges; in third person it barely leans
 		const fps = g.hero === 'runner' && player.camera.firstPerson && g.started;
-		if (fps && (g.panel || g.overlay) && document.pointerLockElement) document.exitPointerLock();
-		if (fps && !g.panel && !g.overlay && !player.camera.free && !document.pointerLockElement) {
+		if (fps && (g.panel || g.overlay || modal) && document.pointerLockElement) document.exitPointerLock();
+		if (fps && lockRefused && !g.panel && !g.overlay && !modal && !player.camera.free && !document.pointerLockElement) {
 			// edge relay: the cursor parked near a border keeps turning the view
 			const ax = player.camera.lookX;
 			const ay = player.camera.lookY;
@@ -784,7 +820,9 @@ export function Player() {
 		}
 		// first person zooms with the wheel; the third-person camera keeps the default lens
 		const cam = camera as THREE.PerspectiveCamera;
-		const wantFov = fps ? player.camera.fov : 55;
+		// crossing a portal: the view is sucked forward (wider field of view), then settles in the new realm
+		const warpK = g.warp === null ? 0 : Math.sin(Math.min(1, (performance.now() - g.warp) / 1300) * Math.PI);
+		const wantFov = (fps ? player.camera.fov : 55) + warpK * 45;
 		// a close near plane in first person, so a zoomed-in (scaled-down) gun is never clipped
 		const wantNear = fps ? 0.04 : 0.3;
 		if (Math.abs(cam.fov - wantFov) > 0.05 || cam.near !== wantNear) {
@@ -834,17 +872,29 @@ export function Player() {
 		if (g.started) {
 			const portal = landmark('portal');
 			const back = landmark('portal-back');
-			if (Math.hypot(player.x - portal.x, player.z - portal.z) < 2.8) {
-				game.visit('portal');
-				player.teleport = { ...NEXUS_SPAWN };
-				game.set({ zone: 'nexus' });
-				game.flag('nexus');
-				game.banner('Le Nexus', 'L’ère des agents');
+			const cross = (arrive: () => void) => {
+				// the whirl covers the screen at its peak: the realm changes there, unseen
+				game.set({ warp: performance.now() });
+				game.holdToasts(1300 + 3800);
+				player.moveTarget = null;
+				setTimeout(arrive, 620);
+				setTimeout(() => game.set({ warp: null }), 1300);
+			};
+			if (g.warp === null && Math.hypot(player.x - portal.x, player.z - portal.z) < 2.8) {
+				cross(() => {
+					game.visit('portal');
+					player.teleport = { ...NEXUS_SPAWN };
+					game.set({ zone: 'nexus' });
+					game.flag('nexus');
+					game.banner('Le Nexus', 'L’ère des agents');
+				});
 			}
-			if (Math.hypot(player.x - back.x, player.z - back.z) < 2.4) {
-				player.teleport = { x: portal.x, z: portal.z + 10, yaw: Math.PI };
-				game.set({ zone: 'val' });
-				game.banner('Val des Origines', 'L’ère du code');
+			if (g.warp === null && Math.hypot(player.x - back.x, player.z - back.z) < 2.4) {
+				cross(() => {
+					player.teleport = { x: portal.x, z: portal.z + 10, yaw: Math.PI };
+					game.set({ zone: 'val' });
+					game.banner('Val des Origines', 'L’ère du code');
+				});
 			}
 		}
 	});
@@ -852,7 +902,8 @@ export function Player() {
 	return (
 		<>
 			<Suspense fallback={null}>
-				{hero === 'runner' && firstPerson ? <FpsWeapon /> : <HeroModel key={hero} ref={body} kind={hero} animation={anim} speed={animSpeed} />}
+				{/* the rifle is glued to the camera: only in play, never under the start screen's orbiting intro camera */}
+				{hero === 'runner' && firstPerson && started ? <FpsWeapon /> : <HeroModel key={hero} ref={body} kind={hero} animation={anim} speed={animSpeed} />}
 			</Suspense>
 			<ClickMarker />
 		</>

@@ -13,10 +13,22 @@ export const hero = {
 	secondaryCta: { label: 'Télécharger le CV', href: '/cv-RaphaelPICARD-IA.pdf' },
 };
 
+/** « Raphaël en 30 secondes » : the summary a hurried reader gets everywhere (game start screen, menu, /portfolio). */
+export const pitch30 = {
+	title: 'Raphaël en 30 secondes',
+	points: [
+		{ label: 'Qui', text: 'Senior AI Engineer & Responsable IA chez Neoteem, à Lyon. 8+ ans d’ingénierie logicielle, dont la mise en production de l’IA.' },
+		{ label: 'Ce qu’il livre', text: '7 agents IA en production (NeoChat, NeoSupport, NeoAgent), utilisés chaque jour par des gestionnaires immobiliers sur leurs propres données.' },
+		{ label: 'Comment', text: 'Des agents qui lisent l’ERP sans pouvoir le modifier, 5 contrôles humains avant toute action engageante, chaque version évaluée avant sa mise en ligne.' },
+		{ label: 'Résultat', text: '−33 % sur la facture des modèles grâce au context caching, et une équipe IA encadrée et formée pour faire vivre les agents.' },
+		{ label: 'Pourquoi lui', text: 'Un profil hybride : il parle architecture aux développeurs, coûts et usages aux dirigeants, et prompts aux modèles.' },
+	],
+};
+
 export const stats = [
 	{ value: 7, suffix: '', label: 'agents IA en production' },
 	{ value: 5, suffix: '', label: 'contrôles humains avant toute action engageante' },
-	{ value: 33, suffix: ' %', label: 'de coûts d’inférence (context caching)' },
+	{ value: 33, suffix: ' %', label: 'de coûts d’inférence en moins (context caching)' },
 	{ value: 8, suffix: '+', label: 'ans d’ingénierie logicielle' },
 ];
 

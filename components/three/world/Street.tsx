@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import * as THREE from 'three';
 
-import { NEXUS_CENTER, NEXUS_LAMPS } from '@/lib/world';
+import { NEXUS_AVENUE_END, NEXUS_CENTER, NEXUS_LAMPS, NEXUS_SIDE_STREETS, NEXUS_STREET_END } from '@/lib/world';
 
 const LIGHT_COLORS = ['#ff4fd8', '#5ef2ff', '#ffb45c', '#b18cff'];
 /** The 8 real point lights sit in 8 of the lamp heads, spread along the avenue (the light count never changes). */
@@ -28,7 +28,13 @@ function poolTexture() {
 	return new THREE.CanvasTexture(c);
 }
 
-/** Modern street lamps along the avenue: pole, arm, glowing head, a faint light cone and a pool on the road. */
+/** Head and pool colour of each lamp: the 8 lit ones wear the colour of their light, the others a street white. */
+const lampTint = (i: number) => {
+	const k = LIT.indexOf(i);
+	return k >= 0 ? LIGHT_COLORS[k % LIGHT_COLORS.length] : HEAD_TINTS[i % HEAD_TINTS.length];
+};
+
+/** Modern street lamps along the avenue: pole, arm, glowing head and a small coloured pool on the road. */
 function Lamps() {
 	const meshes = useMemo(() => {
 		const metal = new THREE.MeshStandardMaterial({ color: '#2a2f3d', metalness: 0.7, roughness: 0.4 });
@@ -38,8 +44,7 @@ function Lamps() {
 			{ geo: new THREE.CylinderGeometry(0.1, 0.15, 7.4, 8), mat: metal, at: (s: number, h: number) => [0, 3.7 * h, 0], stretch: true },
 			{ geo: new THREE.BoxGeometry(2.3, 0.12, 0.14), mat: metal, at: (s: number, h: number) => [-s * 1.1, 7.3 * h, 0] },
 			{ geo: new THREE.BoxGeometry(1.1, 0.16, 0.44), mat: new THREE.MeshBasicMaterial({ color: new THREE.Color(2, 2, 2), toneMapped: false }), at: (s: number, h: number) => [-s * 2.1, HEAD_Y * h, 0], tinted: true },
-			{ geo: new THREE.CylinderGeometry(0.35, 3.4, HEAD_Y, 24, 1, true), mat: additive('#cfe8ff', 0.035), at: (s: number, h: number) => [-s * 2.1, (HEAD_Y * h) / 2, 0], stretch: true },
-			{ geo: new THREE.PlaneGeometry(9, 9), mat: additive('#dbeeff', 0.9, poolTexture()), at: (s: number) => [-s * 2.1, -0.02, 0], flat: true },
+			{ geo: new THREE.PlaneGeometry(5, 5), mat: additive('#ffffff', 0.7, poolTexture()), at: (s: number) => [-s * 2.1, -0.02, 0], flat: true, tinted: true },
 		];
 		const m = new THREE.Matrix4();
 		const q = new THREE.Quaternion();
@@ -51,7 +56,7 @@ function Lamps() {
 				const [x, y, z] = p.at(l.side, l.h);
 				m.compose(new THREE.Vector3(l.x + x, y, l.z + z), p.flat ? flat : q, 'stretch' in p ? new THREE.Vector3(1, l.h, 1) : one);
 				mesh.setMatrixAt(i, m);
-				if ('tinted' in p) mesh.setColorAt(i, new THREE.Color(HEAD_TINTS[i % HEAD_TINTS.length]));
+				if ('tinted' in p) mesh.setColorAt(i, new THREE.Color(lampTint(i)));
 			});
 			mesh.castShadow = p.mat === metal;
 			// the instances span the whole avenue: never culled as one block
@@ -68,6 +73,99 @@ function Lamps() {
 	);
 }
 
+/** A night facade: dark wall, scattered lit windows (warm, cyan, magenta) and one vertical neon strip. Unlit. */
+function facadeTexture(seed: number) {
+	const c = document.createElement('canvas');
+	c.width = 512;
+	c.height = 512;
+	const ctx = c.getContext('2d');
+	if (ctx) {
+		let n = seed;
+		const rnd = () => ((n = (n * 16807) % 2147483647) - 1) / 2147483646;
+		ctx.fillStyle = '#06070b';
+		ctx.fillRect(0, 0, 512, 512);
+		// mostly warm and cold whites, a rare coloured room; whole floors asleep
+		const lit = ['#ffd49a', '#ffe6c2', '#ffd49a', '#d6e9ff', '#fff3de', '#ff9be8', '#8ff0ff'];
+		for (let y = 6; y < 512; y += 20) {
+			const awake = rnd() < 0.75;
+			ctx.fillStyle = '#0c0e15';
+			ctx.fillRect(0, y + 13, 512, 3);
+			for (let x = 5; x < 512; x += 12) {
+				const r = rnd();
+				if (awake && r < 0.2) {
+					ctx.fillStyle = lit[Math.floor(rnd() * lit.length)];
+					ctx.globalAlpha = 0.45 + rnd() * 0.5;
+				} else {
+					ctx.fillStyle = r < 0.6 ? '#10131c' : '#0a0c12';
+					ctx.globalAlpha = 1;
+				}
+				ctx.fillRect(x, y, 7, 10);
+			}
+		}
+		ctx.globalAlpha = 1;
+		// one vertical neon sign
+		const neon = ['#ff4fd8', '#5ef2ff', '#b18cff'][seed % 3];
+		ctx.fillStyle = neon;
+		const sx = seed % 2 ? 60 : 430;
+		ctx.fillRect(sx, 120, 22, 230);
+		ctx.fillStyle = '#06070b';
+		for (let y = 132; y < 340; y += 34) ctx.fillRect(sx + 5, y, 12, 20);
+	}
+	const t = new THREE.CanvasTexture(c);
+	t.colorSpace = THREE.SRGBColorSpace;
+	t.anisotropy = 4;
+	t.wrapS = t.wrapT = THREE.RepeatWrapping;
+	return t;
+}
+
+/** Facades closing the four side streets and the avenue behind the beacon, so no street opens on the void. */
+function StreetEnds() {
+	const walls = useMemo(() => {
+		type Wall = { position: [number, number, number]; size: [number, number, number]; face: 'x' | 'z'; seed: number };
+		const list: Wall[] = NEXUS_SIDE_STREETS.map((st, i) => ({ position: [st.side * (NEXUS_STREET_END + 2), 24, (st.z0 + st.z1) / 2], size: [4, 48, 34], face: 'x', seed: 7 + i * 13 }));
+		list.push({ position: [0, 26, NEXUS_AVENUE_END], size: [40, 52, 4], face: 'z', seed: 101 });
+		return list.map((w) => {
+			const tex = facadeTexture(w.seed);
+			const wide = w.face === 'x' ? w.size[2] : w.size[0];
+			tex.repeat.set(Math.max(1, Math.round(wide / 24)), Math.max(1, Math.round(w.size[1] / 24)));
+			return { ...w, mat: new THREE.MeshBasicMaterial({ map: tex, color: new THREE.Color(1, 1, 1) }) };
+		});
+	}, []);
+	return (
+		<>
+			{walls.map((w, i) => (
+				<mesh key={i} position={w.position} material={w.mat}>
+					<boxGeometry args={w.size} />
+				</mesh>
+			))}
+		</>
+	);
+}
+
+/** Zebra crossing over the seam where the mirrored city blocks meet, in the middle of the avenue. */
+function Crosswalk() {
+	const mat = useMemo(() => {
+		const c = document.createElement('canvas');
+		c.width = 256;
+		c.height = 64;
+		const ctx = c.getContext('2d');
+		if (ctx) {
+			ctx.fillStyle = '#1d1f27';
+			ctx.fillRect(0, 0, 256, 64);
+			ctx.fillStyle = '#c9ccd6';
+			for (let x = 6; x < 256; x += 22) ctx.fillRect(x, 6, 12, 52);
+		}
+		const t = new THREE.CanvasTexture(c);
+		t.colorSpace = THREE.SRGBColorSpace;
+		return new THREE.MeshStandardMaterial({ map: t, roughness: 0.5, metalness: 0.1 });
+	}, []);
+	return (
+		<mesh position={[NEXUS_CENTER.x, 0.02, NEXUS_CENTER.z]} rotation={[-Math.PI / 2, 0, 0]} material={mat} receiveShadow>
+			<planeGeometry args={[30, 7]} />
+		</mesh>
+	);
+}
+
 /**
  * Ground under the Hong Kong blocks (their own road and pavements sit on top), street lamps, and the neon
  * street light: 8 coloured point lights hung in lamp heads along both pavements of the canyon.
@@ -78,8 +176,10 @@ export function Street() {
 			<mesh position={[NEXUS_CENTER.x, -0.06, NEXUS_CENTER.z]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
 				<planeGeometry args={[520, 520]} />
 				{/* wet asphalt: the joins between the city blocks never show a seam, and the side streets catch the neon */}
-				<meshStandardMaterial color="#1b1d24" metalness={0.5} roughness={0.35} />
+				<meshStandardMaterial color="#23252e" metalness={0.1} roughness={0.55} />
 			</mesh>
+			<Crosswalk />
+			<StreetEnds />
 			<Lamps />
 			{LIT.map((idx, i) => {
 				const l = NEXUS_LAMPS[idx];

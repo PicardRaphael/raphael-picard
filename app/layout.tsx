@@ -4,6 +4,7 @@ import type { Metadata, Viewport } from 'next';
 import { Inter, JetBrains_Mono, Sora } from 'next/font/google';
 
 import { SiteJsonLd } from '@/components/ui/JsonLd';
+import { Pitch30Dialog } from '@/components/ui/Pitch30';
 import { site } from '@/lib/site';
 
 import './globals.css';
@@ -54,6 +55,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
 		<html lang="fr" className={`${sora.variable} ${inter.variable} ${mono.variable}`}>
 			<body className="min-h-screen">
 				{children}
+				<Pitch30Dialog />
 				<SiteJsonLd />
 				<Analytics />
 				<SpeedInsights />

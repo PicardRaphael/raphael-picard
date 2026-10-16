@@ -35,10 +35,10 @@ function detect(): Quality {
 }
 
 const LIGHT = {
-	day: { hemi: ['#d6ebff', '#55752f', 1.25], sun: ['#fff1d6', 2.8], fog: '#b9d2ea', near: 140, far: 420 },
-	dusk: { hemi: ['#ffe2b8', '#4a6b2a', 1.1], sun: ['#ffc58a', 2.6], fog: '#d9b48f', near: 150, far: 400 },
+	day: { hemi: ['#d6ebff', '#55752f', 1.45], sun: ['#fff1d6', 3.2], fog: '#b9d2ea', near: 140, far: 420 },
+	dusk: { hemi: ['#ffd6a8', '#4a6b2a', 1.3], sun: ['#ffb070', 3.0], fog: '#d9b48f', near: 150, far: 400 },
 	// a moonlit night, not a black one: the hand-painted val stays readable after 21 h
-	night: { hemi: ['#5a6ac0', '#141a30', 0.85], sun: ['#a9bcff', 1.1], fog: '#1a2142', near: 60, far: 280 },
+	night: { hemi: ['#7f8fe0', '#1c2440', 1.6], sun: ['#a9bcff', 1.8], fog: '#1a2142', near: 60, far: 280 },
 } as const;
 
 /** Sun, fog, sky and weather: the visitor's clock (or the options) in the valley, eternal rainy neon night in the Nexus. */

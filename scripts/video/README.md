@@ -3,7 +3,7 @@
 Deux montages du jeu filmé image par image, sur la musique du Nexus :
 
 - `public/video/resume-30s.*` : « Raphaël Picard en 30 secondes », 16:9, 30 s pile, voix off et sous-titres `.fr.vtt` (une version verticale `resume-30s-vertical.mp4` en bonus) ;
-- `public/video/viral-vertical.*` : le montage viral 1080×1920 (~19 s), uniquement des images du jeu, sous-titres incrustés.
+- `public/video/viral-vertical.*` : le montage viral 1080×1920 (~19 s), uniquement des images du jeu, sans sous-titres (la voix de la fiche du bug reste dans le son).
 
 | Fichier                                  | Rôle                                                                                                                                                                                                                                       |
 | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |

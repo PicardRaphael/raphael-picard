@@ -61,12 +61,6 @@
 					"size": 84
 				},
 				{ "from": 54, "to": 214, "pos": "mid", "lines": ["…et sa vraie parade."], "accent": 0, "size": 84 }
-			],
-			"captions": [
-				{ "at": 6.8, "to": 8.55, "text": "Prompt injection. Contenue par construction, pas par le prompt." },
-				{ "at": 8.55, "to": 9.85, "text": "Identité tirée du jeton vérifié, jeu d’outils fixe," },
-				{ "at": 9.85, "to": 11.4, "text": "invariants avant chaque appel, passerelle en lecture seule," },
-				{ "at": 11.4, "to": 12.93, "text": "aucun envoi ni suppression sans validation humaine." }
 			]
 		},
 		{

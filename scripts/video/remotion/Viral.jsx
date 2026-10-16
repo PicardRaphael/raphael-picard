@@ -1,6 +1,6 @@
 /**
  * The vertical viral cut (1080×1920, ~19 s): only footage of the game (takes of ../viral.mjs), big text that reads
- * without sound, burned-in subtitles for the voice of the bug card. Timings and words: ../viral.json.
+ * without sound. Burned-in subtitles (`captions` of a segment in ../viral.json) are supported, none are used today.
  * Text stays out of the top 6 % and the bottom 15 % (the apps draw their own buttons there).
  */
 import { AbsoluteFill, Audio, Sequence, interpolate, staticFile, useCurrentFrame, useVideoConfig } from 'remotion';

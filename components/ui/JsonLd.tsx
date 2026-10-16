@@ -40,7 +40,7 @@ export function SiteJsonLd() {
 		url: site.url,
 		email: `mailto:${site.email}`,
 		telephone: site.phone.href.replace('tel:', ''),
-		image: `${site.url}/opengraph-image`,
+		image: { '@type': 'ImageObject', url: `${site.url}/images/raphael-picard.jpg`, width: 450, height: 450, caption: site.name },
 		address: { '@type': 'PostalAddress', addressLocality: 'Lyon', addressCountry: 'FR' },
 		worksFor: { '@type': 'Organization', name: site.employer.name, url: site.employer.url },
 		hasOccupation: {

@@ -1,3 +1,5 @@
+import Image from 'next/image';
+
 import { Reveal } from '@/components/ui/Reveal';
 import { about, leadership } from '@/content/profile';
 
@@ -73,7 +75,19 @@ export function About({ principles = true }: { principles?: boolean }) {
 				<Reveal delay={0.15} className="lg:pt-24">
 					<aside aria-label="Fiche de personnage" className="glass relative overflow-hidden rounded-3xl p-6">
 						<div className="from-violet/20 to-magenta/10 pointer-events-none absolute inset-0 bg-gradient-to-br" aria-hidden />
-						<p className="eyebrow eyebrow-keep relative">Fiche de personnage</p>
+						<div className="relative flex items-center gap-4">
+							<Image
+								src="/images/raphael-picard.webp"
+								alt="Raphaël Picard, Senior AI Engineer et Responsable IA à Lyon"
+								width={80}
+								height={80}
+								className="ring-magenta/60 h-20 w-20 rounded-2xl object-cover ring-2"
+							/>
+							<div>
+								<p className="eyebrow eyebrow-keep">Fiche de personnage</p>
+								<p className="font-display mt-1 text-lg font-bold">Raphaël Picard</p>
+							</div>
+						</div>
 						<dl className="relative mt-5 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
 							{sheet.map((s) => (
 								<div key={s.k}>

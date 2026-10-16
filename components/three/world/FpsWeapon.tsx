@@ -53,10 +53,13 @@ export function FpsWeapon() {
 		const fov = (camera as THREE.PerspectiveCamera).fov ?? 72;
 		const k = Math.tan(THREE.MathUtils.degToRad(fov) / 2) / Math.tan(THREE.MathUtils.degToRad(72) / 2);
 		g.scale.setScalar(k);
-		// local offset: lower right, slightly forward; bob while running; recoil pushes back and up
-		g.translateX((0.18 + Math.sin(t * 5.5) * 0.012 * run) * k);
-		g.translateY((-0.26 + Math.abs(Math.cos(t * 5.5)) * 0.02 * run + Math.sin(t * 1.4) * 0.004) * k);
-		g.translateZ((-0.55 + kick.current * 0.09) * k);
+		// local offset: lower right, close to the eye like a modern FPS; bob while running; recoil pushes back and up
+		g.translateX((0.165 + Math.sin(t * 5.5) * 0.012 * run) * k);
+		g.translateY((-0.205 + Math.abs(Math.cos(t * 5.5)) * 0.018 * run + Math.sin(t * 1.4) * 0.004) * k);
+		g.translateZ((-0.44 + kick.current * 0.08) * k);
+		// the barrel converges toward the crosshair
+		g.rotateY(0.07);
+		g.rotateZ(-0.03);
 		g.rotateX(kick.current * 0.12);
 		// the weapon lags a little behind fast mouse movements
 		sway.current.x += (THREE.MathUtils.clamp(player.camera.swayX * 0.004, -0.12, 0.12) - sway.current.x) * Math.min(1, dt * 10);

@@ -333,13 +333,15 @@ function Controls() {
 export function GameUI() {
 	const started = useGame((s) => s.started);
 	const zone = useGame((s) => s.zone);
-	// the mouse cursor follows the realm: golden in the val, neon in the Nexus (styles in globals.css)
+	const hero = useGame((s) => s.hero);
+	// the mouse cursor follows the realm (golden in the val, neon in the Nexus); on the start screen, the hero picked
+	const cursor = started ? zone : hero === 'runner' ? 'nexus' : 'val';
 	useEffect(() => {
-		document.documentElement.dataset.cursor = zone;
+		document.documentElement.dataset.cursor = cursor;
 		return () => {
 			delete document.documentElement.dataset.cursor;
 		};
-	}, [zone]);
+	}, [cursor]);
 	return (
 		<>
 			<StartScreen />

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 
 import { game, useGame, useScreenFree } from '@/lib/game-store';
+import { keyLabel, keymap } from '@/lib/keymap';
 import { bugVoiceText, lessonGist, mobs } from '@/lib/mobs';
 import { useVoice, voice, voiceClip } from '@/lib/voice';
 
@@ -40,8 +41,20 @@ export function BugCard() {
 			if (voice.current() === clip) voice.stop();
 		};
 	}, [clip, free]);
+	// the interact key (E) steps through the card: details, then closed
+	useEffect(() => {
+		if (id === null || !free) return;
+		const step = () => {
+			if (expanded) game.set({ bugCard: null });
+			else setOpen(id);
+		};
+		window.addEventListener('bugcard:key', step);
+		return () => window.removeEventListener('bugcard:key', step);
+	}, [id, free, expanded]);
 	if (id === null || !free) return null;
 	const m = mobs[id];
+	const key = keyLabel(keymap.get().interact[0]);
+	const kbd = 'mr-1 rounded border border-white/30 px-1 font-mono text-[0.65rem] text-white/80 pointer-coarse:hidden';
 	const nexus = m.zone === 'nexus';
 	const g = gist(m.lesson);
 	return (
@@ -60,16 +73,28 @@ export function BugCard() {
 			<div className="flex items-start justify-between gap-2">
 				<p className="min-w-0">
 					<span className="font-mono text-[0.6rem] tracking-[0.22em] text-[#a3e635] uppercase">Bug corrigé ✓</span>
-					<span className={`font-display block text-lg leading-tight font-bold [@media(max-height:500px)]:text-base ${nexus ? 'text-[#ff7ae6]' : 'text-[#ffd100]'}`}>{m.name}</span>
+					<span
+						className={`font-display block text-lg leading-tight font-bold [@media(max-height:500px)]:text-base ${nexus ? 'text-[#ff7ae6]' : 'text-[#ffd100]'}`}
+					>
+						{m.name}
+					</span>
 				</p>
 				<div className="flex shrink-0 gap-1">
 					{clip && playing === clip && (
-						<button onClick={() => voice.stop()} className="rounded-md border border-white/20 px-2 py-0.5 text-sm text-white/80 hover:bg-white/10" aria-label="Arrêter la lecture">
+						<button
+							onClick={() => voice.stop()}
+							className="rounded-md border border-white/20 px-2 py-0.5 text-sm text-white/80 hover:bg-white/10"
+							aria-label="Arrêter la lecture"
+						>
 							■
 						</button>
 					)}
-					<button onClick={() => game.set({ bugCard: null })} className="rounded-md border border-white/20 px-2 py-0.5 text-sm text-white/80 hover:bg-white/10" aria-label="Fermer la fiche">
-						✕
+					<button
+						onClick={() => game.set({ bugCard: null })}
+						className="rounded-md border border-white/20 px-2 py-0.5 text-sm text-white/80 hover:bg-white/10"
+						aria-label="Fermer la fiche"
+					>
+						{expanded && <kbd className={kbd}>{key}</kbd>}✕
 					</button>
 				</div>
 			</div>
@@ -86,14 +111,17 @@ export function BugCard() {
 					</p>
 				</div>
 			) : (
-				<p className="mt-1.5 line-clamp-3 text-sm [@media(max-height:500px)]:mt-1 leading-snug text-white/90 [@media(max-height:500px)]:line-clamp-2 [@media(max-height:500px)]:text-xs">
-					{g.head && <b className="text-[#4ade80]">{g.head}. </b>}
+				<p className="mt-1.5 line-clamp-3 text-sm leading-snug text-white/90 [@media(max-height:500px)]:mt-1 [@media(max-height:500px)]:line-clamp-2 [@media(max-height:500px)]:text-xs">
+					{g.head && <b className="text-[#4ade80]">{g.head} : </b>}
 					{g.first}
 				</p>
 			)}
 			{!expanded && (
-				<button onClick={() => setOpen(id)} className="mt-1.5 text-xs text-[#7dd3fc] underline-offset-4 hover:underline [@media(max-height:500px)]:hidden">
-					Détails (aussi dans le Bestiaire du menu)
+				<button
+					onClick={() => setOpen(id)}
+					className="mt-1.5 text-xs text-[#7dd3fc] underline-offset-4 hover:underline [@media(max-height:500px)]:hidden"
+				>
+					<kbd className={kbd}>{key}</kbd>Détails (aussi dans le Bestiaire du menu)
 				</button>
 			)}
 		</div>

@@ -307,6 +307,11 @@ function useKeyboard() {
 				interact(s.inRange);
 				return;
 			}
+			// a bug card on screen and nothing to talk to: E unfolds it, then closes it (no need to free the aimed mouse)
+			if (keymap.is('interact', e.code) && s.bugCard !== null) {
+				window.dispatchEvent(new Event('bugcard:key'));
+				return;
+			}
 			keys.add(e.code);
 			sync();
 		};

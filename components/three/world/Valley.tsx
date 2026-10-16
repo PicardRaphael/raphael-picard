@@ -133,6 +133,8 @@ uniform vec3 uHorizon;
 uniform vec3 uDeep;
 uniform vec3 uSun;
 uniform vec3 uSunDir;
+uniform vec2 uCenter;
+uniform float uRadius;
 varying vec3 vWorld;
 #include <fog_pars_fragment>
 void main() {
@@ -148,6 +150,10 @@ void main() {
 	vec3 sky = mix(uHorizon, uSky, smoothstep(0.0, 0.45, r.y));
 	vec3 col = mix(uDeep, sky, fres);
 	col += uSun * pow(max(dot(r, uSunDir), 0.0), 140.0) * 1.6;
+	// shallow water toward the shore, and a thin line of foam where it meets the bank
+	float d = length(vWorld.xz - uCenter) / uRadius;
+	col = mix(col, vec3(0.25, 0.5, 0.48), smoothstep(0.82, 1.0, d) * 0.6);
+	col += vec3(0.35) * smoothstep(0.95, 1.0, d) * (0.6 + 0.4 * sin(uTime * 1.3 + d * 40.0));
 	gl_FragColor = vec4(col, 1.0);
 	#include <tonemapping_fragment>
 	#include <colorspace_fragment>
@@ -178,18 +184,30 @@ function Water() {
 				uDeep: { value: new THREE.Color('#0b3c46') },
 				uSun: { value: new THREE.Color('#fff1d0') },
 				uSunDir: { value: new THREE.Vector3(0.4, 0.8, 0.3).normalize() },
+				uCenter: { value: new THREE.Vector2(LAKE.x, LAKE.z) },
+				// the shore line: where the water meets the terrain, a little inside the drawn disc
+				uRadius: { value: LAKE.r + 4 },
 			},
 		});
 	}, [normals]);
-	const night = useMemo(() => new THREE.Color('#0d1430'), []);
+	// the sky it mirrors, per time of day (told apart by the val's fog: dark at night, warm at dusk, cold by day)
+	const skies = useMemo(
+		() => ({
+			day: [new THREE.Color('#5e9be0'), new THREE.Color('#cfe3f5')],
+			dusk: [new THREE.Color('#6b4a8a'), new THREE.Color('#ff9a5c')],
+			night: [new THREE.Color('#141c44'), new THREE.Color('#0b1028')],
+		}),
+		[],
+	);
 	useFrame((_, dt) => {
 		const u = material.uniforms;
 		u.uTime.value += dt;
-		// the sky it mirrors follows the val's weather: the fog colour on the horizon, a deeper tone overhead
 		const fog = scene.fog as THREE.Fog | null;
 		if (fog) {
-			(u.uHorizon.value as THREE.Color).copy(fog.color);
-			(u.uSky.value as THREE.Color).copy(fog.color).lerp(night, 0.45);
+			const c = fog.color;
+			const [sky, horizon] = c.r + c.g + c.b < 0.75 ? skies.night : c.r > c.b ? skies.dusk : skies.day;
+			(u.uSky.value as THREE.Color).lerp(sky, Math.min(1, dt * 2));
+			(u.uHorizon.value as THREE.Color).lerp(horizon, Math.min(1, dt * 2));
 		}
 	});
 	return (

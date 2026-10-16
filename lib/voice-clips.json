@@ -196,17 +196,17 @@
 		}
 	},
 	"place-raphy": {
-		"text": "f9112c36",
+		"text": "f605ac44",
 		"default": "m",
 		"f": {
-			"key": "131f0795d1df",
-			"seconds": 5.91,
-			"bytes": 41904
+			"key": "d95d14e68197",
+			"seconds": 4.27,
+			"bytes": 29544
 		},
 		"m": {
-			"key": "a37e41030196",
-			"seconds": 6.44,
-			"bytes": 50736
+			"key": "e1aa15e99cec",
+			"seconds": 4.56,
+			"bytes": 32832
 		}
 	},
 	"place-forge": {

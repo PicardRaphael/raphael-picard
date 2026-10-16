@@ -75,7 +75,7 @@ export function BugCard() {
 			</div>
 			{expanded ? (
 				// scrolls inside the bubble: it never grows down to the crosshair
-				<div className="mt-2 max-h-[27vh] space-y-2 overflow-y-auto text-sm leading-relaxed text-white/90 [@media(max-height:500px)]:max-h-[24vh] [@media(max-height:500px)]:text-xs">
+				<div className="mt-2 max-h-[20vh] space-y-2 overflow-y-auto text-sm leading-relaxed text-white/90 [@media(max-height:500px)]:max-h-[11vh] [@media(max-height:500px)]:text-xs">
 					<p>
 						<b className="text-[#f87171]">Le problème : </b>
 						{m.problem}

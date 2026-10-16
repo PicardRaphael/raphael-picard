@@ -15,8 +15,8 @@ export function Hero() {
 			className="relative flex min-h-[100svh] flex-col justify-center pt-24 pb-10"
 		>
 			<div className="mx-auto w-full max-w-7xl px-4 sm:px-6">
-				<div className="lg:grid lg:grid-cols-[minmax(0,42rem)_minmax(0,1fr)] lg:items-center lg:gap-12">
-					<div className="max-w-2xl">
+				<div className="xl:grid xl:grid-cols-[minmax(0,46rem)_minmax(0,1fr)] xl:items-center xl:gap-10">
+					<div className="max-w-3xl">
 						<p className="eyebrow flex items-center gap-3">
 							<span className="relative flex h-2 w-2">
 								<span className="bg-ok absolute inline-flex h-full w-full animate-ping rounded-full opacity-60" />
@@ -54,14 +54,14 @@ export function Hero() {
 					</div>
 
 					{/* the 30-second film, the same as in the game's cinema: one click, with the sound */}
-					<Pitch30Button className="group border-signal/30 hover:border-signal/70 relative mt-10 block w-full max-w-xl overflow-hidden rounded-2xl border text-left shadow-[0_0_60px_-20px_rgb(56_189_248_/_0.6)] transition-colors lg:mt-0">
+					<Pitch30Button className="group border-signal/30 hover:border-signal/70 relative mx-auto mt-12 block w-full max-w-2xl overflow-hidden rounded-2xl border text-left shadow-[0_0_60px_-20px_rgb(56_189_248_/_0.6)] transition-colors xl:mt-0 xl:max-w-none">
 						<span className="relative block overflow-hidden">
 							<Image
 								src={PITCH_POSTER}
 								alt=""
 								width={1280}
 								height={720}
-								sizes="(min-width: 1024px) 34rem, 100vw"
+								sizes="(min-width: 1280px) 28rem, (min-width: 768px) 42rem, 100vw"
 								className="block aspect-video w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
 							/>
 							{/* on the neon half of the poster, clear of the name written on the left */}

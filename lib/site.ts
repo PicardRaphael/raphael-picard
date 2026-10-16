@@ -24,6 +24,13 @@ export const site = {
 		github: 'https://github.com/PicardRaphael',
 		x: 'https://x.com/RPRaphaelPicard',
 	},
+	/** The 30-second summary, hosted on the site and mirrored on YouTube (plus the vertical Short). */
+	video: {
+		youtubeId: 'lee1768htbM',
+		youtube: 'https://youtu.be/lee1768htbM',
+		short: 'https://www.youtube.com/shorts/eM1wb6f5u4A',
+		uploadedAt: '2026-10-16',
+	},
 	keywords: [
 		'Raphaël Picard',
 		'ingénieur IA',
@@ -68,7 +75,9 @@ export const site = {
  * it is named explicitly on every page so a nested route never loses it.
  */
 export function pageMetadata({ path, title, description }: { path: string; title: string; description: string }): Metadata {
-	const images = [{ url: '/og-raphael-picard.jpg', width: 1200, height: 630, alt: `${site.name}, ${site.role} à Lyon : ce portfolio est un jeu vidéo` }];
+	const images = [
+		{ url: '/og-raphael-picard.jpg', width: 1200, height: 630, alt: `${site.name}, ${site.role} à Lyon : ce portfolio est un jeu vidéo` },
+	];
 	return {
 		title: { absolute: title },
 		description,

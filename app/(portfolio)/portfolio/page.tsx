@@ -9,7 +9,7 @@ import { Hero } from '@/components/sections/Hero';
 import { Journey } from '@/components/sections/Journey';
 import { Portal } from '@/components/sections/Portal';
 import { Projects } from '@/components/sections/Projects';
-import { PageJsonLd } from '@/components/ui/JsonLd';
+import { PageJsonLd, VideoJsonLd } from '@/components/ui/JsonLd';
 import { pageMetadata } from '@/lib/site';
 
 const page = {
@@ -26,6 +26,7 @@ export default function PortfolioPage() {
 	return (
 		<>
 			<PageJsonLd type="ProfilePage" path={page.path} name={page.title} description={page.description} />
+			<VideoJsonLd />
 			<Hero />
 			<About />
 			<Journey />

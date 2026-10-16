@@ -52,11 +52,45 @@ export function SiteJsonLd() {
 		alumniOf: { '@type': 'EducationalOrganization', name: 'O’clock' },
 		knowsLanguage: ['fr', 'en'],
 		knowsAbout,
-		hasCredential: certifications.map((c) => ({ '@type': 'EducationalOccupationalCredential', name: c.name, recognizedBy: { '@type': 'Organization', name: c.issuer } })),
+		hasCredential: certifications.map((c) => ({
+			'@type': 'EducationalOccupationalCredential',
+			name: c.name,
+			recognizedBy: { '@type': 'Organization', name: c.issuer },
+		})),
 		sameAs: [site.social.linkedin, site.social.github, site.social.x],
 	};
-	const website = { '@type': 'WebSite', '@id': WEBSITE_ID, url: site.url, name: site.name, description: site.description, inLanguage: 'fr-FR', publisher: { '@id': PERSON_ID } };
+	const website = {
+		'@type': 'WebSite',
+		'@id': WEBSITE_ID,
+		url: site.url,
+		name: site.name,
+		description: site.description,
+		inLanguage: 'fr-FR',
+		publisher: { '@id': PERSON_ID },
+	};
 	return <Script data={{ '@context': 'https://schema.org', '@graph': [person, website] }} />;
+}
+
+/** The 30-second summary shown on the page: a VideoObject, so search engines can list it as a video result. */
+export function VideoJsonLd() {
+	return (
+		<Script
+			data={{
+				'@context': 'https://schema.org',
+				'@type': 'VideoObject',
+				name: 'Raphaël Picard en 30 secondes',
+				description:
+					'Ce portfolio est un jeu vidéo. Raphaël Picard, Senior AI Engineer et Responsable IA à Lyon : 7 agents IA en production, 5 points de contrôle humain, −33 % de coût d’inférence.',
+				thumbnailUrl: [`${site.url}/video/resume-30s.jpg`],
+				uploadDate: site.video.uploadedAt,
+				duration: 'PT30S',
+				contentUrl: `${site.url}/video/resume-30s.mp4`,
+				embedUrl: `https://www.youtube.com/embed/${site.video.youtubeId}`,
+				inLanguage: 'fr-FR',
+				author: { '@id': PERSON_ID },
+			}}
+		/>
+	);
 }
 
 /** Page-level structured data: "/portfolio" is a ProfilePage about the Person; "/" a WebPage about them. */

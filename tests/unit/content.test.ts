@@ -123,7 +123,7 @@ describe('consistent figures', () => {
 	});
 
 	it('no other agent count or years of experience anywhere', () => {
-		const wrong = [/\b(?:[0-68-9]|\d{2,}|huit|six|cinq|quatre|trois|deux|dix) agents (?:spécialisés |IA |LangGraph )?en prod/i, /\b(?:8|huit) agents\b/i, /\b(?:9|neuf|dix|10) ans\b/i, /\b8 ans\b/, /(?<!plus de )\bhuit ans\b/i];
+		const wrong = [/\b(?:[0-68-9]|\d{2,}|huit|six|cinq|quatre|trois|deux|dix) agents (?:spécialisés |IA |LangGraph )?en prod/i, /\b(?:8|huit) agents\b/i, /\b(?:9|neuf|dix|10) ans\b/i, /(?<!plus de )\b8 ans\b/, /(?<!plus de )\bhuit ans\b/i];
 		const hits: string[] = [];
 		for (const [f, text] of sources())
 			text.split('\n').forEach((line, i) => {

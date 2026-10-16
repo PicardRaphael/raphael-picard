@@ -64,7 +64,7 @@ export const about = {
 	principles: [
 		{
 			title: 'L’IA ne calcule jamais un chiffre',
-			text: 'Montants et soldes sont lus dans le logiciel par des outils testés ; le modèle explique, et dit « je ne sais pas » quand il ne sait pas.',
+			text: 'Montants et soldes sont lus dans le logiciel par des outils testés. Le modèle explique, et dit « je ne sais pas » quand il ne sait pas.',
 		},
 		{
 			title: 'Pas d’agent sans évaluation',
@@ -93,7 +93,7 @@ export const expertise: Expertise[] = [
 			'Chaque outil est un module autonome : fonction typée, schémas Pydantic, consignes de prompt propres',
 			'Données en catalogue : 42 vues métier couvertes par 5 outils génériques, choisies par similarité sémantique',
 			'5 points de contrôle humain (interruptions LangGraph) : homonymes, destinataire, rédaction, aperçu avant envoi, suppression',
-			'Invariants vérifiés avant chaque appel d’outil ; jeu d’outils fixe qui échoue bruyamment',
+			'Invariants vérifiés avant chaque appel d’outil. Jeu d’outils fixe qui échoue bruyamment',
 		],
 		tags: ['LangGraph', 'ReAct', 'Gemini', 'Claude'],
 		metric: '7 agents en prod',
@@ -120,7 +120,7 @@ export const expertise: Expertise[] = [
 			'Les données de chaque client restent dans sa propre base, choisie par le déploiement',
 			'Rien ne part sans un humain : choix du destinataire, relecture, aperçu avant envoi, confirmation avant suppression',
 			'Tout est tracé : chaque étape d’une conversation est consultable dans Langfuse, avec son coût',
-			'Côté technique : SELECT uniquement, opérateurs en liste fermée, paramètres liés, identité tirée du jeton vérifié ; analyse statique, détection de secrets et audit des dépendances sur chaque PR',
+			'Côté technique : SELECT uniquement, opérateurs en liste fermée, paramètres liés, identité tirée du jeton vérifié. Analyse statique, détection de secrets et audit des dépendances sur chaque PR',
 		],
 		tags: ['Moindre privilège', 'Human-in-the-loop', 'SAST', 'Langfuse'],
 		metric: '5 contrôles humains',
@@ -132,7 +132,7 @@ export const expertise: Expertise[] = [
 		points: [
 			'Workflow /spec → /feature → /go → /ship : TDD par sous-agents, une revue par diff, merge humain',
 			'Garde-fous déterministes par hooks : pas de DDL, pas de commit direct sur les branches principales, secrets, tests ciblés',
-			'Sur la plateforme IA : 13 sous-agents, 38 skills, 27 hooks ; 162 skills sur 5 dépôts au total',
+			'Sur la plateforme IA : 13 sous-agents, 38 skills, 27 hooks, et 162 skills sur 5 dépôts au total',
 			'2 serveurs MCP maison (base de connaissances de 989 notes, PostgreSQL) au service des assistants IA de l’équipe',
 		],
 		tags: ['Claude Code', 'MCP', 'Hooks', 'Plugins'],
@@ -143,10 +143,10 @@ export const expertise: Expertise[] = [
 		title: 'LLMOps : évals & coûts',
 		pitch: 'Ce qui ne se mesure pas ne part pas en production.',
 		points: [
-			'Pyramide de tests : unitaires, intégration sur base réelle, fonctionnels LLM (DeepEval + juge) ; plus de 7 000 fonctions de test, CI sur chaque PR',
+			'Pyramide de tests : unitaires, intégration sur base réelle, fonctionnels LLM (DeepEval + juge). Plus de 7 000 fonctions de test, CI sur chaque PR',
 			'Avant chaque release : Answer Relevancy, Faithfulness, critères métier G-Eval et contrôle déterministe des outils appelés',
 			'Golden set de 64 cas × 5 tirages : une vraie régression se distingue de la variance du modèle',
-			'Langfuse : étapes nommées pour le métier, coût et latence par application et par agent, retours utilisateurs ; context caching −33 %',
+			'Langfuse : étapes nommées pour le métier, coût et latence par application et par agent, retours utilisateurs. Context caching −33 %',
 		],
 		tags: ['Langfuse', 'DeepEval', 'Pytest', 'FinOps'],
 		metric: '−33 % de coûts',
@@ -159,7 +159,7 @@ export const expertise: Expertise[] = [
 			'Couche de données de l’ERP réécrite de zéro en TypeScript (Bun, Hono, Zod, PostgreSQL), en remplacement de fonctions PostgreSQL historiques',
 			'Architecture hexagonale vérifiée en CI, mutation testing à 80 % sur chaque PR',
 			'Contrat partagé : le client HTTP de l’IA est généré depuis la spec OpenAPI du backend',
-			'41 endpoints OpenAPI, 496 schémas Zod ; 77 routes FastAPI sur GCP Cloud Run',
+			'41 endpoints OpenAPI, 496 schémas Zod, et 77 routes FastAPI sur GCP Cloud Run',
 		],
 		tags: ['TypeScript', 'Hono', 'PostgreSQL', 'GCP'],
 		metric: '41 endpoints OpenAPI',
@@ -171,6 +171,6 @@ export const leadership = {
 	points: [
 		'Architecture multi-chatbots spécialisés proposée à la direction, puis adoptée en production',
 		'Plus de 6 notes de décision stratégiques : choix de langage, RAG ou base de connaissances, organisation du pôle IA',
-		'Encadrement direct de 3 à 4 personnes ; formation des équipes tech et non-tech (Claude Code, Claude Desktop, Cowork)',
+		'Encadrement direct de 3 à 4 personnes. Formation des équipes tech et non-tech (Claude Code, Claude Desktop, Cowork)',
 	],
 };

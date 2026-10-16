@@ -16,7 +16,7 @@ export const projects: Project[] = [
 	{
 		name: 'NeoChat',
 		kind: 'Assistant conversationnel · Neoteem',
-		pitch: 'L’assistant du logiciel de gestion immobilière : un gestionnaire pose une question sur ses données, ses mails ou ses documents ; l’agent cherche la réponse et peut agir pour lui, sous son contrôle.',
+		pitch: 'L’assistant du logiciel de gestion immobilière : un gestionnaire pose une question sur ses données, ses mails ou ses documents. L’agent cherche la réponse et peut agir pour lui, sous son contrôle.',
 		highlights: [
 			'Moteur ReAct déclaratif : un agent se déclare, son graphe LangGraph en est dérivé',
 			'Les données comme un catalogue : 42 vues métier couvertes par 5 outils génériques, choisies par similarité sémantique',
@@ -36,7 +36,7 @@ export const projects: Project[] = [
 		highlights: [
 			'Graphe RAG conditionnel : relances réécrites, orientation métier, raccourci pour les salutations, cache',
 			'Recherche hybride plein texte + sémantique fusionnée en Reciprocal Rank Fusion, passages étendus à la page complète',
-			'Classement qui ordonne sans exclure ; service SSE déployé à part ; retours utilisateurs collectés',
+			'Classement qui ordonne sans exclure. Service SSE déployé à part. Retours utilisateurs collectés',
 			'Une panne de recherche n’est jamais présentée comme « rien trouvé »',
 		],
 		stack: ['LangGraph', 'pgvector', 'Gemini', 'FastAPI'],
@@ -87,7 +87,7 @@ export const projects: Project[] = [
 	{
 		name: 'agentsdir',
 		kind: 'CLI open source · MIT',
-		pitch: 'Installe dans n’importe quel dépôt l’architecture AGENTS.md + .agents/ lue par Codex, Cursor et opencode, et la projette vers Claude Code ; `check` échoue en CI dès qu’une projection diverge.',
+		pitch: 'Installe dans n’importe quel dépôt l’architecture AGENTS.md + .agents/ lue par Codex, Cursor et opencode, et la projette vers Claude Code. La commande `check` échoue en CI dès qu’une projection diverge.',
 		highlights: ['init, add, sync, check, doctor : tout est vérifiable en CI', 'Tests unitaires + end-to-end Ubuntu et Windows', 'Durcissement sécurité : path traversal, symlinks, injections'],
 		stack: ['TypeScript', 'Node 22', 'Vitest'],
 		url: 'https://github.com/PicardRaphael/agentsdir',
@@ -144,8 +144,8 @@ export const experiences: Experience[] = [
 			'Context caching : −33 % de coûts d’inférence',
 			'Couche de données de l’ERP réécrite de zéro en TypeScript (Bun, Hono, PostgreSQL), en remplacement de fonctions PostgreSQL historiques : 41 endpoints OpenAPI, 496 schémas Zod, mutation testing à 80 %',
 			'Base de connaissances de 989 notes branchée aux agents via 2 serveurs MCP maison',
-			'Architecture multi-chatbots spécialisés proposée à la direction et adoptée ; plus de 6 notes de décision stratégiques',
-			'Encadrement direct de 3 à 4 personnes ; formation des équipes tech et non-tech',
+			'Architecture multi-chatbots spécialisés proposée à la direction et adoptée. Plus de 6 notes de décision stratégiques',
+			'Encadrement direct de 3 à 4 personnes. Formation des équipes tech et non-tech',
 		],
 		stack: ['Python', 'FastAPI', 'LangGraph', 'Gemini', 'pgvector', 'Langfuse', 'GCP'],
 	},

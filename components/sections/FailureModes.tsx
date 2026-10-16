@@ -15,7 +15,7 @@ export function FailureModes() {
 						Ce qui casse un agent en production, <span className="text-gradient">et comment je l’en empêche</span>.
 					</h2>
 					<p className="text-mist mt-4 max-w-2xl">
-						{mobs.length} pannes réelles, chacune avec sa parade. Dans le monde 3D, ce sont les bugs à corriger ; ici, la fiche complète.
+						{mobs.length} pannes réelles, chacune avec sa parade. Dans le monde 3D, ce sont les bugs à corriger. Ici, la fiche complète.
 					</p>
 				</Reveal>
 				<ul className="mt-10 grid gap-3 md:grid-cols-2">
